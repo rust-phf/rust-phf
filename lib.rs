@@ -80,6 +80,16 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
 
     pairs.sort_by(|&(ref a, _, _), &(ref b, _, _)| a.cmp(b));
 
+    for window in pairs.windows(2) {
+        let (ref a, ref a_expr, _) = window[0];
+        let (ref b, ref b_expr, _) = window[1];
+        if a == b {
+            cx.span_err(sp, format!("key {:s} duplicated", *a));
+            cx.span_err(a_expr.span, "one occurance here");
+            cx.span_err(b_expr.span, "one occurance here");
+        }
+    }
+
     let entries = pairs.move_iter()
         .map(|(_, key, value)| @Expr {
             id: 0,

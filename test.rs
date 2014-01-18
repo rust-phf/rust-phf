@@ -3,6 +3,8 @@
 #[phase(syntax, link)]
 extern mod phf;
 
+use std::hashmap::{HashMap, HashSet};
+
 use phf::PhfMap;
 
 #[allow(dead_code)]
@@ -31,4 +33,49 @@ fn test_two() {
     assert!(Some(&11) == map.find(& &"bar"));
     assert_eq!(None, map.find(& &"asdf"));
     assert_eq!(2, map.len());
+}
+
+#[test]
+fn test_entries() {
+    static map: PhfMap<int> = phf_map!(
+        "foo" => 10,
+        "bar" => 11,
+    );
+    let mut hash = HashMap::new();
+    for (key, &value) in map.entries() {
+        hash.insert(key, value);
+    }
+    assert!(Some(&10) == hash.find(& &"foo"));
+    assert!(Some(&11) == hash.find(& &"bar"));
+    assert_eq!(2, hash.len());
+}
+
+#[test]
+fn test_keys() {
+    static map: PhfMap<int> = phf_map!(
+        "foo" => 10,
+        "bar" => 11,
+    );
+    let mut hash = HashSet::new();
+    for key in map.keys() {
+        hash.insert(key);
+    }
+    assert!(hash.contains(& &"foo"));
+    assert!(hash.contains(& &"bar"));
+    assert_eq!(2, hash.len());
+}
+
+#[test]
+fn test_values() {
+    static map: PhfMap<int> = phf_map!(
+        "foo" => 10,
+        "bar" => 11,
+    );
+    let mut hash = HashSet::new();
+    for &value in map.values() {
+        hash.insert(value);
+    }
+    assert!(hash.contains(&10));
+    assert!(hash.contains(&11));
+    assert_eq!(2, hash.len());
 }

@@ -4,6 +4,8 @@
 
 extern mod syntax;
 
+use std::vec::VecIterator;
+
 use syntax::ast;
 use syntax::ast::{Name, TokenTree, LitStr, MutImmutable, Expr, ExprVec, ExprLit};
 use syntax::codemap::Span;
@@ -35,6 +37,50 @@ impl<T> Map<&'static str, T> for PhfMap<T> {
             let (_, ref val) = self.entries[idx];
             val
         })
+    }
+}
+
+impl<T> PhfMap<T> {
+    pub fn entries<'a>(&'a self) -> PhfMapEntries<'a, T> {
+        PhfMapEntries { iter: self.entries.iter() }
+    }
+
+    pub fn keys<'a>(&'a self) -> PhfMapKeys<'a, T> {
+        PhfMapKeys { iter: self.entries() }
+    }
+
+    pub fn values<'a>(&'a self) -> PhfMapValues<'a, T> {
+        PhfMapValues { iter: self.entries() }
+    }
+}
+
+pub struct PhfMapEntries<'a, T> {
+    priv iter: VecIterator<'a, (&'static str, T)>,
+}
+
+impl<'a, T> Iterator<(&'static str, &'a T)> for PhfMapEntries<'a, T> {
+    fn next(&mut self) -> Option<(&'static str, &'a T)> {
+        self.iter.next().map(|&(key, ref value)| (key, value))
+    }
+}
+
+pub struct PhfMapKeys<'a, T> {
+    priv iter: PhfMapEntries<'a, T>,
+}
+
+impl<'a, T> Iterator<&'static str> for PhfMapKeys<'a, T> {
+    fn next(&mut self) -> Option<&'static str> {
+        self.iter.next().map(|(key, _)| key)
+    }
+}
+
+pub struct PhfMapValues<'a, T> {
+    priv iter: PhfMapEntries<'a, T>,
+}
+
+impl<'a, T> Iterator<&'a T> for PhfMapValues<'a, T> {
+    fn next(&mut self) -> Option<&'a T> {
+        self.iter.next().map(|(_, value)| value)
     }
 }
 
@@ -86,7 +132,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
         let (ref a, ref a_expr, _) = window[0];
         let (ref b, ref b_expr, _) = window[1];
         if a == b {
-            cx.span_err(sp, format!("key {:s} duplicated", *a));
+            cx.span_err(sp, format!("duplicate key \"{}\"", *a));
             cx.span_err(a_expr.span, "one occurrence here");
             cx.span_err(b_expr.span, "one occurrence here");
         }

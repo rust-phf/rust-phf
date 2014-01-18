@@ -1,10 +1,8 @@
-#[crate_id="github.com/sfackler/rust-phf#phf:0.0"];
+#[crate_id="github.com/sfackler/rust-phf/phf_mac"];
 #[crate_type="lib"];
 #[feature(managed_boxes, macro_registrar)];
 
 extern mod syntax;
-
-use std::vec;
 
 use syntax::ast;
 use syntax::ast::{Name, TokenTree, LitStr, MutImmutable, Expr, ExprVec, ExprLit};
@@ -20,80 +18,7 @@ use syntax::parse;
 use syntax::parse::token;
 use syntax::parse::token::{COMMA, EOF, FAT_ARROW};
 
-pub struct PhfMap<T> {
-    #[doc(hidden)]
-    entries: &'static [(&'static str, T)],
-}
-
-impl<T> Container for PhfMap<T> {
-    #[inline]
-    fn len(&self) -> uint {
-        self.entries.len()
-    }
-}
-
-impl<T> Map<&'static str, T> for PhfMap<T> {
-    #[inline]
-    fn find<'a>(&'a self, key: & &'static str) -> Option<&'a T> {
-        self.entries.bsearch(|&(val, _)| val.cmp(key)).map(|idx| {
-            let (_, ref val) = self.entries[idx];
-            val
-        })
-    }
-}
-
-impl<T> PhfMap<T> {
-    #[inline]
-    pub fn entries<'a>(&'a self) -> PhfMapEntries<'a, T> {
-        PhfMapEntries { iter: self.entries.iter() }
-    }
-
-    #[inline]
-    pub fn keys<'a>(&'a self) -> PhfMapKeys<'a, T> {
-        PhfMapKeys { iter: self.entries() }
-    }
-
-    #[inline]
-    pub fn values<'a>(&'a self) -> PhfMapValues<'a, T> {
-        PhfMapValues { iter: self.entries() }
-    }
-}
-
-pub struct PhfMapEntries<'a, T> {
-    priv iter: vec::Items<'a, (&'static str, T)>,
-}
-
-impl<'a, T> Iterator<(&'static str, &'a T)> for PhfMapEntries<'a, T> {
-    #[inline]
-    fn next(&mut self) -> Option<(&'static str, &'a T)> {
-        self.iter.next().map(|&(key, ref value)| (key, value))
-    }
-}
-
-pub struct PhfMapKeys<'a, T> {
-    priv iter: PhfMapEntries<'a, T>,
-}
-
-impl<'a, T> Iterator<&'static str> for PhfMapKeys<'a, T> {
-    #[inline]
-    fn next(&mut self) -> Option<&'static str> {
-        self.iter.next().map(|(key, _)| key)
-    }
-}
-
-pub struct PhfMapValues<'a, T> {
-    priv iter: PhfMapEntries<'a, T>,
-}
-
-impl<'a, T> Iterator<&'a T> for PhfMapValues<'a, T> {
-    #[inline]
-    fn next(&mut self) -> Option<&'a T> {
-        self.iter.next().map(|(_, value)| value)
-    }
-}
-
 #[macro_registrar]
-#[doc(hidden)]
 pub fn macro_registrar(register: |Name, SyntaxExtension|) {
     register(token::intern("phf_map"),
              NormalTT(~SyntaxExpanderTT {

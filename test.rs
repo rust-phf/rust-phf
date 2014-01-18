@@ -1,6 +1,7 @@
 #[feature(phase)];
 
-#[phase(syntax, link)]
+#[phase(syntax)]
+extern mod phf_mac;
 extern mod phf;
 
 use std::hashmap::{HashMap, HashSet};

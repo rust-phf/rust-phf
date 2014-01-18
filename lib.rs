@@ -4,8 +4,8 @@
 
 extern mod syntax;
 
-use syntax::ast::{Name, TokenTree, LitStr, MutImmutable, Expr, ExprTup, ExprVec, ExprLit};
-use syntax::codemap::{Span, NameAndSpan, MacroBang, ExpnInfo};
+use syntax::ast::{Name, TokenTree, LitStr, MutImmutable, Expr, ExprVec, ExprLit};
+use syntax::codemap::Span;
 use syntax::ext::base::{SyntaxExtension,
                         ExtCtxt,
                         MacResult,
@@ -92,38 +92,12 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     cx.parse_sess().span_diagnostic.handler().abort_if_errors();
 
     let entries = pairs.move_iter()
-        .map(|(_, key, value)| @Expr {
-            id: 0,
-            node: ExprTup(~[key, value]),
-            span: Span {
-                lo: key.span.lo,
-                hi: value.span.hi,
-                expn_info: Some(@ExpnInfo {
-                    call_site: sp,
-                    callee: NameAndSpan {
-                        name: @"mphf_map",
-                        format: MacroBang,
-                        span: None,
-                    }
-                })
-            }
-        })
+        .map(|(_, key, value)| quote_expr!(&*cx, ($key, $value)))
         .collect();
     let entries = @Expr {
         id: 0,
         node: ExprVec(entries, MutImmutable),
-        span: Span {
-            lo: sp.lo,
-            hi: sp.hi,
-            expn_info: Some(@ExpnInfo {
-                call_site: sp,
-                callee: NameAndSpan {
-                    name: @"mphf_map",
-                    format: MacroBang,
-                    span: None,
-                }
-            })
-        },
+        span: sp,
     };
 
     MRExpr(quote_expr!(cx, MphfMap { entries: &'static $entries }))

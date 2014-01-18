@@ -4,7 +4,7 @@
 
 extern mod syntax;
 
-use std::vec::VecIterator;
+use std::vec;
 
 use syntax::ast;
 use syntax::ast::{Name, TokenTree, LitStr, MutImmutable, Expr, ExprVec, ExprLit};
@@ -60,7 +60,7 @@ impl<T> PhfMap<T> {
 }
 
 pub struct PhfMapEntries<'a, T> {
-    priv iter: VecIterator<'a, (&'static str, T)>,
+    priv iter: vec::Items<'a, (&'static str, T)>,
 }
 
 impl<'a, T> Iterator<(&'static str, &'a T)> for PhfMapEntries<'a, T> {

@@ -89,6 +89,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
             cx.span_err(b_expr.span, "one occurance here");
         }
     }
+    cx.parse_sess().span_diagnostic.handler().abort_if_errors();
 
     let entries = pairs.move_iter()
         .map(|(_, key, value)| @Expr {

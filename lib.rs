@@ -135,17 +135,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     }
 
     pairs.sort_by(|&(ref a, _, _), &(ref b, _, _)| a.cmp(b));
-
-    for window in pairs.windows(2) {
-        let (ref a, ref a_expr, _) = window[0];
-        let (ref b, ref b_expr, _) = window[1];
-        if a == b {
-            cx.span_err(sp, format!("duplicate key \"{}\"", *a));
-            cx.span_err(a_expr.span, "one occurrence here");
-            cx.span_err(b_expr.span, "one occurrence here");
-        }
-    }
-    cx.parse_sess().span_diagnostic.handler().abort_if_errors();
+    check_for_duplicates(cx, sp, pairs);
 
     let entries = pairs.move_iter()
         .map(|(_, key, value)| quote_expr!(&*cx, ($key, $value)))
@@ -157,4 +147,23 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     };
 
     MRExpr(quote_expr!(cx, PhfMap { entries: &'static $entries }))
+}
+
+fn check_for_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[(@str, @Expr, @Expr)]) {
+    let mut in_dup = false;
+    for window in entries.windows(2) {
+        let (a, a_expr, _) = window[0];
+        let (b, b_expr, _) = window[1];
+        if a == b {
+            if !in_dup {
+                cx.span_err(sp, format!("duplicate key \"{}\"", a));
+                cx.span_err(a_expr.span, "one occurrence here");
+                in_dup = true;
+            }
+            cx.span_err(b_expr.span, "one occurrence here");
+        } else {
+            in_dup = false;
+        }
+    }
+    cx.parse_sess().span_diagnostic.handler().abort_if_errors();
 }

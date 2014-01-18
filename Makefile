@@ -33,6 +33,10 @@ $(PHF_TEST): $(PHF_TEST_MAIN) $(PHF) $(PHF_MAC) | $(BUILDDIR)
 check: $(PHF_TEST)
 	$(PHF_TEST)
 
+doc: $(PHF)
+	rustdoc $(PHF_LIB)
+	rustdoc $(PHF_MAC_LIB)
+
 clean:
 	rm -rf $(BUILDDIR)
 

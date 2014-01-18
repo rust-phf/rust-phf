@@ -1,4 +1,4 @@
-#[crate_id="github.com/sfackler/rust-mphf#mphf:0.0"];
+#[crate_id="github.com/sfackler/rust-phf#phf:0.0"];
 #[crate_type="lib"];
 #[feature(managed_boxes, macro_registrar)];
 
@@ -18,18 +18,18 @@ use syntax::parse;
 use syntax::parse::token;
 use syntax::parse::token::{COMMA, EOF, FAT_ARROW};
 
-pub struct MphfMap<T> {
+pub struct PhfMap<T> {
     #[doc(hidden)]
     entries: &'static [(&'static str, T)],
 }
 
-impl<T> Container for MphfMap<T> {
+impl<T> Container for PhfMap<T> {
     fn len(&self) -> uint {
         self.entries.len()
     }
 }
 
-impl<T> Map<&'static str, T> for MphfMap<T> {
+impl<T> Map<&'static str, T> for PhfMap<T> {
     fn find<'a>(&'a self, key: & &'static str) -> Option<&'a T> {
         self.entries.bsearch(|&(val, _)| val.cmp(key)).map(|idx| {
             let (_, ref val) = self.entries[idx];
@@ -39,8 +39,9 @@ impl<T> Map<&'static str, T> for MphfMap<T> {
 }
 
 #[macro_registrar]
+#[doc(hidden)]
 pub fn macro_registrar(register: |Name, SyntaxExtension|) {
-    register(token::intern("mphf_map"),
+    register(token::intern("phf_map"),
              NormalTT(~SyntaxExpanderTT {
                 expander: SyntaxExpanderTTExpanderWithoutContext(expand_mphf_map),
                 span: None
@@ -101,5 +102,5 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
         span: sp,
     };
 
-    MRExpr(quote_expr!(cx, MphfMap { entries: &'static $entries }))
+    MRExpr(quote_expr!(cx, PhfMap { entries: &'static $entries }))
 }

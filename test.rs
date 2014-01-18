@@ -1,29 +1,29 @@
 #[feature(phase)];
 
 #[phase(syntax, link)]
-extern mod mphf;
+extern mod phf;
 
-use mphf::MphfMap;
+use phf::PhfMap;
 
 #[allow(dead_code)]
-static TRAILING_COMMA: MphfMap<int> = mphf_map!(
+static TRAILING_COMMA: PhfMap<int> = phf_map!(
     "foo" => 10,
 );
 
 #[allow(dead_code)]
-static NO_TRAILING_COMMA: MphfMap<int> = mphf_map!(
+static NO_TRAILING_COMMA: PhfMap<int> = phf_map!(
     "foo" => 10
 );
 
 #[test]
 fn test_empty() {
-    let map: MphfMap<int> = mphf_map!();
+    let map: PhfMap<int> = phf_map!();
     assert!(map.is_empty());
 }
 
 #[test]
 fn test_two() {
-    static map: MphfMap<int> = mphf_map!(
+    static map: PhfMap<int> = phf_map!(
         "foo" => 10,
         "bar" => 11,
     );

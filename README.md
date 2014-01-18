@@ -1,2 +1,2 @@
-rust-mphf
+rust-phf
 =========

@@ -80,3 +80,14 @@ fn test_values() {
     assert!(hash.contains(&11));
     assert_eq!(2, hash.len());
 }
+
+#[test]
+fn test_find_str() {
+    static map: PhfMap<int> = phf_map!(
+        "foo" => 10,
+        "bar" => 11,
+    );
+    assert!(map.find_str(&~"foo") == Some(&10));
+    assert!(map.find_str(&~"bar") == Some(&11));
+    assert!(map.find_str(&~"baz") == None);
+}

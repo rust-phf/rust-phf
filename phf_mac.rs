@@ -19,6 +19,7 @@ use syntax::parse::token;
 use syntax::parse::token::{COMMA, EOF, FAT_ARROW};
 
 #[macro_registrar]
+#[doc(hidden)]
 pub fn macro_registrar(register: |Name, SyntaxExtension|) {
     register(token::intern("phf_map"),
              NormalTT(~SyntaxExpanderTT {

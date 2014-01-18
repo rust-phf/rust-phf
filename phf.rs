@@ -15,21 +15,17 @@ impl<T> Container for PhfMap<T> {
     }
 }
 
-impl<T> Map<&'static str, T> for PhfMap<T> {
+impl<'a, T> Map<&'a str, T> for PhfMap<T> {
     #[inline]
-    fn find<'a>(&'a self, key: & &'static str) -> Option<&'a T> {
-        self.find_str(key)
-    }
-}
-
-impl<T> PhfMap<T> {
-    #[inline]
-    pub fn find_str<'a, S: Str>(&'a self, key: &S) -> Option<&'a T> {
-        self.entries.bsearch(|&(val, _)| val.cmp(&key.as_slice())).map(|idx| {
+    fn find<'a>(&'a self, key: & &str) -> Option<&'a T> {
+        self.entries.bsearch(|&(val, _)| val.cmp(key)).map(|idx| {
             let (_, ref val) = self.entries[idx];
             val
         })
     }
+}
+
+impl<T> PhfMap<T> {
 
     #[inline]
     pub fn entries<'a>(&'a self) -> PhfMapEntries<'a, T> {

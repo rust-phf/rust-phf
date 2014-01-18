@@ -36,4 +36,7 @@ check: $(PHF_TEST)
 clean:
 	rm -rf $(BUILDDIR)
 
+print-targets:
+	@echo $(PHF_MAC) $(PHF)
+
 .PHONY: all clean check

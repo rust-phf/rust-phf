@@ -5,21 +5,15 @@ extern mod mphf;
 
 use mphf::MphfMap;
 
-#[test]
-fn test_trailing_comma() {
-    #[allow(dead_code)]
-    static _m: MphfMap<int> = mphf_map!(
-        "foo" => 10,
-    );
-}
+#[allow(dead_code)]
+static TRAILING_COMMA: MphfMap<int> = mphf_map!(
+    "foo" => 10,
+);
 
-#[test]
-fn test_no_trailing_comma() {
-    #[allow(dead_code)]
-    static _m: MphfMap<int> = mphf_map!(
-        "foo" => 10
-    );
-}
+#[allow(dead_code)]
+static NO_TRAILING_COMMA: MphfMap<int> = mphf_map!(
+    "foo" => 10
+);
 
 #[test]
 fn test_empty() {

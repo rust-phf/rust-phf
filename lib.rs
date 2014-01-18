@@ -85,8 +85,8 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
         let (ref b, ref b_expr, _) = window[1];
         if a == b {
             cx.span_err(sp, format!("key {:s} duplicated", *a));
-            cx.span_err(a_expr.span, "one occurance here");
-            cx.span_err(b_expr.span, "one occurance here");
+            cx.span_err(a_expr.span, "one occurrence here");
+            cx.span_err(b_expr.span, "one occurrence here");
         }
     }
     cx.parse_sess().span_diagnostic.handler().abort_if_errors();

@@ -26,12 +26,14 @@ pub struct PhfMap<T> {
 }
 
 impl<T> Container for PhfMap<T> {
+    #[inline]
     fn len(&self) -> uint {
         self.entries.len()
     }
 }
 
 impl<T> Map<&'static str, T> for PhfMap<T> {
+    #[inline]
     fn find<'a>(&'a self, key: & &'static str) -> Option<&'a T> {
         self.entries.bsearch(|&(val, _)| val.cmp(key)).map(|idx| {
             let (_, ref val) = self.entries[idx];
@@ -41,14 +43,17 @@ impl<T> Map<&'static str, T> for PhfMap<T> {
 }
 
 impl<T> PhfMap<T> {
+    #[inline]
     pub fn entries<'a>(&'a self) -> PhfMapEntries<'a, T> {
         PhfMapEntries { iter: self.entries.iter() }
     }
 
+    #[inline]
     pub fn keys<'a>(&'a self) -> PhfMapKeys<'a, T> {
         PhfMapKeys { iter: self.entries() }
     }
 
+    #[inline]
     pub fn values<'a>(&'a self) -> PhfMapValues<'a, T> {
         PhfMapValues { iter: self.entries() }
     }
@@ -59,6 +64,7 @@ pub struct PhfMapEntries<'a, T> {
 }
 
 impl<'a, T> Iterator<(&'static str, &'a T)> for PhfMapEntries<'a, T> {
+    #[inline]
     fn next(&mut self) -> Option<(&'static str, &'a T)> {
         self.iter.next().map(|&(key, ref value)| (key, value))
     }
@@ -69,6 +75,7 @@ pub struct PhfMapKeys<'a, T> {
 }
 
 impl<'a, T> Iterator<&'static str> for PhfMapKeys<'a, T> {
+    #[inline]
     fn next(&mut self) -> Option<&'static str> {
         self.iter.next().map(|(key, _)| key)
     }
@@ -79,6 +86,7 @@ pub struct PhfMapValues<'a, T> {
 }
 
 impl<'a, T> Iterator<&'a T> for PhfMapValues<'a, T> {
+    #[inline]
     fn next(&mut self) -> Option<&'a T> {
         self.iter.next().map(|(_, value)| value)
     }

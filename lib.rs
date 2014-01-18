@@ -4,6 +4,7 @@
 
 extern mod syntax;
 
+use syntax::ast;
 use syntax::ast::{Name, TokenTree, LitStr, MutImmutable, Expr, ExprVec, ExprLit};
 use syntax::codemap::Span;
 use syntax::ext::base::{SyntaxExtension,
@@ -95,7 +96,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
         .map(|(_, key, value)| quote_expr!(&*cx, ($key, $value)))
         .collect();
     let entries = @Expr {
-        id: 0,
+        id: ast::DUMMY_NODE_ID,
         node: ExprVec(entries, MutImmutable),
         span: sp,
     };

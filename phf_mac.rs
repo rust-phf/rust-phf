@@ -128,7 +128,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
         span: sp,
     };
 
-    MRExpr(quote_expr!(cx, phf::PhfMap {
+    MRExpr(quote_expr!(cx, PhfMap {
         len: $len,
         k1: $k1,
         k2_g: $k2_g,

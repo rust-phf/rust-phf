@@ -6,12 +6,15 @@
 #[doc(html_root_url="http://www.rust-ci.org/sfackler/rust-phf/doc")];
 #[feature(managed_boxes, macro_registrar)];
 
+extern mod extra;
 extern mod syntax;
 extern mod phf;
 
+use extra::time;
 use std::hashmap::HashMap;
 use std::rand;
 use std::uint;
+use std::os;
 use std::vec;
 use syntax::ast;
 use syntax::ast::{Name, TokenTree, LitStr, MutImmutable, Expr, ExprVec, ExprLit};
@@ -83,6 +86,8 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
 
     entries.sort_by(|a, b| a.key_str.cmp(&b.key_str));
     check_for_duplicates(cx, sp, entries);
+
+    let start = time::precise_time_s();
     let state;
     loop {
         match generate_hash(entries) {
@@ -92,6 +97,10 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
             }
             None => {}
         }
+    }
+    let time = time::precise_time_s() - start;
+    if (os::getenv("PHF_STATS").is_some()) {
+        cx.parse_sess().span_diagnostic.span_note(sp, format!("PHF generation took {} seconds", time));
     }
 
     let len = entries.len();

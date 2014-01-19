@@ -1,6 +1,8 @@
 Rust-PHF
 =========
 
+[![Build Status](https://travis-ci.org/sfackler/rust-phf.png?branch=master)](https://travis-ci.org/sfackler/rust-phf)
+
 Rust-PHF is a library to generate efficient lookup tables at compile time using
 [perfect hash functions](http://en.wikipedia.org/wiki/Perfect_hash_function).
 

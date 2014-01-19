@@ -13,7 +13,6 @@ extern mod phf;
 use extra::time;
 use std::hashmap::HashMap;
 use std::rand;
-use std::uint;
 use std::os;
 use std::vec;
 use syntax::ast;

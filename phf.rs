@@ -42,15 +42,13 @@ pub struct PhfMap<T> {
 
 #[doc(hidden)]
 #[inline]
-pub fn hash1(s: &str, k1: u64, k2_g: u64) -> uint {
-    s.hash_keyed(k1, k2_g) as uint
+pub fn hash(s: &str, k1: u64, k2: u64) -> uint {
+    s.hash_keyed(k1, k2) as uint
 }
 
 #[doc(hidden)]
 #[inline]
-pub fn hash2(s: &str, k1: u64, k2_f1: u64, k2_f2: u64, d1: uint, d2: uint) -> uint {
-    let f1 = s.hash_keyed(k1, k2_f1) as uint;
-    let f2 = s.hash_keyed(k1, k2_f2) as uint;
+pub fn displace(f1: uint, f2: uint, d1: uint, d2: uint) -> uint {
     d2 + f1 * d1 + f2
 }
 
@@ -64,9 +62,11 @@ impl<T> Container for PhfMap<T> {
 impl<'a, T> Map<&'a str, T> for PhfMap<T> {
     #[inline]
     fn find<'a>(&'a self, key: & &str) -> Option<&'a T> {
-        let hash1 = hash1(*key, self.k1, self.k2_g);
+        let hash1 = hash(*key, self.k1, self.k2_g);
         let (d1, d2) = self.disps[hash1 % self.disps.len()];
-        let hash2 = hash2(*key, self.k1, self.k2_f1, self.k2_f2, d1, d2);
+        let f1 = hash(*key, self.k1, self.k2_f1);
+        let f2 = hash(*key, self.k1, self.k2_f2);
+        let hash2 = displace(f1, f2, d1, d2);
         match self.entries[hash2 % self.entries.len()] {
             Some((s, ref value)) if s == *key => Some(value),
             _ => None

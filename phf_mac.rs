@@ -173,18 +173,31 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
         keys: ~[uint],
     }
 
+    struct Hashes {
+        g: uint,
+        f1: uint,
+        f2: uint,
+    }
+
     let k1 = rand::random();
     let k2_g = rand::random();
     let k2_f1 = rand::random();
     let k2_f2 = rand::random();
+
+    let hashes = entries.iter().map(|entry| {
+            Hashes {
+                g: phf::hash(entry.key_str, k1, k2_g) as uint,
+                f1: phf::hash(entry.key_str, k1, k2_f1) as uint,
+                f2: phf::hash(entry.key_str, k1, k2_f2) as uint,
+            }
+        }).to_owned_vec();
 
     let buckets_len = (entries.len() + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA;
     let mut buckets = vec::from_fn(buckets_len,
                                    |i| Bucket { idx: i, keys: ~[] });
 
     for (i, entry) in entries.iter().enumerate() {
-        let idx = phf::hash1(entry.key_str.as_slice(), k1, k2_g) % buckets_len;
-        buckets[idx].keys.push(i);
+        buckets[hashes[i].g % buckets_len].keys.push(i);
     }
 
     // Sort descending
@@ -199,8 +212,8 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
             'disps: for d2 in range(0, table_len) {
                 try_map.clear();
                 for &key in bucket.keys.iter() {
-                    let idx = phf::hash2(entries[key].key_str.as_slice(), k1,
-                                         k2_f1, k2_f2, d1, d2) % table_len;
+                    let idx = phf::displace(hashes[key].f1, hashes[key].f2,
+                                            d1, d2) % table_len;
                     if try_map.find(&idx).is_some() || map[idx].is_some() {
                         continue 'disps;
                     }

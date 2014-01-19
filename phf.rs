@@ -119,6 +119,11 @@ impl<'a, T> Iterator<(&'static str, &'a T)> for PhfMapEntries<'a, T> {
     fn next(&mut self) -> Option<(&'static str, &'a T)> {
         self.iter.next()
     }
+
+    #[inline]
+    fn size_hint(&self) -> (uint, Option<uint>) {
+        self.iter.size_hint()
+    }
 }
 
 /// An iterator over the keys in a `PhfMap`.
@@ -131,6 +136,11 @@ impl<'a, T> Iterator<&'static str> for PhfMapKeys<'a, T> {
     fn next(&mut self) -> Option<&'static str> {
         self.iter.next().map(|(key, _)| key)
     }
+
+    #[inline]
+    fn size_hint(&self) -> (uint, Option<uint>) {
+        self.iter.size_hint()
+    }
 }
 
 /// An iterator over the values in a `PhfMap`.
@@ -142,5 +152,10 @@ impl<'a, T> Iterator<&'a T> for PhfMapValues<'a, T> {
     #[inline]
     fn next(&mut self) -> Option<&'a T> {
         self.iter.next().map(|(_, value)| value)
+    }
+
+    #[inline]
+    fn size_hint(&self) -> (uint, Option<uint>) {
+        self.iter.size_hint()
     }
 }

@@ -28,6 +28,6 @@ static KEYWORDS: PhfMap<Token> = phf_map!(
 );
 
 pub fn parse_token(tok: &str) -> Option<Token> {
-    KEYWORDS.find(tok)
+    KEYWORDS.find(tok).map(|t| t.clone())
 }
 ```

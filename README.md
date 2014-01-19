@@ -19,15 +19,15 @@ extern mod phf;
 
 use phf::PhfMap;
 
-static KEYWORDS: PhfMap<Token> = phf_map!(
-    "," => COMMA,
-    "=>" => FAT_ARROW,
-    "(" => LPAREN,
-    ")" => RPAREN,
-    "=" => EQ,
+static KEYWORDS: PhfMap<Keyword> = phf_map!(
+    "loop" => LOOP,
+    "continue" => CONTINUE,
+    "break" => BREAK,
+    "fn" => FN,
+    "extern" => EXTERN,
 );
 
-pub fn parse_token(tok: &str) -> Option<Token> {
-    KEYWORDS.find(tok).map(|t| t.clone())
+pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
+    KEYWORDS.find(keyword).map(|t| t.clone())
 }
 ```

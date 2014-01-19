@@ -33,10 +33,16 @@ pub fn macro_registrar(register: |Name, SyntaxExtension|) {
              None));
 }
 
+struct Entry {
+    key_str: @str,
+    key: @Expr,
+    value: @Expr
+}
+
 fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(),
                                                 tts.to_owned());
-    let mut pairs = ~[];
+    let mut entries = ~[];
 
     while parser.token != EOF {
         let key = parser.parse_expr();
@@ -57,18 +63,22 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
 
         let value = parser.parse_expr();
 
-        pairs.push((key_str, key, value));
+        entries.push(Entry {
+            key_str: key_str,
+            key: key,
+            value: value
+        });
 
         if !parser.eat(&COMMA) && parser.token != EOF {
             cx.span_fatal(parser.span, "expected `,`");
         }
     }
 
-    pairs.sort_by(|&(ref a, _, _), &(ref b, _, _)| a.cmp(b));
-    check_for_duplicates(cx, sp, pairs);
+    entries.sort_by(|a, b| a.key_str.cmp(&b.key_str));
+    check_for_duplicates(cx, sp, entries);
 
-    let entries = pairs.move_iter()
-        .map(|(_, key, value)| quote_expr!(&*cx, ($key, $value)))
+    let entries = entries.move_iter()
+        .map(|Entry { key, value, .. }| quote_expr!(&*cx, ($key, $value)))
         .collect();
     let entries = @Expr {
         id: ast::DUMMY_NODE_ID,
@@ -79,18 +89,18 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     MRExpr(quote_expr!(cx, PhfMap { entries: &'static $entries }))
 }
 
-fn check_for_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[(@str, @Expr, @Expr)]) {
+fn check_for_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) {
     let mut in_dup = false;
     for window in entries.windows(2) {
-        let (a, a_expr, _) = window[0];
-        let (b, b_expr, _) = window[1];
-        if a == b {
+        let ref a = window[0];
+        let ref b = window[1];
+        if a.key_str == b.key_str {
             if !in_dup {
-                cx.span_err(sp, format!("duplicate key \"{}\"", a));
-                cx.span_err(a_expr.span, "one occurrence here");
+                cx.span_err(sp, format!("duplicate key \"{}\"", a.key_str));
+                cx.span_err(a.key.span, "one occurrence here");
                 in_dup = true;
             }
-            cx.span_err(b_expr.span, "one occurrence here");
+            cx.span_err(b.key.span, "one occurrence here");
         } else {
             in_dup = false;
         }

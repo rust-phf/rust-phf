@@ -205,8 +205,8 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
     let mut buckets = vec::from_fn(buckets_len,
                                    |i| Bucket { idx: i, keys: ~[] });
 
-    for (i, entry) in entries.iter().enumerate() {
-        buckets[hashes[i].g % buckets_len].keys.push(i);
+    for (i, hash) in hashes.iter().enumerate() {
+        buckets[hash.g % buckets_len].keys.push(i);
     }
 
     // Sort descending

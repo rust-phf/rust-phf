@@ -34,7 +34,7 @@ check: $(PHF_TEST)
 
 doc: $(PHF)
 	rustdoc $(PHF_LIB)
-	rustdoc $(PHF_MAC_LIB)
+	rustdoc -L $(BUILDDIR) $(PHF_MAC_LIB)
 
 clean:
 	rm -rf $(BUILDDIR)

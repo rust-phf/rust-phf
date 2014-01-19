@@ -19,16 +19,14 @@ $(BUILDDIR):
 	mkdir -p $@
 
 $(PHF): $(PHF_LIB) | $(BUILDDIR)
-	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf.d \
-		--out-dir $(BUILDDIR) $<
+	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf.d --out-dir $(@D) $<
 
 $(PHF_MAC): $(PHF_MAC_LIB) | $(BUILDDIR)
-	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf_mac.d \
-		--out-dir $(BUILDDIR) $<
+	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf_mac.d --out-dir $(@D) $<
 
 $(PHF_TEST): $(PHF_TEST_MAIN) $(PHF) $(PHF_MAC) | $(BUILDDIR)
 	$(RUSTC) --test $(RUSTFLAGS) -L $(BUILDDIR) \
-		--dep-info $(BUILDDIR)/phf_test.d --out-dir $(BUILDDIR) $<
+		--dep-info $(BUILDDIR)/phf_test.d --out-dir $(@D) $<
 
 check: $(PHF_TEST)
 	$(PHF_TEST)

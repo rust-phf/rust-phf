@@ -27,7 +27,13 @@ pub struct PhfMap<T> {
     #[doc(hidden)]
     len: uint,
     #[doc(hidden)]
-    keys: Keys,
+    k1: u64,
+    #[doc(hidden)]
+    k2_g: u64,
+    #[doc(hidden)]
+    k2_f1: u64,
+    #[doc(hidden)]
+    k2_f2: u64,
     #[doc(hidden)]
     disps: &'static [(uint, uint)],
     #[doc(hidden)]
@@ -35,25 +41,17 @@ pub struct PhfMap<T> {
 }
 
 #[doc(hidden)]
-pub struct Keys {
-    k1: u64,
-    k2_g: u64,
-    k2_f1: u64,
-    k2_f2: u64,
+#[inline]
+pub fn hash1(s: &str, k1: u64, k2_g: u64) -> uint {
+    s.hash_keyed(k1, k2_g) as uint
 }
 
-impl Keys {
-    #[doc(hidden)]
-    pub fn hash1(&self, s: &str) -> uint {
-        s.hash_keyed(self.k1, self.k2_g) as uint
-    }
-
-    #[doc(hidden)]
-    pub fn hash2(&self, s: &str, d1: uint, d2: uint) -> uint {
-        let f1 = s.hash_keyed(self.k1, self.k2_f1) as uint;
-        let f2 = s.hash_keyed(self.k1, self.k2_f2) as uint;
-        d2 + f1 * d1 + f2
-    }
+#[doc(hidden)]
+#[inline]
+pub fn hash2(s: &str, k1: u64, k2_f1: u64, k2_f2: u64, d1: uint, d2: uint) -> uint {
+    let f1 = s.hash_keyed(k1, k2_f1) as uint;
+    let f2 = s.hash_keyed(k1, k2_f2) as uint;
+    d2 + f1 * d1 + f2
 }
 
 impl<T> Container for PhfMap<T> {
@@ -66,9 +64,9 @@ impl<T> Container for PhfMap<T> {
 impl<'a, T> Map<&'a str, T> for PhfMap<T> {
     #[inline]
     fn find<'a>(&'a self, key: & &str) -> Option<&'a T> {
-        let hash1 = self.keys.hash1(*key);
+        let hash1 = hash1(*key, self.k1, self.k2_g);
         let (d1, d2) = self.disps[hash1 % self.disps.len()];
-        let hash2 = self.keys.hash2(*key, d1, d2);
+        let hash2 = hash2(*key, self.k1, self.k2_f1, self.k2_f2, d1, d2);
         match self.entries[hash2 % self.entries.len()] {
             Some((s, ref value)) if s == *key => Some(value),
             _ => None

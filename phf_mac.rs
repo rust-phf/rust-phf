@@ -27,8 +27,6 @@ use syntax::parse;
 use syntax::parse::token;
 use syntax::parse::token::{COMMA, EOF, FAT_ARROW};
 
-use phf::Keys;
-
 static DEFAULT_LAMBDA: uint = 5;
 
 #[macro_registrar]
@@ -99,16 +97,14 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     let len = entries.len();
     let len = quote_expr!(&*cx, $len);
 
-    let k1 = state.keys.k1;
-    let k2_g = state.keys.k2_g;
-    let k2_f1 = state.keys.k2_f1;
-    let k2_f2 = state.keys.k2_f2;
-    let keys = quote_expr!(&*cx, phf::Keys {
-        k1: $k1,
-        k2_g: $k2_g,
-        k2_f1: $k2_f1,
-        k2_f2: $k2_f2,
-    });
+    let k1 = state.k1;
+    let k1 = quote_expr!(&*cx, $k1);
+    let k2_g = state.k2_g;
+    let k2_g = quote_expr!(&*cx, $k2_g);
+    let k2_f1 = state.k2_f1;
+    let k2_f1 = quote_expr!(&*cx, $k2_f1);
+    let k2_f2 = state.k2_f2;
+    let k2_f2 = quote_expr!(&*cx, $k2_f2);
     let disps = state.disps.iter().map(|&(d1, d2)| {
             quote_expr!(&*cx, ($d1, $d2))
         }).collect();
@@ -134,7 +130,10 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
 
     MRExpr(quote_expr!(cx, phf::PhfMap {
         len: $len,
-        keys: $keys,
+        k1: $k1,
+        k2_g: $k2_g,
+        k2_f1: $k2_f1,
+        k2_f2: $k2_f2,
         disps: &'static $disps,
         entries: &'static $entries,
     }))
@@ -160,7 +159,10 @@ fn check_for_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) {
 }
 
 struct HashState {
-    keys: Keys,
+    k1: u64,
+    k2_g: u64,
+    k2_f1: u64,
+    k2_f2: u64,
     disps: ~[(uint, uint)],
     map: ~[Option<uint>],
 }
@@ -171,27 +173,17 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
         keys: ~[uint],
     }
 
-    let keys = Keys {
-        k1: rand::random(),
-        k2_g: rand::random(),
-        k2_f1: rand::random(),
-        k2_f2: rand::random(),
-    };
-
-    if entries.is_empty() {
-        return Some(HashState {
-            keys: keys,
-            disps: ~[],
-            map: ~[],
-        })
-    }
+    let k1 = rand::random();
+    let k2_g = rand::random();
+    let k2_f1 = rand::random();
+    let k2_f2 = rand::random();
 
     let buckets_len = (entries.len() + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA;
     let mut buckets = vec::from_fn(buckets_len,
                                    |i| Bucket { idx: i, keys: ~[] });
 
     for (i, entry) in entries.iter().enumerate() {
-        let idx = keys.hash1(entry.key_str.as_slice()) % buckets_len;
+        let idx = phf::hash1(entry.key_str.as_slice(), k1, k2_g) % buckets_len;
         buckets[idx].keys.push(i);
     }
 
@@ -207,7 +199,8 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
             'disps: for d2 in range(0, table_len) {
                 try_map.clear();
                 for &key in bucket.keys.iter() {
-                    let idx = keys.hash2(entries[key].key_str.as_slice(), d1, d2) % table_len;
+                    let idx = phf::hash2(entries[key].key_str.as_slice(), k1,
+                                         k2_f1, k2_f2, d1, d2) % table_len;
                     if try_map.find(&idx).is_some() || map[idx].is_some() {
                         continue 'disps;
                     }
@@ -230,7 +223,10 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
     let disps = disps.move_iter().map(|i| i.expect("should have a bucket")).collect();
 
     Some(HashState {
-        keys: keys,
+        k1: k1,
+        k2_g: k2_g,
+        k2_f1: k2_f1,
+        k2_f2: k2_f2,
         disps: disps,
         map: map,
     })

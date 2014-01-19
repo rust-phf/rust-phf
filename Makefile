@@ -1,6 +1,6 @@
 RUSTC = rustc
 BUILDDIR = build
-RUSTFLAGS = -O
+RUSTFLAGS = -O -Z extra-debug-info
 
 PHF_LIB = phf.rs
 PHF = $(BUILDDIR)/$(shell $(RUSTC) --crate-file-name $(PHF_LIB))
@@ -21,8 +21,9 @@ $(BUILDDIR):
 $(PHF): $(PHF_LIB) | $(BUILDDIR)
 	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf.d --out-dir $(@D) $<
 
-$(PHF_MAC): $(PHF_MAC_LIB) | $(BUILDDIR)
-	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf_mac.d --out-dir $(@D) $<
+$(PHF_MAC): $(PHF_MAC_LIB) $(PHF) | $(BUILDDIR)
+	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf_mac.d --out-dir $(@D) \
+		-L $(BUILDDIR) $<
 
 $(PHF_TEST): $(PHF_TEST_MAIN) $(PHF) $(PHF_MAC) | $(BUILDDIR)
 	$(RUSTC) --test $(RUSTFLAGS) -L $(BUILDDIR) \

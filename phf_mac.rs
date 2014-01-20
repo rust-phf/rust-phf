@@ -83,6 +83,12 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
         }
     }
 
+    if entries.len() > phf::MAX_SIZE {
+        cx.span_fatal(parser.span,
+                      format!("maps with more than {} items are not supported",
+                              phf::MAX_SIZE));
+    }
+
     entries.sort_by(|a, b| a.key_str.cmp(&b.key_str));
     check_for_duplicates(cx, sp, entries);
 
@@ -104,9 +110,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
 
     let len = entries.len();
     let k1 = state.k1;
-    let k2_g = state.k2_g;
-    let k2_f1 = state.k2_f1;
-    let k2_f2 = state.k2_f2;
+    let k2 = state.k2;
     let disps = state.disps.iter().map(|&(d1, d2)| {
             quote_expr!(&*cx, ($d1, $d2))
         }).collect();
@@ -133,9 +137,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     MRExpr(quote_expr!(cx, PhfMap {
         len: $len,
         k1: $k1,
-        k2_g: $k2_g,
-        k2_f1: $k2_f1,
-        k2_f2: $k2_f2,
+        k2: $k2,
         disps: &'static $disps,
         entries: &'static $entries,
     }))
@@ -162,9 +164,7 @@ fn check_for_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) {
 
 struct HashState {
     k1: u64,
-    k2_g: u64,
-    k2_f1: u64,
-    k2_f2: u64,
+    k2: u64,
     disps: ~[(uint, uint)],
     map: ~[Option<uint>],
 }
@@ -182,15 +182,14 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
     }
 
     let k1 = rand::random();
-    let k2_g = rand::random();
-    let k2_f1 = rand::random();
-    let k2_f2 = rand::random();
+    let k2 = rand::random();
 
     let hashes = entries.iter().map(|entry| {
+            let (g, f1, f2) = phf::hash(entry.key_str, k1, k2);
             Hashes {
-                g: phf::hash(entry.key_str, k1, k2_g) as uint,
-                f1: phf::hash(entry.key_str, k1, k2_f1) as uint,
-                f2: phf::hash(entry.key_str, k1, k2_f2) as uint,
+                g: g,
+                f1: f1,
+                f2: f2
             }
         }).to_owned_vec();
 
@@ -239,9 +238,7 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
 
     Some(HashState {
         k1: k1,
-        k2_g: k2_g,
-        k2_f1: k2_f1,
-        k2_f2: k2_f2,
+        k2: k2,
         disps: disps,
         map: map,
     })

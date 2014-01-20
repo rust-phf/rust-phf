@@ -103,16 +103,10 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     }
 
     let len = entries.len();
-    let len = quote_expr!(&*cx, $len);
-
     let k1 = state.k1;
-    let k1 = quote_expr!(&*cx, $k1);
     let k2_g = state.k2_g;
-    let k2_g = quote_expr!(&*cx, $k2_g);
     let k2_f1 = state.k2_f1;
-    let k2_f1 = quote_expr!(&*cx, $k2_f1);
     let k2_f2 = state.k2_f2;
-    let k2_f2 = quote_expr!(&*cx, $k2_f2);
     let disps = state.disps.iter().map(|&(d1, d2)| {
             quote_expr!(&*cx, ($d1, $d2))
         }).collect();

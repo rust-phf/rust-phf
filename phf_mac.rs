@@ -1,4 +1,4 @@
-//! Compiler plugin for Rust-Phf
+//! Compiler plugin for Rust-PHF
 //!
 //! See the documentation for the `phf` crate for more details.
 #[crate_id="github.com/sfackler/rust-phf/phf_mac"];
@@ -53,6 +53,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
                                                 tts.to_owned());
     let mut entries = ~[];
 
+    let mut bad = false;
     while parser.token != EOF {
         let key = parser.parse_expr();
 
@@ -60,14 +61,23 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
             ExprLit(lit) => {
                 match lit.node {
                     LitStr(s, _) => s,
-                    _ => cx.span_fatal(key.span, "expected string literal"),
+                    _ => {
+                        cx.span_err(key.span, "expected string literal");
+                        bad = true;
+                        @""
+                    }
                 }
             }
-            _ => cx.span_fatal(key.span, "expected string literal"),
+            _ => {
+                cx.span_err(key.span, "expected string literal");
+                bad = true;
+                @""
+            }
         };
 
         if !parser.eat(&FAT_ARROW) {
-            cx.span_fatal(parser.span, "expected `=>`");
+            cx.span_err(parser.span, "expected `=>`");
+            return MacResult::dummy_expr();
         }
 
         let value = parser.parse_expr();
@@ -79,18 +89,26 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
         });
 
         if !parser.eat(&COMMA) && parser.token != EOF {
-            cx.span_fatal(parser.span, "expected `,`");
+            cx.span_err(parser.span, "expected `,`");
+            return MacResult::dummy_expr();
         }
     }
 
     if entries.len() > phf::MAX_SIZE {
-        cx.span_fatal(parser.span,
-                      format!("maps with more than {} items are not supported",
-                              phf::MAX_SIZE));
+        cx.span_err(parser.span,
+                    format!("maps with more than {} items are not supported",
+                            phf::MAX_SIZE));
+        return MacResult::dummy_expr();
+    }
+
+    if bad {
+        return MacResult::dummy_expr();
     }
 
     entries.sort_by(|a, b| a.key_str.cmp(&b.key_str));
-    check_for_duplicates(cx, sp, entries);
+    if check_for_duplicates(cx, sp, entries) {
+        return MacResult::dummy_expr();
+    }
 
     let start = time::precise_time_s();
     let state;
@@ -143,23 +161,26 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     }))
 }
 
-fn check_for_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) {
+fn check_for_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
+    let mut dups = false;
     let mut in_dup = false;
     for window in entries.windows(2) {
         let ref a = window[0];
         let ref b = window[1];
         if a.key_str == b.key_str {
+            dups = true;
             if !in_dup {
                 cx.span_err(sp, format!("duplicate key \"{}\"", a.key_str));
-                cx.span_err(a.key.span, "one occurrence here");
+                cx.span_note(a.key.span, "one occurrence here");
                 in_dup = true;
             }
-            cx.span_err(b.key.span, "one occurrence here");
+            cx.span_note(b.key.span, "one occurrence here");
         } else {
             in_dup = false;
         }
     }
-    cx.parse_sess().span_diagnostic.handler().abort_if_errors();
+
+    dups
 }
 
 struct HashState {

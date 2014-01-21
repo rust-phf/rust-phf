@@ -78,8 +78,9 @@ impl<'a, T> Map<&'a str, T> for PhfMap<T> {
 }
 
 impl<T> PhfMap<T> {
-    /// Returns an iterator over the key/value pairs in the map. Entries are
-    /// retuned in an arbitrary order.
+    /// Returns an iterator over the key/value pairs in the map.
+    ///
+    /// Entries are retuned in an arbitrary order.
     #[inline]
     pub fn entries<'a>(&'a self) -> PhfMapEntries<'a, T> {
         PhfMapEntries {
@@ -92,15 +93,17 @@ impl<T> PhfMap<T> {
         }
     }
 
-    /// Returns an iterator over the keys in the map. Keys are returned in an
-    /// arbitrary order.
+    /// Returns an iterator over the keys in the map.
+    ///
+    /// Keys are returned in an arbitrary order.
     #[inline]
     pub fn keys<'a>(&'a self) -> PhfMapKeys<'a, T> {
         PhfMapKeys { iter: self.entries() }
     }
 
-    /// Returns an iterator over the values in the map. Values are returned in
-    /// an arbitrary order.
+    /// Returns an iterator over the values in the map.
+    ///
+    /// Values are returned in an arbitrary order.
     #[inline]
     pub fn values<'a>(&'a self) -> PhfMapValues<'a, T> {
         PhfMapValues { iter: self.entries() }

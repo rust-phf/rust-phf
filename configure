@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd $(dirname $0)
+
 TEMP=`getopt -o "" --long prefix: -n "$0" -- "$@"`
 
 if [ $? != 0 ]; then exit 1; fi

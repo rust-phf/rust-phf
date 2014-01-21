@@ -6,6 +6,8 @@ before_install:
   - sudo apt-get update
 install:
   - sudo apt-get install rust-nightly
+before_script:
+  - ./configure
 script:
   - make all check doc
 after_success:

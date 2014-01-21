@@ -1,6 +1,7 @@
 RUSTC = rustc
 BUILDDIR = build
 RUSTFLAGS = -O -Z extra-debug-info
+INSTALL_DIR = %PREFIX%
 
 PHF_LIB = phf.rs
 PHF = $(BUILDDIR)/$(shell $(RUSTC) --crate-file-name $(PHF_LIB))
@@ -35,6 +36,10 @@ check: $(PHF_TEST)
 doc: $(PHF)
 	rustdoc $(PHF_LIB)
 	rustdoc -L $(BUILDDIR) $(PHF_MAC_LIB)
+
+install: $(PHF) $(PHF_MAC)
+	install $(PHF) $(INSTALL_DIR)
+	install $(PHF_MAC) $(INSTALL_DIR)
 
 clean:
 	rm -rf $(BUILDDIR)

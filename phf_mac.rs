@@ -122,7 +122,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
         }
     }
     let time = time::precise_time_s() - start;
-    if (os::getenv("PHF_STATS").is_some()) {
+    if os::getenv("PHF_STATS").is_some() {
         cx.parse_sess().span_diagnostic.span_note(sp, format!("PHF generation took {} seconds", time));
     }
 

@@ -23,8 +23,7 @@ use syntax::ext::base::{SyntaxExtension,
                         MacResult,
                         MRExpr,
                         NormalTT,
-                        SyntaxExpanderTT,
-                        SyntaxExpanderTTExpanderWithoutContext};
+                        BasicMacroExpander};
 use syntax::parse;
 use syntax::parse::token;
 use syntax::parse::token::{COMMA, EOF, FAT_ARROW};
@@ -35,8 +34,8 @@ static DEFAULT_LAMBDA: uint = 5;
 #[doc(hidden)]
 pub fn macro_registrar(register: |Name, SyntaxExtension|) {
     register(token::intern("phf_map"),
-             NormalTT(~SyntaxExpanderTT {
-                expander: SyntaxExpanderTTExpanderWithoutContext(expand_mphf_map),
+             NormalTT(~BasicMacroExpander {
+                expander: expand_mphf_map,
                 span: None
              },
              None));

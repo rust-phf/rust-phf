@@ -20,11 +20,12 @@ $(BUILDDIR):
 	mkdir -p $@
 
 $(PHF): $(PHF_LIB) | $(BUILDDIR)
-	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf.d --out-dir $(@D) $<
+	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf.d --out-dir $(@D) \
+		--lib --dylib $<
 
 $(PHF_MAC): $(PHF_MAC_LIB) $(PHF) | $(BUILDDIR)
 	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf_mac.d --out-dir $(@D) \
-		-L $(BUILDDIR) $<
+		--dylib -L $(BUILDDIR) $<
 
 $(PHF_TEST): $(PHF_TEST_MAIN) $(PHF) $(PHF_MAC) | $(BUILDDIR)
 	$(RUSTC) --test $(RUSTFLAGS) -L $(BUILDDIR) \

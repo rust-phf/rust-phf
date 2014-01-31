@@ -25,7 +25,7 @@ $(PHF): $(PHF_LIB) | $(BUILDDIR)
 
 $(PHF_MAC): $(PHF_MAC_LIB) $(PHF) | $(BUILDDIR)
 	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf_mac.d --out-dir $(@D) \
-		--dylib -L $(BUILDDIR) $<
+		-L $(BUILDDIR) $<
 
 $(PHF_TEST): $(PHF_TEST_MAIN) $(PHF) $(PHF_MAC) | $(BUILDDIR)
 	$(RUSTC) --test $(RUSTFLAGS) -L $(BUILDDIR) \

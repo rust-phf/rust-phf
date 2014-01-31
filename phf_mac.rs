@@ -48,6 +48,36 @@ struct Entry {
 }
 
 fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
+    let mut entries = match parse_entries(cx, tts) {
+        Some(entries) => entries,
+        None => return MacResult::dummy_expr()
+    };
+
+    entries.sort_by(|a, b| a.key_str.cmp(&b.key_str));
+    if check_for_duplicates(cx, sp, entries) {
+        return MacResult::dummy_expr();
+    }
+
+    let start = time::precise_time_s();
+    let state;
+    loop {
+        match generate_hash(entries) {
+            Some(s) => {
+                state = s;
+                break;
+            }
+            None => {}
+        }
+    }
+    let time = time::precise_time_s() - start;
+    if os::getenv("PHF_STATS").is_some() {
+        cx.span_note(sp, format!("PHF generation took {} seconds", time));
+    }
+
+    create_map(cx, sp, entries, state)
+}
+
+fn parse_entries(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<~[Entry]> {
     let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(),
                                                 tts.to_owned());
     let mut entries = ~[];
@@ -76,7 +106,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
 
         if !parser.eat(&FAT_ARROW) {
             cx.span_err(parser.span, "expected `=>`");
-            return MacResult::dummy_expr();
+            return None;
         }
 
         let value = parser.parse_expr();
@@ -89,75 +119,22 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
 
         if !parser.eat(&COMMA) && parser.token != EOF {
             cx.span_err(parser.span, "expected `,`");
-            return MacResult::dummy_expr();
+            return None;
         }
     }
 
     if entries.len() > phf::MAX_SIZE {
         cx.span_err(parser.span,
-                    format!("maps with more than {} items are not supported",
+                    format!("maps with more than {} entries are not supported",
                             phf::MAX_SIZE));
-        return MacResult::dummy_expr();
+        return None;
     }
 
     if bad {
-        return MacResult::dummy_expr();
+        return None;
     }
 
-    entries.sort_by(|a, b| a.key_str.cmp(&b.key_str));
-    if check_for_duplicates(cx, sp, entries) {
-        return MacResult::dummy_expr();
-    }
-
-    let start = time::precise_time_s();
-    let state;
-    loop {
-        match generate_hash(entries) {
-            Some(s) => {
-                state = s;
-                break;
-            }
-            None => {}
-        }
-    }
-    let time = time::precise_time_s() - start;
-    if os::getenv("PHF_STATS").is_some() {
-        cx.span_note(sp, format!("PHF generation took {} seconds", time));
-    }
-
-    let len = entries.len();
-    let k1 = state.k1;
-    let k2 = state.k2;
-    let disps = state.disps.iter().map(|&(d1, d2)| {
-            quote_expr!(&*cx, ($d1, $d2))
-        }).collect();
-    let disps = @Expr {
-        id: ast::DUMMY_NODE_ID,
-        node: ExprVec(disps, MutImmutable),
-        span: sp,
-    };
-    let entries = state.map.iter().map(|&idx| {
-            match idx {
-                Some(idx) => {
-                    let Entry { key, value, .. } = entries[idx];
-                    quote_expr!(&*cx, Some(($key, $value)))
-                }
-                None => quote_expr!(&*cx, None),
-            }
-        }).collect();
-    let entries = @Expr {
-        id: ast::DUMMY_NODE_ID,
-        node: ExprVec(entries, MutImmutable),
-        span: sp,
-    };
-
-    MRExpr(quote_expr!(cx, PhfMap {
-        len: $len,
-        k1: $k1,
-        k2: $k2,
-        disps: &'static $disps,
-        entries: &'static $entries,
-    }))
+    Some(entries)
 }
 
 fn check_for_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
@@ -254,7 +231,8 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
         return None;
     }
 
-    let disps = disps.move_iter().map(|i| i.expect("should have a bucket")).collect();
+    let disps = disps.move_iter().map(|i| i.expect("should have a bucket"))
+            .collect();
 
     Some(HashState {
         k1: k1,
@@ -262,4 +240,41 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
         disps: disps,
         map: map,
     })
+}
+
+fn create_map(cx: &mut ExtCtxt, sp: Span, entries: ~[Entry], state: HashState)
+              -> MacResult {
+    let len = entries.len();
+    let k1 = state.k1;
+    let k2 = state.k2;
+    let disps = state.disps.iter().map(|&(d1, d2)| {
+            quote_expr!(&*cx, ($d1, $d2))
+        }).collect();
+    let disps = @Expr {
+        id: ast::DUMMY_NODE_ID,
+        node: ExprVec(disps, MutImmutable),
+        span: sp,
+    };
+    let entries = state.map.iter().map(|&idx| {
+            match idx {
+                Some(idx) => {
+                    let Entry { key, value, .. } = entries[idx];
+                    quote_expr!(&*cx, Some(($key, $value)))
+                }
+                None => quote_expr!(&*cx, None),
+            }
+        }).collect();
+    let entries = @Expr {
+        id: ast::DUMMY_NODE_ID,
+        node: ExprVec(entries, MutImmutable),
+        span: sp,
+    };
+
+    MRExpr(quote_expr!(cx, PhfMap {
+        len: $len,
+        k1: $k1,
+        k2: $k2,
+        disps: &'static $disps,
+        entries: &'static $entries,
+    }))
 }

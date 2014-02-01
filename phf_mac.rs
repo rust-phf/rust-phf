@@ -26,7 +26,7 @@ use syntax::ext::base::{SyntaxExtension,
                         BasicMacroExpander};
 use syntax::parse;
 use syntax::parse::token;
-use syntax::parse::token::{COMMA, EOF, FAT_ARROW};
+use syntax::parse::token::{InternedString, COMMA, EOF, FAT_ARROW};
 
 static DEFAULT_LAMBDA: uint = 5;
 
@@ -42,7 +42,7 @@ pub fn macro_registrar(register: |Name, SyntaxExtension|) {
 }
 
 struct Entry {
-    key_str: @str,
+    key_str: InternedString,
     key: @Expr,
     value: @Expr
 }
@@ -89,18 +89,18 @@ fn parse_entries(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<~[Entry]> {
         let key_str = match key.node {
             ExprLit(lit) => {
                 match lit.node {
-                    LitStr(s, _) => s,
+                    LitStr(ref s, _) => s.clone(),
                     _ => {
                         cx.span_err(key.span, "expected string literal");
                         bad = true;
-                        @""
+                        InternedString::new("")
                     }
                 }
             }
             _ => {
                 cx.span_err(key.span, "expected string literal");
                 bad = true;
-                @""
+                InternedString::new("")
             }
         };
 
@@ -182,7 +182,7 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
     let k2 = rand::random();
 
     let hashes = entries.iter().map(|entry| {
-            let (g, f1, f2) = phf::hash(entry.key_str, k1, k2);
+            let (g, f1, f2) = phf::hash(entry.key_str.get(), k1, k2);
             Hashes {
                 g: g,
                 f1: f1,

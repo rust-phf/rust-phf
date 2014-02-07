@@ -4,7 +4,7 @@ RUSTFLAGS = -O -Z extra-debug-info
 INSTALL_DIR = %PREFIX%
 
 PHF_LIB = phf.rs
-PHF = $(BUILDDIR)/$(shell $(RUSTC) --crate-file-name $(PHF_LIB))
+PHF = $(foreach file,$(shell $(RUSTC) --crate-file-name $(PHF_LIB)),$(BUILDDIR)/$(file))
 PHF_MAC_LIB = phf_mac.rs
 PHF_MAC = $(BUILDDIR)/$(shell $(RUSTC) --crate-file-name $(PHF_MAC_LIB))
 PHF_TEST_MAIN = test.rs
@@ -20,8 +20,7 @@ $(BUILDDIR):
 	mkdir -p $@
 
 $(PHF): $(PHF_LIB) | $(BUILDDIR)
-	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf.d --out-dir $(@D) \
-		--lib --dylib $<
+	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf.d --out-dir $(@D) $<
 
 $(PHF_MAC): $(PHF_MAC_LIB) $(PHF) | $(BUILDDIR)
 	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf_mac.d --out-dir $(@D) \

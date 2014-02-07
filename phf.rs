@@ -1,7 +1,8 @@
 //! Compile time optimized maps
 #[crate_id="github.com/sfackler/rust-phf/phf"];
 #[doc(html_root_url="http://www.rust-ci.org/sfackler/rust-phf/doc")];
-#[crate_type="lib"];
+#[crate_type="rlib"];
+#[crate_type="dylib"];
 #[warn(missing_doc)];
 
 use std::iter;

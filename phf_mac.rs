@@ -4,7 +4,7 @@
 #[crate_id="github.com/sfackler/rust-phf/phf_mac"];
 #[crate_type="dylib"];
 #[doc(html_root_url="http://www.rust-ci.org/sfackler/rust-phf/doc")];
-#[feature(managed_boxes, macro_registrar)];
+#[feature(managed_boxes, macro_registrar, quote)];
 
 extern mod extra;
 extern mod syntax;

@@ -1,6 +1,6 @@
 RUSTC = rustc
 BUILDDIR = build
-RUSTFLAGS = -O -Z extra-debug-info
+RUSTFLAGS = -O -g
 INSTALL_DIR = %PREFIX%
 
 PHF_LIB = phf.rs

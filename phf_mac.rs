@@ -6,9 +6,9 @@
 #[doc(html_root_url="http://www.rust-ci.org/sfackler/rust-phf/doc")];
 #[feature(managed_boxes, macro_registrar, quote)];
 
-extern mod extra;
-extern mod syntax;
-extern mod phf;
+extern crate extra;
+extern crate syntax;
+extern crate phf;
 
 use extra::time;
 use std::hashmap::HashMap;

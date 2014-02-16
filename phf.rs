@@ -60,14 +60,12 @@ pub fn displace(f1: uint, f2: uint, d1: uint, d2: uint) -> uint {
 }
 
 impl<T> Container for PhfMap<T> {
-    #[inline]
     fn len(&self) -> uint {
         self.len
     }
 }
 
 impl<'a, T> Map<&'a str, T> for PhfMap<T> {
-    #[inline]
     fn find<'a>(&'a self, key: & &str) -> Option<&'a T> {
         let (g, f1, f2) = hash(*key, self.k1, self.k2);
         let (d1, d2) = self.disps[g % self.disps.len()];
@@ -120,12 +118,10 @@ pub struct PhfMapEntries<'a, T> {
 }
 
 impl<'a, T> Iterator<(&'static str, &'a T)> for PhfMapEntries<'a, T> {
-    #[inline]
     fn next(&mut self) -> Option<(&'static str, &'a T)> {
         self.iter.next()
     }
 
-    #[inline]
     fn size_hint(&self) -> (uint, Option<uint>) {
         self.iter.size_hint()
     }
@@ -137,12 +133,10 @@ pub struct PhfMapKeys<'a, T> {
 }
 
 impl<'a, T> Iterator<&'static str> for PhfMapKeys<'a, T> {
-    #[inline]
     fn next(&mut self) -> Option<&'static str> {
         self.iter.next().map(|(key, _)| key)
     }
 
-    #[inline]
     fn size_hint(&self) -> (uint, Option<uint>) {
         self.iter.size_hint()
     }
@@ -154,12 +148,10 @@ pub struct PhfMapValues<'a, T> {
 }
 
 impl<'a, T> Iterator<&'a T> for PhfMapValues<'a, T> {
-    #[inline]
     fn next(&mut self) -> Option<&'a T> {
         self.iter.next().map(|(_, value)| value)
     }
 
-    #[inline]
     fn size_hint(&self) -> (uint, Option<uint>) {
         self.iter.size_hint()
     }

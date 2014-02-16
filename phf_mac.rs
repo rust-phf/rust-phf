@@ -54,7 +54,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     };
 
     entries.sort_by(|a, b| a.key_str.cmp(&b.key_str));
-    if check_for_duplicates(cx, sp, entries) {
+    if has_duplicates(cx, sp, entries) {
         return MacResult::dummy_expr();
     }
 
@@ -137,7 +137,7 @@ fn parse_entries(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<~[Entry]> {
     Some(entries)
 }
 
-fn check_for_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
+fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
     let mut dups = false;
     let mut in_dup = false;
     for window in entries.windows(2) {

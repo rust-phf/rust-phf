@@ -50,12 +50,12 @@ struct Entry {
 fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     let mut entries = match parse_entries(cx, tts) {
         Some(entries) => entries,
-        None => return MacResult::dummy_expr()
+        None => return MacResult::dummy_expr(sp)
     };
 
     entries.sort_by(|a, b| a.key_str.cmp(&b.key_str));
     if has_duplicates(cx, sp, entries) {
-        return MacResult::dummy_expr();
+        return MacResult::dummy_expr(sp);
     }
 
     let start = time::precise_time_s();

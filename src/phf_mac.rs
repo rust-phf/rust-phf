@@ -8,9 +8,9 @@
 
 extern crate extra;
 extern crate syntax;
+extern crate time;
 extern crate phf;
 
-use extra::time;
 use std::hashmap::HashMap;
 use std::rand;
 use std::os;

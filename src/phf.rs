@@ -7,6 +7,8 @@
 
 use std::iter;
 use std::vec;
+use std::hash::Hasher;
+use std::hash::sip::SipHasher;
 
 /// An immutable map constructed at compile time.
 ///
@@ -45,7 +47,7 @@ pub static MAX_SIZE: uint = 1 << LOG_MAX_SIZE;
 #[doc(hidden)]
 #[inline]
 pub fn hash(s: &str, k1: u64, k2: u64) -> (uint, uint, uint) {
-    let hash = s.hash_keyed(k1, k2);
+    let hash = SipHasher::new_with_keys(k1, k2).hash(&s);
     let mask = (MAX_SIZE - 1) as u64;
 
     ((hash & mask) as uint,

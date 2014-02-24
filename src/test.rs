@@ -1,10 +1,11 @@
 #[feature(phase)];
 
+extern crate collections;
 #[phase(syntax)]
 extern crate phf_mac;
 extern crate phf;
 
-use std::hashmap::{HashMap, HashSet};
+use collections::{HashMap, HashSet};
 
 use phf::PhfMap;
 

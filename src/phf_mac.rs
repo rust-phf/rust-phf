@@ -6,12 +6,13 @@
 #[doc(html_root_url="http://www.rust-ci.org/sfackler/rust-phf/doc")];
 #[feature(managed_boxes, macro_registrar, quote)];
 
+extern crate collections;
 extern crate extra;
 extern crate syntax;
 extern crate time;
 extern crate phf;
 
-use std::hashmap::HashMap;
+use collections::HashMap;
 use std::rand;
 use std::os;
 use std::vec;
@@ -207,13 +208,13 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
     let mut try_map = HashMap::new();
     'buckets: for bucket in buckets.iter() {
         for d1 in range(0, table_len) {
-            'disps: for d2 in range(0, table_len) {
+            'disps_l: for d2 in range(0, table_len) {
                 try_map.clear();
                 for &key in bucket.keys.iter() {
                     let idx = phf::displace(hashes[key].f1, hashes[key].f2,
                                             d1, d2) % table_len;
                     if try_map.find(&idx).is_some() || map[idx].is_some() {
-                        continue 'disps;
+                        continue 'disps_l;
                     }
                     try_map.insert(idx, key);
                 }

@@ -85,7 +85,7 @@ fn parse_entries(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<~[Entry]> {
 
     let mut bad = false;
     while parser.token != EOF {
-        let key = parser.parse_expr();
+        let key = cx.expand_expr(parser.parse_expr());
 
         let key_str = match key.node {
             ExprLit(lit) => {

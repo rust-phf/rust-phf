@@ -108,3 +108,11 @@ fn test_large() {
     );
     assert!(map.find(& &"a") == Some(&0));
 }
+
+#[test]
+fn test_macro_key() {
+    static map: PhfMap<int> = phf_map!(
+        concat!("foo", "bar") => 1
+    );
+    assert!(Some(&1) == map.find(& &"foobar"));
+}

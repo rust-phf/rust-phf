@@ -80,7 +80,8 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
 
 fn parse_entries(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<~[Entry]> {
     let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(),
-                                                tts.to_owned());
+                                                tts.iter().map(|x| x.clone())
+                                                    .collect());
     let mut entries = ~[];
 
     let mut bad = false;

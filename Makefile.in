@@ -30,7 +30,10 @@ $(PHF_TEST): $(PHF_TEST_MAIN) $(PHF) $(PHF_MAC) | $(BUILDDIR)
 	$(RUSTC) --test $(RUSTFLAGS) -L $(BUILDDIR) \
 		--dep-info $(BUILDDIR)/phf_test.d --out-dir $(@D) $<
 
-check: $(PHF_TEST)
+doc-test: $(PHF) $(PHF_MAC)
+	rustdoc -L $(BUILDDIR) --test $(PHF_LIB)
+
+check: $(PHF_TEST) doc-test
 	$(PHF_TEST)
 
 doc: $(PHF)
@@ -47,4 +50,4 @@ clean:
 print-targets:
 	@echo $(PHF_MAC) $(PHF)
 
-.PHONY: all clean check
+.PHONY: all doc-test check doc install clean print-targets

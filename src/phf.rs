@@ -15,10 +15,19 @@ use std::hash::sip::SipHasher;
 /// `PhfMap`s may be created with the `phf_map` macro:
 ///
 /// ```rust
+/// # #[feature(phase)];
+/// extern crate phf;
+/// #[phase(syntax)]
+/// extern crate phf_mac;
+///
+/// use phf::PhfMap;
+///
 /// static my_map: PhfMap<int> = phf_map!(
 ///    "hello" => 10,
 ///    "world" => 11,
 /// );
+///
+/// # fn main() {}
 /// ```
 ///
 /// # Note

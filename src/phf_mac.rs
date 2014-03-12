@@ -8,12 +8,12 @@
 
 extern crate collections;
 extern crate extra;
+extern crate rand;
 extern crate syntax;
 extern crate time;
 extern crate phf;
 
 use collections::HashMap;
-use std::rand;
 use std::os;
 use std::vec;
 use syntax::ast;

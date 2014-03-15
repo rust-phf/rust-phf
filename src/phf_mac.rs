@@ -15,7 +15,7 @@ extern crate phf;
 
 use collections::HashMap;
 use std::os;
-use std::vec;
+use std::vec_ng::Vec;
 use syntax::ast;
 use syntax::ast::{Name, TokenTree, LitStr, MutImmutable, Expr, ExprVec, ExprLit};
 use syntax::codemap::Span;
@@ -55,14 +55,14 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     };
 
     entries.sort_by(|a, b| a.key_str.cmp(&b.key_str));
-    if has_duplicates(cx, sp, entries) {
+    if has_duplicates(cx, sp, entries.as_slice()) {
         return MacResult::dummy_expr(sp);
     }
 
     let start = time::precise_time_s();
     let state;
     loop {
-        match generate_hash(entries) {
+        match generate_hash(entries.as_slice()) {
             Some(s) => {
                 state = s;
                 break;
@@ -78,11 +78,11 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     create_map(cx, sp, entries, state)
 }
 
-fn parse_entries(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<~[Entry]> {
+fn parse_entries(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(),
                                                 tts.iter().map(|x| x.clone())
                                                     .collect());
-    let mut entries = ~[];
+    let mut entries = Vec::new();
 
     let mut bad = false;
     while parser.token != EOF {
@@ -164,14 +164,14 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
 struct HashState {
     k1: u64,
     k2: u64,
-    disps: ~[(uint, uint)],
-    map: ~[Option<uint>],
+    disps: Vec<(uint, uint)>,
+    map: Vec<Option<uint>>,
 }
 
 fn generate_hash(entries: &[Entry]) -> Option<HashState> {
     struct Bucket {
         idx: uint,
-        keys: ~[uint],
+        keys: Vec<uint>,
     }
 
     struct Hashes {
@@ -183,47 +183,49 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
     let k1 = rand::random();
     let k2 = rand::random();
 
-    let hashes = entries.iter().map(|entry| {
+    let hashes: Vec<Hashes> = entries.iter().map(|entry| {
             let (g, f1, f2) = phf::hash(entry.key_str.get(), k1, k2);
             Hashes {
                 g: g,
                 f1: f1,
                 f2: f2
             }
-        }).to_owned_vec();
+        }).collect();
 
     let buckets_len = (entries.len() + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA;
-    let mut buckets = vec::from_fn(buckets_len,
-                                   |i| Bucket { idx: i, keys: ~[] });
+    let mut buckets = Vec::from_fn(buckets_len,
+                                   |i| Bucket { idx: i, keys: Vec::new() });
 
     for (i, hash) in hashes.iter().enumerate() {
-        buckets[hash.g % buckets_len].keys.push(i);
+        buckets.get_mut(hash.g % buckets_len).keys.push(i);
     }
 
     // Sort descending
     buckets.sort_by(|a, b| b.keys.len().cmp(&a.keys.len()));
 
     let table_len = entries.len();
-    let mut map = vec::from_elem(table_len, None);
-    let mut disps = vec::from_elem(buckets_len, None);
+    let mut map = Vec::from_elem(table_len, None);
+    let mut disps = Vec::from_elem(buckets_len, None);
     let mut try_map = HashMap::new();
     'buckets: for bucket in buckets.iter() {
         for d1 in range(0, table_len) {
             'disps_l: for d2 in range(0, table_len) {
                 try_map.clear();
                 for &key in bucket.keys.iter() {
-                    let idx = phf::displace(hashes[key].f1, hashes[key].f2,
-                                            d1, d2) % table_len;
-                    if try_map.find(&idx).is_some() || map[idx].is_some() {
+                    let idx = phf::displace(hashes.get(key).f1,
+                                            hashes.get(key).f2,
+                                            d1,
+                                            d2) % table_len;
+                    if try_map.find(&idx).is_some() || map.get(idx).is_some() {
                         continue 'disps_l;
                     }
                     try_map.insert(idx, key);
                 }
 
                 // We've picked a good set of disps
-                disps[bucket.idx] = Some((d1, d2));
+                *disps.get_mut(bucket.idx) = Some((d1, d2));
                 for (&idx, &key) in try_map.iter() {
-                    map[idx] = Some(key);
+                    *map.get_mut(idx) = Some(key);
                 }
                 continue 'buckets;
             }
@@ -244,7 +246,7 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
     })
 }
 
-fn create_map(cx: &mut ExtCtxt, sp: Span, entries: ~[Entry], state: HashState)
+fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
               -> MacResult {
     let len = entries.len();
     let k1 = state.k1;
@@ -260,7 +262,7 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: ~[Entry], state: HashState)
     let entries = state.map.iter().map(|&idx| {
             match idx {
                 Some(idx) => {
-                    let Entry { key, value, .. } = entries[idx];
+                    let &Entry { key, value, .. } = entries.get(idx);
                     quote_expr!(&*cx, Some(($key, $value)))
                 }
                 None => quote_expr!(&*cx, None),

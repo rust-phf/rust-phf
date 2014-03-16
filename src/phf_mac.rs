@@ -7,7 +7,6 @@
 #[feature(managed_boxes, macro_registrar, quote)];
 
 extern crate collections;
-extern crate extra;
 extern crate rand;
 extern crate syntax;
 extern crate time;

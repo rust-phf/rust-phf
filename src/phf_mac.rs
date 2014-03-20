@@ -27,8 +27,11 @@ use syntax::ext::base::{SyntaxExtension,
 use syntax::parse;
 use syntax::parse::token;
 use syntax::parse::token::{InternedString, COMMA, EOF, FAT_ARROW};
+use rand::{Rng, SeedableRng, XorShiftRng};
 
 static DEFAULT_LAMBDA: uint = 5;
+
+static FIXED_SEED: [u32, ..4] = [3141592653, 589793238, 462643383, 2795028841];
 
 #[macro_registrar]
 #[doc(hidden)]
@@ -58,10 +61,11 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
         return MacResult::dummy_expr(sp);
     }
 
+    let mut rng: XorShiftRng = SeedableRng::from_seed(FIXED_SEED);
     let start = time::precise_time_s();
     let state;
     loop {
-        match generate_hash(entries.as_slice()) {
+        match generate_hash(entries.as_slice(), &mut rng) {
             Some(s) => {
                 state = s;
                 break;
@@ -167,7 +171,7 @@ struct HashState {
     map: Vec<Option<uint>>,
 }
 
-fn generate_hash(entries: &[Entry]) -> Option<HashState> {
+fn generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<HashState> {
     struct Bucket {
         idx: uint,
         keys: Vec<uint>,
@@ -179,8 +183,8 @@ fn generate_hash(entries: &[Entry]) -> Option<HashState> {
         f2: uint,
     }
 
-    let k1 = rand::random();
-    let k2 = rand::random();
+    let k1 = rng.gen();
+    let k2 = rng.gen();
 
     let hashes: Vec<Hashes> = entries.iter().map(|entry| {
             let (g, f1, f2) = phf::hash(entry.key_str.get(), k1, k2);

@@ -63,7 +63,9 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     let mut rng: XorShiftRng = SeedableRng::from_seed(FIXED_SEED);
     let start = time::precise_time_s();
     let state;
+    let mut rounds = 0;
     loop {
+        rounds += 1;
         match generate_hash(entries.as_slice(), &mut rng) {
             Some(s) => {
                 state = s;
@@ -74,7 +76,9 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     }
     let time = time::precise_time_s() - start;
     if os::getenv("PHF_STATS").is_some() {
-        cx.span_note(sp, format!("PHF generation took {} seconds", time));
+        cx.span_note(sp, format!("PHF generation took {} seconds and {} \
+                                  {2, plural, one{round} other{rounds}}",
+                                 time, rounds, rounds));
     }
 
     create_map(cx, sp, entries, state)

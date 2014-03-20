@@ -51,12 +51,11 @@ struct Entry {
 }
 
 fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
-    let mut entries = match parse_entries(cx, tts) {
+    let entries = match parse_entries(cx, tts) {
         Some(entries) => entries,
         None => return MacResult::dummy_expr(sp)
     };
 
-    entries.sort_by(|a, b| a.key_str.cmp(&b.key_str));
     if has_duplicates(cx, sp, entries.as_slice()) {
         return MacResult::dummy_expr(sp);
     }
@@ -144,21 +143,18 @@ fn parse_entries(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
 
 fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
     let mut dups = false;
-    let mut in_dup = false;
-    for window in entries.windows(2) {
-        let ref a = window[0];
-        let ref b = window[1];
-        if a.key_str == b.key_str {
-            dups = true;
-            if !in_dup {
-                cx.span_err(sp, format!("duplicate key \"{}\"", a.key_str));
-                cx.span_note(a.key.span, "one occurrence here");
-                in_dup = true;
-            }
-            cx.span_note(b.key.span, "one occurrence here");
-        } else {
-            in_dup = false;
-        }
+    let mut strings = HashMap::new();
+    for entry in entries.iter() {
+        strings.insert_or_update_with(entry.key_str.clone(), (entry, true),
+                                      |_, &(orig, ref mut first)| {
+                if *first {
+                    cx.span_err(sp, format!("duplicate key \"{}\"", entry.key_str));
+                    cx.span_note(orig.key.span, "one occurence here");
+                    *first = false;
+                }
+                cx.span_note(entry.key.span, "one occurence here");
+                dups = true;
+            });
     }
 
     dups

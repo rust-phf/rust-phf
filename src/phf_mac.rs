@@ -149,10 +149,10 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
                                       |_, &(orig, ref mut first)| {
                 if *first {
                     cx.span_err(sp, format!("duplicate key \"{}\"", entry.key_str));
-                    cx.span_note(orig.key.span, "one occurence here");
+                    cx.span_note(orig.key.span, "one occurrence here");
                     *first = false;
                 }
-                cx.span_note(entry.key.span, "one occurence here");
+                cx.span_note(entry.key.span, "one occurrence here");
                 dups = true;
             });
     }

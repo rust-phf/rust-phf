@@ -14,7 +14,6 @@ extern crate phf;
 
 use collections::HashMap;
 use std::os;
-use std::vec_ng::Vec;
 use syntax::ast;
 use syntax::ast::{Name, TokenTree, LitStr, MutImmutable, Expr, ExprVec, ExprLit};
 use syntax::codemap::Span;
@@ -77,7 +76,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     let time = time::precise_time_s() - start;
     if os::getenv("PHF_STATS").is_some() {
         cx.span_note(sp, format!("PHF generation took {} seconds and {} \
-                                  {2, plural, one{round} other{rounds}}",
+                                  {, plural, one{round} other{rounds}}",
                                  time, rounds, rounds));
     }
 

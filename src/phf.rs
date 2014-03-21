@@ -6,7 +6,7 @@
 #[warn(missing_doc)];
 
 use std::iter;
-use std::vec;
+use std::slice;
 use std::hash::Hasher;
 use std::hash::sip::SipHasher;
 
@@ -125,7 +125,7 @@ pub struct PhfMapEntries<'a, T> {
     priv iter: iter::FilterMap<'a,
                                &'a Option<(&'static str, T)>,
                                (&'static str, &'a T),
-                               vec::Items<'a, Option<(&'static str, T)>>>,
+                               slice::Items<'a, Option<(&'static str, T)>>>,
 }
 
 impl<'a, T> Iterator<(&'static str, &'a T)> for PhfMapEntries<'a, T> {

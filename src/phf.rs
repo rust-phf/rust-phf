@@ -5,7 +5,6 @@
 #[crate_type="dylib"];
 #[warn(missing_doc)];
 
-use std::iter;
 use std::slice;
 use std::hash::Hasher;
 use std::hash::sip::SipHasher;
@@ -94,12 +93,7 @@ impl<T> PhfMap<T> {
     #[inline]
     pub fn entries<'a>(&'a self) -> PhfMapEntries<'a, T> {
         PhfMapEntries {
-            iter: self.entries.iter().filter_map(|e| {
-                match *e {
-                    Some((key, ref value)) => Some((key, value)),
-                    None => None
-                }
-            })
+            iter: self.entries.iter()
         }
     }
 
@@ -122,15 +116,17 @@ impl<T> PhfMap<T> {
 
 /// An iterator over the key/value pairs in a `PhfMap`.
 pub struct PhfMapEntries<'a, T> {
-    priv iter: iter::FilterMap<'a,
-                               &'a Option<(&'static str, T)>,
-                               (&'static str, &'a T),
-                               slice::Items<'a, Option<(&'static str, T)>>>,
+    priv iter: slice::Items<'a, Option<(&'static str, T)>>,
 }
 
 impl<'a, T> Iterator<(&'static str, &'a T)> for PhfMapEntries<'a, T> {
     fn next(&mut self) -> Option<(&'static str, &'a T)> {
-        self.iter.next()
+        self.iter.by_ref().filter_map(|e| {
+                match *e {
+                    Some((key, ref value)) => Some((key, value)),
+                    None => None
+                }
+            }).next()
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {

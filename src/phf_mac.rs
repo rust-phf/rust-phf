@@ -85,8 +85,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
 
 fn parse_entries(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(),
-                                                tts.iter().map(|x| x.clone())
-                                                    .collect());
+                                                Vec::from_slice(tts));
     let mut entries = Vec::new();
 
     let mut bad = false;
@@ -167,7 +166,7 @@ struct HashState {
     k1: u64,
     k2: u64,
     disps: Vec<(uint, uint)>,
-    map: Vec<Option<uint>>,
+    map: Vec<uint>,
 }
 
 fn generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<HashState> {
@@ -239,6 +238,8 @@ fn generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<HashState> 
 
     let disps = disps.move_iter().map(|i| i.expect("should have a bucket"))
             .collect();
+    let map = map.move_iter().map(|i| i.expect("should have a value"))
+            .collect();
 
     Some(HashState {
         k1: k1,
@@ -262,13 +263,8 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
         span: sp,
     };
     let entries = state.map.iter().map(|&idx| {
-            match idx {
-                Some(idx) => {
-                    let &Entry { key, value, .. } = entries.get(idx);
-                    quote_expr!(&*cx, Some(($key, $value)))
-                }
-                None => quote_expr!(&*cx, None),
-            }
+            let &Entry { key, value, .. } = entries.get(idx);
+            quote_expr!(&*cx, ($key, $value))
         }).collect();
     let entries = @Expr {
         id: ast::DUMMY_NODE_ID,

@@ -44,7 +44,7 @@ pub struct PhfMap<T> {
     #[doc(hidden)]
     disps: &'static [(uint, uint)],
     #[doc(hidden)]
-    entries: &'static [Option<(&'static str, T)>],
+    entries: &'static [(&'static str, T)],
 }
 
 static LOG_MAX_SIZE: uint = 21;
@@ -80,7 +80,7 @@ impl<'a, T> Map<&'a str, T> for PhfMap<T> {
         let (g, f1, f2) = hash(*key, self.k1, self.k2);
         let (d1, d2) = self.disps[g % self.disps.len()];
         match self.entries[displace(f1, f2, d1, d2) % self.entries.len()] {
-            Some((s, ref value)) if s == *key => Some(value),
+            (s, ref value) if s == *key => Some(value),
             _ => None
         }
     }
@@ -116,17 +116,12 @@ impl<T> PhfMap<T> {
 
 /// An iterator over the key/value pairs in a `PhfMap`.
 pub struct PhfMapEntries<'a, T> {
-    priv iter: slice::Items<'a, Option<(&'static str, T)>>,
+    priv iter: slice::Items<'a, (&'static str, T)>,
 }
 
 impl<'a, T> Iterator<(&'static str, &'a T)> for PhfMapEntries<'a, T> {
     fn next(&mut self) -> Option<(&'static str, &'a T)> {
-        self.iter.by_ref().filter_map(|e| {
-                match *e {
-                    Some((key, ref value)) => Some((key, value)),
-                    None => None
-                }
-            }).next()
+        self.iter.next().map(|&(key, ref value)| (key, value))
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {

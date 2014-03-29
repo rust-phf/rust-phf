@@ -1,9 +1,9 @@
 //! Compile time optimized maps
-#[crate_id="github.com/sfackler/rust-phf/phf"];
-#[doc(html_root_url="http://www.rust-ci.org/sfackler/rust-phf/doc")];
-#[crate_type="rlib"];
-#[crate_type="dylib"];
-#[warn(missing_doc)];
+#![crate_id="github.com/sfackler/rust-phf/phf"]
+#![doc(html_root_url="http://www.rust-ci.org/sfackler/rust-phf/doc")]
+#![crate_type="rlib"]
+#![crate_type="dylib"]
+#![warn(missing_doc)]
 
 use std::slice;
 use std::hash::Hasher;
@@ -92,9 +92,7 @@ impl<T> PhfMap<T> {
     /// Entries are retuned in an arbitrary order.
     #[inline]
     pub fn entries<'a>(&'a self) -> PhfMapEntries<'a, T> {
-        PhfMapEntries {
-            iter: self.entries.iter()
-        }
+        PhfMapEntries { iter: self.entries.iter() }
     }
 
     /// Returns an iterator over the keys in the map.

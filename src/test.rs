@@ -1,4 +1,4 @@
-#[feature(phase)];
+#![feature(phase)]
 
 extern crate collections;
 #[phase(syntax)]

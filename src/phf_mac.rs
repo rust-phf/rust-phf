@@ -62,9 +62,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     let mut rng: XorShiftRng = SeedableRng::from_seed(FIXED_SEED);
     let start = time::precise_time_s();
     let state;
-    let mut rounds = 0;
     loop {
-        rounds += 1;
         match generate_hash(entries.as_slice(), &mut rng) {
             Some(s) => {
                 state = s;
@@ -75,9 +73,7 @@ fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     }
     let time = time::precise_time_s() - start;
     if os::getenv("PHF_STATS").is_some() {
-        cx.span_note(sp, format!("PHF generation took {} seconds and {} \
-                                  {, plural, one{round} other{rounds}}",
-                                 time, rounds, rounds));
+        cx.span_note(sp, format!("PHF generation took {} seconds", time));
     }
 
     create_map(cx, sp, entries, state)
@@ -150,7 +146,8 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
         strings.insert_or_update_with(entry.key_str.clone(), (entry, true),
                                       |_, &(orig, ref mut first)| {
                 if *first {
-                    cx.span_err(sp, format!("duplicate key \"{}\"", entry.key_str));
+                    cx.span_err(sp, format!("duplicate key \"{}\"",
+                                            entry.key_str));
                     cx.span_note(orig.key.span, "one occurrence here");
                     *first = false;
                 }
@@ -169,7 +166,8 @@ struct HashState {
     map: Vec<uint>,
 }
 
-fn generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<HashState> {
+fn generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
+                 -> Option<HashState> {
     struct Bucket {
         idx: uint,
         keys: Vec<uint>,
@@ -206,7 +204,7 @@ fn generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<HashState> 
 
     let table_len = entries.len();
     let mut map = Vec::from_elem(table_len, None);
-    let mut disps = Vec::from_elem(buckets_len, None);
+    let mut disps = Vec::from_elem(buckets_len, (0u, 0u));
     let mut try_map = HashMap::new();
     'buckets: for bucket in buckets.iter() {
         for d1 in range(0, table_len) {
@@ -217,14 +215,14 @@ fn generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<HashState> 
                                             hashes.get(key).f2,
                                             d1,
                                             d2) % table_len;
-                    if try_map.find(&idx).is_some() || map.get(idx).is_some() {
+                    if map.get(idx).is_some() || try_map.find(&idx).is_some() {
                         continue 'disps_l;
                     }
                     try_map.insert(idx, key);
                 }
 
                 // We've picked a good set of disps
-                *disps.get_mut(bucket.idx) = Some((d1, d2));
+                *disps.get_mut(bucket.idx) = (d1, d2);
                 for (&idx, &key) in try_map.iter() {
                     *map.get_mut(idx) = Some(key);
                 }
@@ -236,8 +234,6 @@ fn generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<HashState> 
         return None;
     }
 
-    let disps = disps.move_iter().map(|i| i.expect("should have a bucket"))
-            .collect();
     let map = map.move_iter().map(|i| i.expect("should have a value"))
             .collect();
 
@@ -251,9 +247,6 @@ fn generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<HashState> 
 
 fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
               -> MacResult {
-    let len = entries.len();
-    let k1 = state.k1;
-    let k2 = state.k2;
     let disps = state.disps.iter().map(|&(d1, d2)| {
             quote_expr!(&*cx, ($d1, $d2))
         }).collect();
@@ -272,8 +265,9 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
         span: sp,
     };
 
+    let k1 = state.k1;
+    let k2 = state.k2;
     MRExpr(quote_expr!(cx, PhfMap {
-        len: $len,
         k1: $k1,
         k2: $k2,
         disps: &'static $disps,

@@ -37,8 +37,6 @@ use std::slice;
 /// be accessed directly.
 pub struct PhfMap<T> {
     #[doc(hidden)]
-    len: uint,
-    #[doc(hidden)]
     k1: u64,
     #[doc(hidden)]
     k2: u64,
@@ -72,7 +70,7 @@ pub fn displace(f1: uint, f2: uint, d1: uint, d2: uint) -> uint {
 
 impl<T> Container for PhfMap<T> {
     fn len(&self) -> uint {
-        self.len
+        self.entries.len()
     }
 }
 
@@ -109,7 +107,6 @@ impl<T> PhfMap<T> {
     /// Returns an iterator over the key/value pairs in the map.
     ///
     /// Entries are retuned in an arbitrary order.
-    #[inline]
     pub fn entries<'a>(&'a self) -> PhfMapEntries<'a, T> {
         PhfMapEntries { iter: self.entries.iter() }
     }
@@ -117,7 +114,6 @@ impl<T> PhfMap<T> {
     /// Returns an iterator over the keys in the map.
     ///
     /// Keys are returned in an arbitrary order.
-    #[inline]
     pub fn keys<'a>(&'a self) -> PhfMapKeys<'a, T> {
         PhfMapKeys { iter: self.entries() }
     }
@@ -125,7 +121,6 @@ impl<T> PhfMap<T> {
     /// Returns an iterator over the values in the map.
     ///
     /// Values are returned in an arbitrary order.
-    #[inline]
     pub fn values<'a>(&'a self) -> PhfMapValues<'a, T> {
         PhfMapValues { iter: self.entries() }
     }

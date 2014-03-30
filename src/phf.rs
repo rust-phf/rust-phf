@@ -5,9 +5,10 @@
 #![crate_type="dylib"]
 #![warn(missing_doc)]
 
-use std::slice;
+use std::fmt;
 use std::hash::Hasher;
 use std::hash::sip::SipHasher;
+use std::slice;
 
 /// An immutable map constructed at compile time.
 ///
@@ -83,6 +84,21 @@ impl<'a, T> Map<&'a str, T> for PhfMap<T> {
             (s, ref value) if s == *key => Some(value),
             _ => None
         }
+    }
+}
+
+impl<T: fmt::Show> fmt::Show for PhfMap<T> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        try!(fmt.buf.write_char('{'));
+        let mut first = true;
+        for (k, v) in self.entries() {
+            if !first {
+                try!(fmt.buf.write_str(", "));
+            }
+            try!(write!(fmt.buf, "{}: {}", k, v))
+            first = false;
+        }
+        fmt.buf.write_char('}')
     }
 }
 

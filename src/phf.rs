@@ -80,9 +80,12 @@ impl<'a, T> Map<&'a str, T> for PhfMap<T> {
     fn find<'a>(&'a self, key: & &str) -> Option<&'a T> {
         let (g, f1, f2) = hash(*key, self.k1, self.k2);
         let (d1, d2) = self.disps[g % self.disps.len()];
-        match self.entries[displace(f1, f2, d1, d2) % self.entries.len()] {
-            (s, ref value) if s == *key => Some(value),
-            _ => None
+        let (s, ref value) = self.entries[displace(f1, f2, d1, d2) %
+                                          self.entries.len()];
+        if s == *key {
+            Some(value)
+        } else {
+            None
         }
     }
 }

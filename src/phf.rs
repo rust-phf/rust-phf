@@ -37,13 +37,13 @@ use std::slice;
 /// be accessed directly.
 pub struct PhfMap<T> {
     #[doc(hidden)]
-    k1: u64,
+    pub k1: u64,
     #[doc(hidden)]
-    k2: u64,
+    pub k2: u64,
     #[doc(hidden)]
-    disps: &'static [(uint, uint)],
+    pub disps: &'static [(uint, uint)],
     #[doc(hidden)]
-    entries: &'static [(&'static str, T)],
+    pub entries: &'static [(&'static str, T)],
 }
 
 static LOG_MAX_SIZE: uint = 21;
@@ -128,7 +128,7 @@ impl<T> PhfMap<T> {
 
 /// An iterator over the key/value pairs in a `PhfMap`.
 pub struct PhfMapEntries<'a, T> {
-    priv iter: slice::Items<'a, (&'static str, T)>,
+    iter: slice::Items<'a, (&'static str, T)>,
 }
 
 impl<'a, T> Iterator<(&'static str, &'a T)> for PhfMapEntries<'a, T> {
@@ -143,7 +143,7 @@ impl<'a, T> Iterator<(&'static str, &'a T)> for PhfMapEntries<'a, T> {
 
 /// An iterator over the keys in a `PhfMap`.
 pub struct PhfMapKeys<'a, T> {
-    priv iter: PhfMapEntries<'a, T>,
+    iter: PhfMapEntries<'a, T>,
 }
 
 impl<'a, T> Iterator<&'static str> for PhfMapKeys<'a, T> {
@@ -158,7 +158,7 @@ impl<'a, T> Iterator<&'static str> for PhfMapKeys<'a, T> {
 
 /// An iterator over the values in a `PhfMap`.
 pub struct PhfMapValues<'a, T> {
-    priv iter: PhfMapEntries<'a, T>,
+    iter: PhfMapEntries<'a, T>,
 }
 
 impl<'a, T> Iterator<&'a T> for PhfMapValues<'a, T> {

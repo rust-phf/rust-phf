@@ -37,7 +37,7 @@ static FIXED_SEED: [u32, ..4] = [3141592653, 589793238, 462643383, 2795028841];
 pub fn macro_registrar(register: |Name, SyntaxExtension|) {
     register(token::intern("phf_map"),
              NormalTT(~BasicMacroExpander {
-                expander: expand_mphf_map,
+                expander: expand_phf_map,
                 span: None
              },
              None));
@@ -49,7 +49,7 @@ struct Entry {
     value: @Expr
 }
 
-fn expand_mphf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
+fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     let entries = match parse_entries(cx, tts) {
         Some(entries) => entries,
         None => return MacResult::dummy_expr(sp)
@@ -145,15 +145,15 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
     for entry in entries.iter() {
         strings.insert_or_update_with(entry.key_str.clone(), (entry, true),
                                       |_, &(orig, ref mut first)| {
-                if *first {
-                    cx.span_err(sp, format!("duplicate key \"{}\"",
-                                            entry.key_str));
-                    cx.span_note(orig.key.span, "one occurrence here");
-                    *first = false;
-                }
-                cx.span_note(entry.key.span, "one occurrence here");
-                dups = true;
-            });
+            if *first {
+                cx.span_err(sp, format!("duplicate key \"{}\"",
+                                        entry.key_str));
+                cx.span_note(orig.key.span, "one occurrence here");
+                *first = false;
+            }
+            cx.span_note(entry.key.span, "one occurrence here");
+            dups = true;
+        });
     }
 
     dups
@@ -183,13 +183,13 @@ fn generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
     let k2 = rng.gen();
 
     let hashes: Vec<Hashes> = entries.iter().map(|entry| {
-            let (g, f1, f2) = phf::hash(entry.key_str.get(), k1, k2);
-            Hashes {
-                g: g,
-                f1: f1,
-                f2: f2
-            }
-        }).collect();
+        let (g, f1, f2) = phf::hash(entry.key_str.get(), k1, k2);
+        Hashes {
+            g: g,
+            f1: f1,
+            f2: f2
+        }
+    }).collect();
 
     let buckets_len = (entries.len() + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA;
     let mut buckets = Vec::from_fn(buckets_len,

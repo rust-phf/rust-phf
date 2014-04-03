@@ -6,8 +6,9 @@ Rust-PHF
 Rust-PHF is a library to generate efficient lookup tables at compile time using
 [perfect hash functions](http://en.wikipedia.org/wiki/Perfect_hash_function).
 
-It is still in the very early stages, but the plan is to use the
-[CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf).
+It currently uses the
+[CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) and can generate
+a 10,000 entry map in roughly .25 seconds.
 
 Example
 =======

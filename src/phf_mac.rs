@@ -15,7 +15,7 @@ extern crate phf;
 use collections::HashMap;
 use std::os;
 use syntax::ast;
-use syntax::ast::{Name, TokenTree, LitStr, MutImmutable, Expr, ExprVec, ExprLit};
+use syntax::ast::{Name, TokenTree, LitStr, Expr, ExprVec, ExprLit};
 use syntax::codemap::Span;
 use syntax::ext::base::{SyntaxExtension,
                         ExtCtxt,
@@ -252,7 +252,7 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
         }).collect();
     let disps = @Expr {
         id: ast::DUMMY_NODE_ID,
-        node: ExprVec(disps, MutImmutable),
+        node: ExprVec(disps),
         span: sp,
     };
     let entries = state.map.iter().map(|&idx| {
@@ -261,7 +261,7 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
         }).collect();
     let entries = @Expr {
         id: ast::DUMMY_NODE_ID,
-        node: ExprVec(entries, MutImmutable),
+        node: ExprVec(entries),
         span: sp,
     };
 

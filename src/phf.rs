@@ -106,21 +106,21 @@ impl<T: fmt::Show> fmt::Show for PhfMap<T> {
 impl<T> PhfMap<T> {
     /// Returns an iterator over the key/value pairs in the map.
     ///
-    /// Entries are retuned in an arbitrary order.
+    /// Entries are retuned in an arbitrary but fixed order.
     pub fn entries<'a>(&'a self) -> PhfMapEntries<'a, T> {
         PhfMapEntries { iter: self.entries.iter() }
     }
 
     /// Returns an iterator over the keys in the map.
     ///
-    /// Keys are returned in an arbitrary order.
+    /// Keys are returned in an arbitrary but fixed order.
     pub fn keys<'a>(&'a self) -> PhfMapKeys<'a, T> {
         PhfMapKeys { iter: self.entries() }
     }
 
     /// Returns an iterator over the values in the map.
     ///
-    /// Values are returned in an arbitrary order.
+    /// Values are returned in an arbitrary but fixed order.
     pub fn values<'a>(&'a self) -> PhfMapValues<'a, T> {
         PhfMapValues { iter: self.entries() }
     }

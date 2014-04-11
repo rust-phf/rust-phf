@@ -234,31 +234,29 @@ fn generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
         return None;
     }
 
-    let map = map.move_iter().map(|i| i.expect("should have a value"))
-            .collect();
-
     Some(HashState {
         k1: k1,
         k2: k2,
         disps: disps,
-        map: map,
+        map: map.move_iter().map(|i| i.unwrap()).collect(),
     })
 }
 
 fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
               -> MacResult {
     let disps = state.disps.iter().map(|&(d1, d2)| {
-            quote_expr!(&*cx, ($d1, $d2))
-        }).collect();
+        quote_expr!(&*cx, ($d1, $d2))
+    }).collect();
     let disps = @Expr {
         id: ast::DUMMY_NODE_ID,
         node: ExprVec(disps),
         span: sp,
     };
+
     let entries = state.map.iter().map(|&idx| {
-            let &Entry { key, value, .. } = entries.get(idx);
-            quote_expr!(&*cx, ($key, $value))
-        }).collect();
+        let &Entry { key, value, .. } = entries.get(idx);
+        quote_expr!(&*cx, ($key, $value))
+    }).collect();
     let entries = @Expr {
         id: ast::DUMMY_NODE_ID,
         node: ExprVec(entries),

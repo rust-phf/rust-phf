@@ -15,17 +15,17 @@ use std::slice;
 /// `PhfMap`s may be created with the `phf_map` macro:
 ///
 /// ```rust
-/// # #[feature(phase)];
+/// # #![feature(phase)]
 /// extern crate phf;
 /// #[phase(syntax)]
 /// extern crate phf_mac;
 ///
 /// use phf::PhfMap;
 ///
-/// static my_map: PhfMap<int> = phf_map!(
+/// static my_map: PhfMap<int> = phf_map! {
 ///    "hello" => 10,
 ///    "world" => 11,
-/// );
+/// };
 ///
 /// # fn main() {}
 /// ```
@@ -164,6 +164,84 @@ pub struct PhfMapValues<'a, T> {
 impl<'a, T> Iterator<&'a T> for PhfMapValues<'a, T> {
     fn next(&mut self) -> Option<&'a T> {
         self.iter.next().map(|(_, value)| value)
+    }
+
+    fn size_hint(&self) -> (uint, Option<uint>) {
+        self.iter.size_hint()
+    }
+}
+
+/// An immutable set constructed at compile time.
+///
+/// `PhfSet`s may be created with the `phf_set` macro:
+///
+/// ```rust
+/// # #![feature(phase)]
+/// extern crate phf;
+/// #[phase(syntax)]
+/// extern crate phf_mac;
+///
+/// use phf::{PhfMap, PhfSet};
+///
+/// static my_map: PhfSet = phf_set! {
+///    "hello",
+///    "world",
+/// };
+///
+/// # fn main() {}
+/// ```
+///
+/// # Note
+///
+/// The fields of this struct are public so that they may be initialized by the
+/// `phf_set` macro. They are subject to change at any time and should never be
+/// accessed directly.
+pub struct PhfSet {
+    #[doc(hidden)]
+    pub map: PhfMap<()>
+}
+
+impl Container for PhfSet {
+    fn len(&self) -> uint {
+        self.map.len()
+    }
+}
+
+impl<'a> Set<&'a str> for PhfSet {
+    fn contains(&self, value: & &'a str) -> bool {
+        self.map.contains_key(value)
+    }
+
+    fn is_disjoint(&self, other: &PhfSet) -> bool {
+        !self.iter().any(|value| other.contains(&value))
+    }
+
+    fn is_subset(&self, other: &PhfSet) -> bool {
+        self.iter().all(|value| other.contains(&value))
+    }
+
+    fn is_superset(&self, other: &PhfSet) -> bool {
+        other.is_subset(self)
+    }
+}
+
+impl PhfSet {
+    /// Returns an iterator over the values in the set.
+    ///
+    /// Values are returned in an arbitrary but fixed order.
+    pub fn iter<'a>(&'a self) -> PhfSetValues<'a> {
+        PhfSetValues { iter: self.map.keys() }
+    }
+}
+
+/// An iterator over the values in a `PhfSet`.
+pub struct PhfSetValues<'a> {
+    iter: PhfMapKeys<'a, ()>,
+}
+
+impl<'a> Iterator<&'static str> for PhfSetValues<'a> {
+    fn next(&mut self) -> Option<&'static str> {
+        self.iter.next()
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {

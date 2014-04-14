@@ -35,12 +35,16 @@ static FIXED_SEED: [u32, ..4] = [3141592653, 589793238, 462643383, 2795028841];
 #[macro_registrar]
 #[doc(hidden)]
 pub fn macro_registrar(register: |Name, SyntaxExtension|) {
-    register(token::intern("phf_map"),
-             NormalTT(~BasicMacroExpander {
-                expander: expand_phf_map,
-                span: None
-             },
-             None));
+    let reg = |name, fn_| {
+        register(token::intern(name),
+                 NormalTT(~BasicMacroExpander {
+                     expander: fn_,
+                     span: None
+                 },
+                 None));
+    };
+    reg("phf_map", expand_phf_map);
+    reg("phf_set", expand_phf_set);
 }
 
 struct Entry {
@@ -49,8 +53,15 @@ struct Entry {
     value: @Expr
 }
 
+struct HashState {
+    k1: u64,
+    k2: u64,
+    disps: Vec<(uint, uint)>,
+    map: Vec<uint>,
+}
+
 fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
-    let entries = match parse_entries(cx, tts) {
+    let entries = match parse_map(cx, tts) {
         Some(entries) => entries,
         None => return MacResult::dummy_expr(sp)
     };
@@ -59,27 +70,27 @@ fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
         return MacResult::dummy_expr(sp);
     }
 
-    let mut rng: XorShiftRng = SeedableRng::from_seed(FIXED_SEED);
-    let start = time::precise_time_s();
-    let state;
-    loop {
-        match generate_hash(entries.as_slice(), &mut rng) {
-            Some(s) => {
-                state = s;
-                break;
-            }
-            None => {}
-        }
-    }
-    let time = time::precise_time_s() - start;
-    if os::getenv("PHF_STATS").is_some() {
-        cx.span_note(sp, format!("PHF generation took {} seconds", time));
-    }
+    let state = generate_hash(cx, sp, entries.as_slice());
 
     create_map(cx, sp, entries, state)
 }
 
-fn parse_entries(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
+fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
+    let entries = match parse_set(cx, tts) {
+        Some(entries) => entries,
+        None => return MacResult::dummy_expr(sp)
+    };
+
+    if has_duplicates(cx, sp, entries.as_slice()) {
+        return MacResult::dummy_expr(sp);
+    }
+
+    let state = generate_hash(cx, sp, entries.as_slice());
+
+    create_set(cx, sp, entries, state)
+}
+
+fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(),
                                                 Vec::from_slice(tts));
     let mut entries = Vec::new();
@@ -87,24 +98,10 @@ fn parse_entries(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     let mut bad = false;
     while parser.token != EOF {
         let key = cx.expand_expr(parser.parse_expr());
-
-        let key_str = match key.node {
-            ExprLit(lit) => {
-                match lit.node {
-                    LitStr(ref s, _) => s.clone(),
-                    _ => {
-                        cx.span_err(key.span, "expected string literal");
-                        bad = true;
-                        InternedString::new("")
-                    }
-                }
-            }
-            _ => {
-                cx.span_err(key.span, "expected string literal");
-                bad = true;
-                InternedString::new("")
-            }
-        };
+        let key_str = parse_str(cx, key).unwrap_or_else(|| {
+            bad = true;
+            InternedString::new("")
+        });
 
         if !parser.eat(&FAT_ARROW) {
             cx.span_err(parser.span, "expected `=>`");
@@ -139,6 +136,53 @@ fn parse_entries(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     Some(entries)
 }
 
+fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
+    let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(),
+                                                Vec::from_slice(tts));
+    let mut entries = Vec::new();
+    let value = quote_expr!(&*cx, ());
+
+    let mut bad = false;
+    while parser.token != EOF {
+        let key = cx.expand_expr(parser.parse_expr());
+        let key_str = parse_str(cx, key).unwrap_or_else(|| {
+            bad = true;
+            InternedString::new("")
+        });
+
+        entries.push(Entry {
+            key_str: key_str,
+            key: key,
+            value: value,
+        });
+
+        if !parser.eat(&COMMA) && parser.token != EOF {
+            cx.span_err(parser.span, "expected `,`");
+            return None;
+        }
+    }
+
+    Some(entries)
+}
+
+fn parse_str(cx: &mut ExtCtxt, e: &Expr) -> Option<InternedString> {
+    match e.node {
+        ExprLit(lit) => {
+            match lit.node {
+                LitStr(ref s, _) => Some(s.clone()),
+                _ => {
+                    cx.span_err(e.span, "expected string literal");
+                    None
+                }
+            }
+        }
+        _ => {
+            cx.span_err(e.span, "expected string literal");
+            None
+        }
+    }
+}
+
 fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
     let mut dups = false;
     let mut strings = HashMap::new();
@@ -159,15 +203,29 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
     dups
 }
 
-struct HashState {
-    k1: u64,
-    k2: u64,
-    disps: Vec<(uint, uint)>,
-    map: Vec<uint>,
+fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
+    let mut rng: XorShiftRng = SeedableRng::from_seed(FIXED_SEED);
+    let start = time::precise_time_s();
+    let state;
+    loop {
+        match try_generate_hash(entries.as_slice(), &mut rng) {
+            Some(s) => {
+                state = s;
+                break;
+            }
+            None => {}
+        }
+    }
+    let time = time::precise_time_s() - start;
+    if os::getenv("PHF_STATS").is_some() {
+        cx.span_note(sp, format!("PHF generation took {} seconds", time));
+    }
+
+    state
 }
 
-fn generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
-                 -> Option<HashState> {
+fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
+                     -> Option<HashState> {
     struct Bucket {
         idx: uint,
         keys: Vec<uint>,
@@ -271,4 +329,14 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
         disps: &'static $disps,
         entries: &'static $entries,
     }))
+}
+
+fn create_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
+              -> MacResult {
+    let map = match create_map(cx, sp, entries, state) {
+        MRExpr(expr) => expr,
+        _ => unreachable!(),
+    };
+
+    MRExpr(quote_expr!(cx, PhfSet { map: $map }))
 }

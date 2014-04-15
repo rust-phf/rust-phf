@@ -409,6 +409,8 @@ impl<'a, T> RandomAccessIterator<(&'static str, &'a T)>
     }
 }
 
+impl<'a, T> ExactSize<(&'static str, &'a T)> for PhfOrderedMapEntries<'a, T> {}
+
 /// An iterator over the keys in a `PhfOrderedMap`.
 pub struct PhfOrderedMapKeys<'a, T> {
     iter: PhfOrderedMapEntries<'a, T>,
@@ -440,6 +442,8 @@ impl<'a, T> RandomAccessIterator<&'static str> for PhfOrderedMapKeys<'a, T> {
     }
 }
 
+impl<'a, T> ExactSize<&'static str> for PhfOrderedMapKeys<'a, T> {}
+
 /// An iterator over the values in a `PhfOrderedMap`.
 pub struct PhfOrderedMapValues<'a, T> {
     iter: PhfOrderedMapEntries<'a, T>,
@@ -470,6 +474,8 @@ impl<'a, T> RandomAccessIterator<&'a T> for PhfOrderedMapValues<'a, T> {
         self.iter.idx(index).map(|(_, value)| value)
     }
 }
+
+impl<'a, T> ExactSize<&'a T> for PhfOrderedMapValues<'a, T> {}
 
 /// An order-preserving immutable set constructed at compile time.
 ///
@@ -593,3 +599,5 @@ impl<'a> RandomAccessIterator<&'static str> for PhfOrderedSetValues<'a> {
         self.iter.idx(index)
     }
 }
+
+impl<'a> ExactSize<&'static str> for PhfOrderedSetValues<'a> {}

@@ -215,3 +215,43 @@ mod ordered_map {
         assert_eq!(vec, vec!(10, 11, 12));
     }
 }
+
+mod ordered_set {
+    use phf::{PhfOrderedMap, PhfOrderedSet};
+
+    #[allow(dead_code)]
+    static TRAILING_COMMA: PhfOrderedSet = phf_ordered_set! {
+        "foo",
+    };
+
+    #[allow(dead_code)]
+    static NO_TRAILING_COMMA: PhfOrderedSet = phf_ordered_set! {
+        "foo"
+    };
+
+    #[test]
+    fn test_two() {
+        static SET: PhfOrderedSet = phf_ordered_set! {
+            "hello",
+            "there",
+            "world",
+        };
+        assert!(SET.contains(& &"hello"));
+        assert!(SET.contains(& &"there"));
+        assert!(SET.contains(& &"world"));
+        assert!(!SET.contains(& &"foo"));
+        assert_eq!(3, SET.len());
+    }
+
+    #[test]
+    fn test_iter() {
+        static SET: PhfOrderedSet = phf_ordered_set! {
+            "hello",
+            "there",
+            "world",
+        };
+        let vec = SET.iter().collect::<Vec<_>>();
+        assert_eq!(vec, vec!("hello", "there", "world"));
+    }
+}
+

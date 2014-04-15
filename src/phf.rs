@@ -217,24 +217,29 @@ impl fmt::Show for PhfSet {
 }
 
 impl Container for PhfSet {
+    #[inline]
     fn len(&self) -> uint {
         self.map.len()
     }
 }
 
 impl<'a> Set<&'a str> for PhfSet {
+    #[inline]
     fn contains(&self, value: & &'a str) -> bool {
         self.map.contains_key(value)
     }
 
+    #[inline]
     fn is_disjoint(&self, other: &PhfSet) -> bool {
         !self.iter().any(|value| other.contains(&value))
     }
 
+    #[inline]
     fn is_subset(&self, other: &PhfSet) -> bool {
         self.iter().all(|value| other.contains(&value))
     }
 
+    #[inline]
     fn is_superset(&self, other: &PhfSet) -> bool {
         other.is_subset(self)
     }
@@ -244,6 +249,7 @@ impl PhfSet {
     /// Returns an iterator over the values in the set.
     ///
     /// Values are returned in an arbitrary but fixed order.
+    #[inline]
     pub fn iter<'a>(&'a self) -> PhfSetValues<'a> {
         PhfSetValues { iter: self.map.keys() }
     }
@@ -255,10 +261,12 @@ pub struct PhfSetValues<'a> {
 }
 
 impl<'a> Iterator<&'static str> for PhfSetValues<'a> {
+    #[inline]
     fn next(&mut self) -> Option<&'static str> {
         self.iter.next()
     }
 
+    #[inline]
     fn size_hint(&self) -> (uint, Option<uint>) {
         self.iter.size_hint()
     }
@@ -460,5 +468,128 @@ impl<'a, T> RandomAccessIterator<&'a T> for PhfOrderedMapValues<'a, T> {
 
     fn idx(&self, index: uint) -> Option<&'a T> {
         self.iter.idx(index).map(|(_, value)| value)
+    }
+}
+
+/// An order-preserving immutable set constructed at compile time.
+///
+/// Unlike a `PhfSet`, the order of entries in a `PhfOrderedSet` is guaranteed
+/// to be the order the entries were listed in.
+///
+/// `PhfOrderedSet`s may be created with the `phf_ordered_set` macro:
+///
+/// ```rust
+/// # #![feature(phase)]
+/// extern crate phf;
+/// #[phase(syntax)]
+/// extern crate phf_mac;
+///
+/// use phf::{PhfOrderedSet, PhfOrderedMap};
+///
+/// static my_map: PhfOrderedSet = phf_ordered_set! {
+///    "hello",
+///    "world",
+/// };
+///
+/// # fn main() {}
+/// ```
+///
+/// # Note
+///
+/// The fields of this struct are public so that they may be initialized by the
+/// `phf_ordered_set` macro. They are subject to change at any time and should
+/// never be accessed directly.
+pub struct PhfOrderedSet {
+    #[doc(hidden)]
+    pub map: PhfOrderedMap<()>,
+}
+
+impl fmt::Show for PhfOrderedSet {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        try!(fmt.buf.write_char('{'));
+        let mut first = true;
+        for entry in self.iter() {
+            if !first {
+                try!(fmt.buf.write_str(", "));
+            }
+            try!(fmt.buf.write_str(entry));
+            first = false;
+        }
+        fmt.buf.write_char('}')
+    }
+}
+
+impl Container for PhfOrderedSet {
+    #[inline]
+    fn len(&self) -> uint {
+        self.map.len()
+    }
+}
+
+impl<'a> Set<&'a str> for PhfOrderedSet {
+    #[inline]
+    fn contains(&self, value: & &'a str) -> bool {
+        self.map.contains_key(value)
+    }
+
+    #[inline]
+    fn is_disjoint(&self, other: &PhfOrderedSet) -> bool {
+        !self.iter().any(|value| other.contains(&value))
+    }
+
+    #[inline]
+    fn is_subset(&self, other: &PhfOrderedSet) -> bool {
+        self.iter().all(|value| other.contains(&value))
+    }
+
+    #[inline]
+    fn is_superset(&self, other: &PhfOrderedSet) -> bool {
+        other.is_subset(self)
+    }
+}
+
+impl PhfOrderedSet {
+    /// Returns an iterator over the values in the set.
+    ///
+    /// Values are returned in the same order in which they were defined.
+    #[inline]
+    pub fn iter<'a>(&'a self) -> PhfOrderedSetValues<'a> {
+        PhfOrderedSetValues { iter: self.map.keys() }
+    }
+}
+
+/// An iterator over the values in a `PhfOrderedSet`.
+pub struct PhfOrderedSetValues<'a> {
+    iter: PhfOrderedMapKeys<'a, ()>,
+}
+
+impl<'a> Iterator<&'static str> for PhfOrderedSetValues<'a> {
+    #[inline]
+    fn next(&mut self) -> Option<&'static str> {
+        self.iter.next()
+    }
+
+    #[inline]
+    fn size_hint(&self) -> (uint, Option<uint>) {
+        self.iter.size_hint()
+    }
+}
+
+impl<'a> DoubleEndedIterator<&'static str> for PhfOrderedSetValues<'a> {
+    #[inline]
+    fn next_back(&mut self) -> Option<&'static str> {
+        self.iter.next_back()
+    }
+}
+
+impl<'a> RandomAccessIterator<&'static str> for PhfOrderedSetValues<'a> {
+    #[inline]
+    fn indexable(&self) -> uint {
+        self.iter.indexable()
+    }
+
+    #[inline]
+    fn idx(&self, index: uint) -> Option<&'static str> {
+        self.iter.idx(index)
     }
 }

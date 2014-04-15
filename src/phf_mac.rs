@@ -46,6 +46,7 @@ pub fn macro_registrar(register: |Name, SyntaxExtension|) {
     reg("phf_map", expand_phf_map);
     reg("phf_set", expand_phf_set);
     reg("phf_ordered_map", expand_phf_ordered_map);
+    reg("phf_ordered_set", expand_phf_ordered_set);
 }
 
 struct Entry {
@@ -105,6 +106,22 @@ fn expand_phf_ordered_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
     let state = generate_hash(cx, sp, entries.as_slice());
 
     create_ordered_map(cx, sp, entries, state)
+}
+
+fn expand_phf_ordered_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
+                          -> MacResult {
+    let entries = match parse_set(cx, tts) {
+        Some(entries) => entries,
+        None => return MacResult::dummy_expr(sp)
+    };
+
+    if has_duplicates(cx, sp, entries.as_slice()) {
+        return MacResult::dummy_expr(sp);
+    }
+
+    let state = generate_hash(cx, sp, entries.as_slice());
+
+    create_ordered_set(cx, sp, entries, state)
 }
 
 fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
@@ -374,6 +391,16 @@ fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
         idxs: &'static $idxs,
         entries: &'static $entries,
     }))
+}
+
+fn create_ordered_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
+                      state: HashState) -> MacResult {
+    let map = match create_ordered_map(cx, sp, entries, state) {
+        MRExpr(expr) => expr,
+        _ => unreachable!(),
+    };
+
+    MRExpr(quote_expr!(cx, PhfOrderedSet { map: $map }))
 }
 
 fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {

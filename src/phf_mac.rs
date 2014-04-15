@@ -196,6 +196,17 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
         }
     }
 
+    if entries.len() > phf::MAX_SIZE {
+        cx.span_err(parser.span,
+                    format!("maps with more than {} entries are not supported",
+                            phf::MAX_SIZE));
+        return None;
+    }
+
+    if bad {
+        return None;
+    }
+
     Some(entries)
 }
 

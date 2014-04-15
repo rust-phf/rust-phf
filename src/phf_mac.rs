@@ -45,6 +45,7 @@ pub fn macro_registrar(register: |Name, SyntaxExtension|) {
     };
     reg("phf_map", expand_phf_map);
     reg("phf_set", expand_phf_set);
+    reg("phf_ordered_map", expand_phf_ordered_map);
 }
 
 struct Entry {
@@ -88,6 +89,22 @@ fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     let state = generate_hash(cx, sp, entries.as_slice());
 
     create_set(cx, sp, entries, state)
+}
+
+fn expand_phf_ordered_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
+                          -> MacResult {
+    let entries = match parse_map(cx, tts) {
+        Some(entries) => entries,
+        None => return MacResult::dummy_expr(sp),
+    };
+
+    if has_duplicates(cx, sp, entries.as_slice()) {
+        return MacResult::dummy_expr(sp);
+    }
+
+    let state = generate_hash(cx, sp, entries.as_slice());
+
+    create_ordered_map(cx, sp, entries, state)
 }
 
 fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
@@ -305,21 +322,13 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
     let disps = state.disps.iter().map(|&(d1, d2)| {
         quote_expr!(&*cx, ($d1, $d2))
     }).collect();
-    let disps = @Expr {
-        id: ast::DUMMY_NODE_ID,
-        node: ExprVec(disps),
-        span: sp,
-    };
+    let disps = create_slice_expr(disps, sp);
 
     let entries = state.map.iter().map(|&idx| {
         let &Entry { key, value, .. } = entries.get(idx);
         quote_expr!(&*cx, ($key, $value))
     }).collect();
-    let entries = @Expr {
-        id: ast::DUMMY_NODE_ID,
-        node: ExprVec(entries),
-        span: sp,
-    };
+    let entries = create_slice_expr(entries, sp);
 
     let k1 = state.k1;
     let k2 = state.k2;
@@ -339,4 +348,38 @@ fn create_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
     };
 
     MRExpr(quote_expr!(cx, PhfSet { map: $map }))
+}
+
+fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
+                      state: HashState) -> MacResult {
+    let disps = state.disps.iter().map(|&(d1, d2)| {
+        quote_expr!(&*cx, ($d1, $d2))
+    }).collect();
+    let disps = create_slice_expr(disps, sp);
+
+    let idxs = state.map.iter().map(|&idx| quote_expr!(&*cx, $idx)).collect();
+    let idxs = create_slice_expr(idxs, sp);
+
+    let entries = entries.iter().map(|&Entry { key, value, .. }| {
+        quote_expr!(&*cx, ($key, $value))
+    }).collect();
+    let entries = create_slice_expr(entries, sp);
+
+    let k1 = state.k1;
+    let k2 = state.k2;
+    MRExpr(quote_expr!(cx, PhfOrderedMap {
+        k1: $k1,
+        k2: $k2,
+        disps: &'static $disps,
+        idxs: &'static $idxs,
+        entries: &'static $entries,
+    }))
+}
+
+fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {
+    @Expr {
+        id: ast::DUMMY_NODE_ID,
+        node: ExprVec(vec),
+        span: sp
+    }
 }

@@ -156,3 +156,62 @@ mod set {
         assert_eq!(2, set.len());
     }
 }
+
+mod ordered_map {
+    use phf::PhfOrderedMap;
+
+    #[allow(dead_code)]
+    static TRAILING_COMMA: PhfOrderedMap<int> = phf_ordered_map!(
+        "foo" => 10,
+    );
+
+    #[allow(dead_code)]
+    static NO_TRAILING_COMMA: PhfOrderedMap<int> = phf_ordered_map!(
+        "foo" => 10
+    );
+
+    #[test]
+    fn test_two() {
+        static map: PhfOrderedMap<int> = phf_ordered_map!(
+            "foo" => 10,
+            "bar" => 11,
+        );
+        assert!(Some(&10) == map.find(& &"foo"));
+        assert!(Some(&11) == map.find(& &"bar"));
+        assert_eq!(None, map.find(& &"asdf"));
+        assert_eq!(2, map.len());
+    }
+
+    #[test]
+    fn test_entries() {
+        static MAP: PhfOrderedMap<int> = phf_ordered_map!(
+            "foo" => 10,
+            "bar" => 11,
+            "baz" => 12,
+        );
+        let vec = MAP.entries().map(|(k, &v)| (k, v)).collect::<Vec<_>>();
+        assert_eq!(vec, vec!(("foo", 10), ("bar", 11), ("baz", 12)));
+    }
+
+    #[test]
+    fn test_keys() {
+        static MAP: PhfOrderedMap<int> = phf_ordered_map!(
+            "foo" => 10,
+            "bar" => 11,
+            "baz" => 12,
+        );
+        let vec = MAP.keys().collect::<Vec<_>>();
+        assert_eq!(vec, vec!("foo", "bar", "baz"));
+    }
+
+    #[test]
+    fn test_values() {
+        static MAP: PhfOrderedMap<int> = phf_ordered_map!(
+            "foo" => 10,
+            "bar" => 11,
+            "baz" => 12,
+        );
+        let vec = MAP.values().map(|&v| v).collect::<Vec<_>>();
+        assert_eq!(vec, vec!(10, 11, 12));
+    }
+}

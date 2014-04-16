@@ -14,7 +14,7 @@ Example
 =======
 
 ```rust
-#[feature(phase)];
+#![feature(phase)]
 
 #[phase(syntax)]
 extern mod phf_mac;

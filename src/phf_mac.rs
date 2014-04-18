@@ -18,9 +18,10 @@ use syntax::ast;
 use syntax::ast::{Name, TokenTree, LitStr, Expr, ExprVec, ExprLit};
 use syntax::codemap::Span;
 use syntax::ext::base::{SyntaxExtension,
+                        DummyResult,
                         ExtCtxt,
                         MacResult,
-                        MRExpr,
+                        MacExpr,
                         NormalTT,
                         BasicMacroExpander};
 use syntax::parse;
@@ -62,14 +63,14 @@ struct HashState {
     map: Vec<uint>,
 }
 
-fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
+fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> ~MacResult {
     let entries = match parse_map(cx, tts) {
         Some(entries) => entries,
-        None => return MacResult::dummy_expr(sp)
+        None => return DummyResult::expr(sp)
     };
 
     if has_duplicates(cx, sp, entries.as_slice()) {
-        return MacResult::dummy_expr(sp);
+        return DummyResult::expr(sp);
     }
 
     let state = generate_hash(cx, sp, entries.as_slice());
@@ -77,14 +78,14 @@ fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
     create_map(cx, sp, entries, state)
 }
 
-fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
+fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> ~MacResult {
     let entries = match parse_set(cx, tts) {
         Some(entries) => entries,
-        None => return MacResult::dummy_expr(sp)
+        None => return DummyResult::expr(sp)
     };
 
     if has_duplicates(cx, sp, entries.as_slice()) {
-        return MacResult::dummy_expr(sp);
+        return DummyResult::expr(sp);
     }
 
     let state = generate_hash(cx, sp, entries.as_slice());
@@ -93,14 +94,14 @@ fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> MacResult {
 }
 
 fn expand_phf_ordered_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
-                          -> MacResult {
+                          -> ~MacResult {
     let entries = match parse_map(cx, tts) {
         Some(entries) => entries,
-        None => return MacResult::dummy_expr(sp),
+        None => return DummyResult::expr(sp),
     };
 
     if has_duplicates(cx, sp, entries.as_slice()) {
-        return MacResult::dummy_expr(sp);
+        return DummyResult::expr(sp);
     }
 
     let state = generate_hash(cx, sp, entries.as_slice());
@@ -109,14 +110,14 @@ fn expand_phf_ordered_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
 }
 
 fn expand_phf_ordered_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
-                          -> MacResult {
+                          -> ~MacResult {
     let entries = match parse_set(cx, tts) {
         Some(entries) => entries,
-        None => return MacResult::dummy_expr(sp)
+        None => return DummyResult::expr(sp)
     };
 
     if has_duplicates(cx, sp, entries.as_slice()) {
-        return MacResult::dummy_expr(sp);
+        return DummyResult::expr(sp);
     }
 
     let state = generate_hash(cx, sp, entries.as_slice());
@@ -346,7 +347,7 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
 }
 
 fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
-              -> MacResult {
+              -> ~MacResult {
     let disps = state.disps.iter().map(|&(d1, d2)| {
         quote_expr!(&*cx, ($d1, $d2))
     }).collect();
@@ -360,7 +361,7 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
 
     let k1 = state.k1;
     let k2 = state.k2;
-    MRExpr(quote_expr!(cx, PhfMap {
+    MacExpr::new(quote_expr!(cx, PhfMap {
         k1: $k1,
         k2: $k2,
         disps: &'static $disps,
@@ -369,17 +370,13 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
 }
 
 fn create_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
-              -> MacResult {
-    let map = match create_map(cx, sp, entries, state) {
-        MRExpr(expr) => expr,
-        _ => unreachable!(),
-    };
-
-    MRExpr(quote_expr!(cx, PhfSet { map: $map }))
+              -> ~MacResult {
+    let map = create_map(cx, sp, entries, state).make_expr().unwrap();
+    MacExpr::new(quote_expr!(cx, PhfSet { map: $map }))
 }
 
 fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
-                      state: HashState) -> MacResult {
+                      state: HashState) -> ~MacResult {
     let disps = state.disps.iter().map(|&(d1, d2)| {
         quote_expr!(&*cx, ($d1, $d2))
     }).collect();
@@ -395,7 +392,7 @@ fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
 
     let k1 = state.k1;
     let k2 = state.k2;
-    MRExpr(quote_expr!(cx, PhfOrderedMap {
+    MacExpr::new(quote_expr!(cx, PhfOrderedMap {
         k1: $k1,
         k2: $k2,
         disps: &'static $disps,
@@ -405,13 +402,9 @@ fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
 }
 
 fn create_ordered_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
-                      state: HashState) -> MacResult {
-    let map = match create_ordered_map(cx, sp, entries, state) {
-        MRExpr(expr) => expr,
-        _ => unreachable!(),
-    };
-
-    MRExpr(quote_expr!(cx, PhfOrderedSet { map: $map }))
+                      state: HashState) -> ~MacResult {
+    let map = create_ordered_map(cx, sp, entries, state).make_expr().unwrap();
+    MacExpr::new(quote_expr!(cx, PhfOrderedSet { map: $map }))
 }
 
 fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {

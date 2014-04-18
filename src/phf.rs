@@ -238,11 +238,6 @@ impl<'a> Set<&'a str> for PhfSet {
     fn is_subset(&self, other: &PhfSet) -> bool {
         self.iter().all(|value| other.contains(&value))
     }
-
-    #[inline]
-    fn is_superset(&self, other: &PhfSet) -> bool {
-        other.is_subset(self)
-    }
 }
 
 impl PhfSet {
@@ -546,11 +541,6 @@ impl<'a> Set<&'a str> for PhfOrderedSet {
     #[inline]
     fn is_subset(&self, other: &PhfOrderedSet) -> bool {
         self.iter().all(|value| other.contains(&value))
-    }
-
-    #[inline]
-    fn is_superset(&self, other: &PhfOrderedSet) -> bool {
-        other.is_subset(self)
     }
 }
 

@@ -76,15 +76,7 @@ impl<T> Container for PhfMap<T> {
 
 impl<'a, T> Map<&'a str, T> for PhfMap<T> {
     fn find<'a>(&'a self, key: & &str) -> Option<&'a T> {
-        let (g, f1, f2) = hash(*key, self.k1, self.k2);
-        let (d1, d2) = self.disps[g % self.disps.len()];
-        let (s, ref value) = self.entries[displace(f1, f2, d1, d2) %
-                                          self.entries.len()];
-        if s == *key {
-            Some(value)
-        } else {
-            None
-        }
+        self.find_entry(key).map(|&(_, ref v)| v)
     }
 }
 
@@ -104,6 +96,26 @@ impl<T: fmt::Show> fmt::Show for PhfMap<T> {
 }
 
 impl<T> PhfMap<T> {
+    fn find_entry(&self, key: & &str) -> Option<&'static (&'static str, T)> {
+        let (g, f1, f2) = hash(*key, self.k1, self.k2);
+        let (d1, d2) = self.disps[g % self.disps.len()];
+        let entry @ &(s, _) = &self.entries[displace(f1, f2, d1, d2) %
+                                            self.entries.len()];
+        if s == *key {
+            Some(entry)
+        } else {
+            None
+        }
+    }
+
+    /// Returns a reference to the map's internal static instance of the given
+    /// key.
+    ///
+    /// This can be useful for interning schemes.
+    pub fn find_key(&self, key: & &str) -> Option<&'static str> {
+        self.find_entry(key).map(|&(s, _)| s)
+    }
+
     /// Returns an iterator over the key/value pairs in the map.
     ///
     /// Entries are retuned in an arbitrary but fixed order.
@@ -241,6 +253,15 @@ impl<'a> Set<&'a str> for PhfSet {
 }
 
 impl PhfSet {
+    /// Returns a reference to the set's internal static instance of the given
+    /// key.
+    ///
+    /// This can be useful for interning schemes.
+    #[inline]
+    pub fn find_key(&self, key: & &str) -> Option<&'static str> {
+        self.map.find_key(key)
+    }
+
     /// Returns an iterator over the values in the set.
     ///
     /// Values are returned in an arbitrary but fixed order.
@@ -308,27 +329,6 @@ pub struct PhfOrderedMap<T> {
     pub entries: &'static [(&'static str, T)],
 }
 
-impl<T> Container for PhfOrderedMap<T> {
-    fn len(&self) -> uint {
-        self.entries.len()
-    }
-}
-
-impl<'a, T> Map<&'a str, T> for PhfOrderedMap<T> {
-    fn find<'a>(&'a self, key: & &str) -> Option<&'a T> {
-        let (g, f1, f2) = hash(*key, self.k1, self.k2);
-        let (d1, d2) = self.disps[g % self.disps.len()];
-        let idx = self.idxs[displace(f1, f2, d1, d2) % self.idxs.len()];
-        let (s, ref value) = self.entries[idx];
-
-        if s == *key {
-            Some(value)
-        } else {
-            None
-        }
-    }
-}
-
 impl<T: fmt::Show> fmt::Show for PhfOrderedMap<T> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(fmt.buf.write_char('{'));
@@ -344,7 +344,40 @@ impl<T: fmt::Show> fmt::Show for PhfOrderedMap<T> {
     }
 }
 
+impl<T> Container for PhfOrderedMap<T> {
+    fn len(&self) -> uint {
+        self.entries.len()
+    }
+}
+
+impl<'a, T> Map<&'a str, T> for PhfOrderedMap<T> {
+    fn find<'a>(&'a self, key: & &str) -> Option<&'a T> {
+        self.find_entry(key).map(|&(_, ref v)| v)
+    }
+}
+
 impl<T> PhfOrderedMap<T> {
+    fn find_entry(&self, key: & &str) -> Option<&'static (&'static str, T)> {
+        let (g, f1, f2) = hash(*key, self.k1, self.k2);
+        let (d1, d2) = self.disps[g % self.disps.len()];
+        let idx = self.idxs[displace(f1, f2, d1, d2) % self.idxs.len()];
+        let entry @ &(s, _) = &self.entries[idx];
+
+        if s == *key {
+            Some(entry)
+        } else {
+            None
+        }
+    }
+
+    /// Returns a reference to the map's internal static instance of the given
+    /// key.
+    ///
+    /// This can be useful for interning schemes.
+    pub fn find_key(&self, key: & &str) -> Option<&'static str> {
+        self.find_entry(key).map(|&(s, _)| s)
+    }
+
     /// Returns an iterator over the key/value pairs in the map.
     ///
     /// Entries are retuned in the same order in which they were defined.
@@ -545,6 +578,15 @@ impl<'a> Set<&'a str> for PhfOrderedSet {
 }
 
 impl PhfOrderedSet {
+    /// Returns a reference to the set's internal static instance of the given
+    /// key.
+    ///
+    /// This can be useful for interning schemes.
+    #[inline]
+    pub fn find_key(&self, key: & &str) -> Option<&'static str> {
+        self.map.find_key(key)
+    }
+
     /// Returns an iterator over the values in the set.
     ///
     /// Values are returned in the same order in which they were defined.

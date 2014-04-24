@@ -395,7 +395,7 @@ impl<'a, T> RandomAccessIterator<(&'static str, &'a T)>
         self.iter.indexable()
     }
 
-    fn idx(&self, index: uint) -> Option<(&'static str, &'a T)> {
+    fn idx(&mut self, index: uint) -> Option<(&'static str, &'a T)> {
         // FIXME: mozilla/rust#13167
         self.iter.idx(index).map(|pair| {
             let &(key, ref value) = pair;
@@ -432,7 +432,7 @@ impl<'a, T> RandomAccessIterator<&'static str> for PhfOrderedMapKeys<'a, T> {
         self.iter.indexable()
     }
 
-    fn idx(&self, index: uint) -> Option<&'static str> {
+    fn idx(&mut self, index: uint) -> Option<&'static str> {
         self.iter.idx(index).map(|(key, _)| key)
     }
 }
@@ -465,7 +465,7 @@ impl<'a, T> RandomAccessIterator<&'a T> for PhfOrderedMapValues<'a, T> {
         self.iter.indexable()
     }
 
-    fn idx(&self, index: uint) -> Option<&'a T> {
+    fn idx(&mut self, index: uint) -> Option<&'a T> {
         self.iter.idx(index).map(|(_, value)| value)
     }
 }
@@ -585,7 +585,7 @@ impl<'a> RandomAccessIterator<&'static str> for PhfOrderedSetValues<'a> {
     }
 
     #[inline]
-    fn idx(&self, index: uint) -> Option<&'static str> {
+    fn idx(&mut self, index: uint) -> Option<&'static str> {
         self.iter.idx(index)
     }
 }

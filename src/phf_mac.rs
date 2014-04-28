@@ -3,7 +3,7 @@
 //! See the documentation for the `phf` crate for more details.
 #![crate_id="github.com/sfackler/rust-phf/phf_mac"]
 #![crate_type="dylib"]
-#![doc(html_root_url="http://www.rust-ci.org/sfackler/rust-phf/doc")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
 #![feature(managed_boxes, macro_registrar, quote)]
 
 extern crate collections;

@@ -25,9 +25,9 @@ mod map {
             "foo" => 10,
             "bar" => 11,
         );
-        assert!(Some(&10) == map.find(& &"foo"));
-        assert!(Some(&11) == map.find(& &"bar"));
-        assert_eq!(None, map.find(& &"asdf"));
+        assert!(Some(&10) == map.find(&("foo")));
+        assert!(Some(&11) == map.find(&("bar")));
+        assert_eq!(None, map.find(&("asdf")));
         assert_eq!(2, map.len());
     }
 
@@ -41,8 +41,8 @@ mod map {
         for (key, &value) in map.entries() {
             hash.insert(key, value);
         }
-        assert!(Some(&10) == hash.find(& &"foo"));
-        assert!(Some(&11) == hash.find(& &"bar"));
+        assert!(Some(&10) == hash.find(&("foo")));
+        assert!(Some(&11) == hash.find(&("bar")));
         assert_eq!(2, hash.len());
     }
 
@@ -56,8 +56,8 @@ mod map {
         for key in map.keys() {
             hash.insert(key);
         }
-        assert!(hash.contains(& &"foo"));
-        assert!(hash.contains(& &"bar"));
+        assert!(hash.contains(&("foo")));
+        assert!(hash.contains(&("bar")));
         assert_eq!(2, hash.len());
     }
 
@@ -106,7 +106,7 @@ mod map {
             "y" => 24,
             "z" => 25,
         );
-        assert!(map.find(& &"a") == Some(&0));
+        assert!(map.find(&("a")) == Some(&0));
     }
 
     #[test]
@@ -114,7 +114,7 @@ mod map {
         static map: PhfMap<int> = phf_map!(
             concat!("foo", "bar") => 1
         );
-        assert!(Some(&1) == map.find(& &"foobar"));
+        assert!(Some(&1) == map.find(&("foobar")));
     }
 }
 
@@ -138,9 +138,9 @@ mod set {
             "hello",
             "world",
         };
-        assert!(SET.contains(& &"hello"));
-        assert!(SET.contains(& &"world"));
-        assert!(!SET.contains(& &"foo"));
+        assert!(SET.contains(&("hello")));
+        assert!(SET.contains(&("world")));
+        assert!(!SET.contains(&("foo")));
         assert_eq!(2, SET.len());
     }
 
@@ -151,8 +151,8 @@ mod set {
             "world",
         };
         let set = SET.iter().collect::<HashSet<_>>();
-        assert!(set.contains(& &"hello"));
-        assert!(set.contains(& &"world"));
+        assert!(set.contains(&("hello")));
+        assert!(set.contains(&("world")));
         assert_eq!(2, set.len());
     }
 }
@@ -176,9 +176,9 @@ mod ordered_map {
             "foo" => 10,
             "bar" => 11,
         );
-        assert!(Some(&10) == map.find(& &"foo"));
-        assert!(Some(&11) == map.find(& &"bar"));
-        assert_eq!(None, map.find(& &"asdf"));
+        assert!(Some(&10) == map.find(&("foo")));
+        assert!(Some(&11) == map.find(&("bar")));
+        assert_eq!(None, map.find(&("asdf")));
         assert_eq!(2, map.len());
     }
 
@@ -236,10 +236,10 @@ mod ordered_set {
             "there",
             "world",
         };
-        assert!(SET.contains(& &"hello"));
-        assert!(SET.contains(& &"there"));
-        assert!(SET.contains(& &"world"));
-        assert!(!SET.contains(& &"foo"));
+        assert!(SET.contains(&("hello")));
+        assert!(SET.contains(&("there")));
+        assert!(SET.contains(&("world")));
+        assert!(!SET.contains(&("foo")));
         assert_eq!(3, SET.len());
     }
 

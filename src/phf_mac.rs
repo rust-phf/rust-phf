@@ -38,7 +38,7 @@ static FIXED_SEED: [u32, ..4] = [3141592653, 589793238, 462643383, 2795028841];
 pub fn macro_registrar(register: |Name, SyntaxExtension|) {
     let reg = |name, fn_| {
         register(token::intern(name),
-                 NormalTT(~BasicMacroExpander {
+                 NormalTT(box BasicMacroExpander {
                      expander: fn_,
                      span: None
                  },
@@ -63,7 +63,8 @@ struct HashState {
     map: Vec<uint>,
 }
 
-fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> ~MacResult {
+fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
+                  -> Box<MacResult> {
     let entries = match parse_map(cx, tts) {
         Some(entries) => entries,
         None => return DummyResult::expr(sp)
@@ -78,7 +79,8 @@ fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> ~MacResult {
     create_map(cx, sp, entries, state)
 }
 
-fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> ~MacResult {
+fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
+                  -> Box<MacResult> {
     let entries = match parse_set(cx, tts) {
         Some(entries) => entries,
         None => return DummyResult::expr(sp)
@@ -94,7 +96,7 @@ fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> ~MacResult {
 }
 
 fn expand_phf_ordered_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
-                          -> ~MacResult {
+                          -> Box<MacResult> {
     let entries = match parse_map(cx, tts) {
         Some(entries) => entries,
         None => return DummyResult::expr(sp),
@@ -110,7 +112,7 @@ fn expand_phf_ordered_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
 }
 
 fn expand_phf_ordered_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
-                          -> ~MacResult {
+                          -> Box<MacResult> {
     let entries = match parse_set(cx, tts) {
         Some(entries) => entries,
         None => return DummyResult::expr(sp)
@@ -347,7 +349,7 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
 }
 
 fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
-              -> ~MacResult {
+              -> Box<MacResult> {
     let disps = state.disps.iter().map(|&(d1, d2)| {
         quote_expr!(&*cx, ($d1, $d2))
     }).collect();
@@ -370,13 +372,13 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
 }
 
 fn create_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
-              -> ~MacResult {
+              -> Box<MacResult> {
     let map = create_map(cx, sp, entries, state).make_expr().unwrap();
     MacExpr::new(quote_expr!(cx, PhfSet { map: $map }))
 }
 
 fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
-                      state: HashState) -> ~MacResult {
+                      state: HashState) -> Box<MacResult> {
     let disps = state.disps.iter().map(|&(d1, d2)| {
         quote_expr!(&*cx, ($d1, $d2))
     }).collect();
@@ -402,7 +404,7 @@ fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
 }
 
 fn create_ordered_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
-                      state: HashState) -> ~MacResult {
+                      state: HashState) -> Box<MacResult> {
     let map = create_ordered_map(cx, sp, entries, state).make_expr().unwrap();
     MacExpr::new(quote_expr!(cx, PhfOrderedSet { map: $map }))
 }

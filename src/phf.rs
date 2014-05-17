@@ -82,16 +82,16 @@ impl<'a, T> Map<&'a str, T> for PhfMap<T> {
 
 impl<T: fmt::Show> fmt::Show for PhfMap<T> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(fmt.buf.write_char('{'));
+        try!(write!(fmt, r"\{"));
         let mut first = true;
         for (k, v) in self.entries() {
             if !first {
-                try!(fmt.buf.write_str(", "));
+                try!(write!(fmt, ", "));
             }
-            try!(write!(fmt.buf, "{}: {}", k, v))
+            try!(write!(fmt, "{}: {}", k, v))
             first = false;
         }
-        fmt.buf.write_char('}')
+        write!(fmt, r"\}")
     }
 }
 
@@ -215,16 +215,16 @@ pub struct PhfSet {
 
 impl fmt::Show for PhfSet {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(fmt.buf.write_char('{'));
+        try!(write!(fmt, r"\{"));
         let mut first = true;
         for entry in self.iter() {
             if !first {
-                try!(fmt.buf.write_str(", "));
+                try!(write!(fmt, ", "));
             }
-            try!(fmt.buf.write_str(entry));
+            try!(write!(fmt, "{}", entry));
             first = false;
         }
-        fmt.buf.write_char('}')
+        write!(fmt, r"\}")
     }
 }
 
@@ -331,16 +331,16 @@ pub struct PhfOrderedMap<T> {
 
 impl<T: fmt::Show> fmt::Show for PhfOrderedMap<T> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(fmt.buf.write_char('{'));
+        try!(write!(fmt, r"\{"));
         let mut first = true;
         for (k, v) in self.entries() {
             if !first {
-                try!(fmt.buf.write_str(", "));
+                try!(write!(fmt, ", "));
             }
-            try!(write!(fmt.buf, "{}: {}", k, v))
+            try!(write!(fmt, "{}: {}", k, v))
             first = false;
         }
-        fmt.buf.write_char('}')
+        write!(fmt, r"\}")
     }
 }
 
@@ -540,16 +540,16 @@ pub struct PhfOrderedSet {
 
 impl fmt::Show for PhfOrderedSet {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(fmt.buf.write_char('{'));
+        try!(write!(fmt, r"\{"));
         let mut first = true;
         for entry in self.iter() {
             if !first {
-                try!(fmt.buf.write_str(", "));
+                try!(write!(fmt, ", "));
             }
-            try!(fmt.buf.write_str(entry));
+            try!(write!(fmt, "{}", entry));
             first = false;
         }
-        fmt.buf.write_char('}')
+        write!(fmt, r"\}")
     }
 }
 

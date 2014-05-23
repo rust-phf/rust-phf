@@ -19,8 +19,8 @@ Example
 #![feature(phase)]
 
 #[phase(syntax)]
-extern mod phf_mac;
-extern mod phf;
+extern crate phf_mac;
+extern crate phf;
 
 use phf::PhfMap;
 

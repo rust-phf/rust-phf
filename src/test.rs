@@ -120,7 +120,7 @@ mod map {
 
 mod set {
     use collections::HashSet;
-    use phf::{PhfMap, PhfSet};
+    use phf::PhfSet;
 
     #[allow(dead_code)]
     static TRAILING_COMMA: PhfSet = phf_set! {
@@ -217,7 +217,7 @@ mod ordered_map {
 }
 
 mod ordered_set {
-    use phf::{PhfOrderedMap, PhfOrderedSet};
+    use phf::PhfOrderedSet;
 
     #[allow(dead_code)]
     static TRAILING_COMMA: PhfOrderedSet = phf_ordered_set! {
@@ -254,4 +254,3 @@ mod ordered_set {
         assert_eq!(vec, vec!("hello", "there", "world"));
     }
 }
-

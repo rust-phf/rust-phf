@@ -364,7 +364,7 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
 
     let k1 = state.k1;
     let k2 = state.k2;
-    MacExpr::new(quote_expr!(cx, PhfMap {
+    MacExpr::new(quote_expr!(cx, ::phf::PhfMap {
         k1: $k1,
         k2: $k2,
         disps: &'static $disps,
@@ -375,7 +375,7 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
 fn create_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
               -> Box<MacResult> {
     let map = create_map(cx, sp, entries, state).make_expr().unwrap();
-    MacExpr::new(quote_expr!(cx, PhfSet { map: $map }))
+    MacExpr::new(quote_expr!(cx, ::phf::PhfSet { map: $map }))
 }
 
 fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
@@ -395,7 +395,7 @@ fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
 
     let k1 = state.k1;
     let k2 = state.k2;
-    MacExpr::new(quote_expr!(cx, PhfOrderedMap {
+    MacExpr::new(quote_expr!(cx, ::phf::PhfOrderedMap {
         k1: $k1,
         k2: $k2,
         disps: &'static $disps,
@@ -407,7 +407,7 @@ fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
 fn create_ordered_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
                       state: HashState) -> Box<MacResult> {
     let map = create_ordered_map(cx, sp, entries, state).make_expr().unwrap();
-    MacExpr::new(quote_expr!(cx, PhfOrderedSet { map: $map }))
+    MacExpr::new(quote_expr!(cx, ::phf::PhfOrderedSet { map: $map }))
 }
 
 fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {

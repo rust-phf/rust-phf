@@ -22,7 +22,7 @@ use std::slice;
 ///
 /// use phf::PhfMap;
 ///
-/// static my_map: PhfMap<int> = phf_map! {
+/// static MY_MAP: PhfMap<int> = phf_map! {
 ///    "hello" => 10,
 ///    "world" => 11,
 /// };
@@ -195,7 +195,7 @@ impl<'a, T> Iterator<&'a T> for PhfMapValues<'a, T> {
 ///
 /// use phf::PhfSet;
 ///
-/// static my_map: PhfSet = phf_set! {
+/// static MY_SET: PhfSet = phf_set! {
 ///    "hello",
 ///    "world",
 /// };
@@ -303,7 +303,7 @@ impl<'a> Iterator<&'static str> for PhfSetValues<'a> {
 ///
 /// use phf::PhfOrderedMap;
 ///
-/// static my_map: PhfOrderedMap<int> = phf_ordered_map! {
+/// static MY_MAP: PhfOrderedMap<int> = phf_ordered_map! {
 ///    "hello" => 10,
 ///    "world" => 11,
 /// };
@@ -520,7 +520,7 @@ impl<'a, T> ExactSize<&'a T> for PhfOrderedMapValues<'a, T> {}
 ///
 /// use phf::PhfOrderedSet;
 ///
-/// static my_map: PhfOrderedSet = phf_ordered_set! {
+/// static MY_SET: PhfOrderedSet = phf_ordered_set! {
 ///    "hello",
 ///    "world",
 /// };

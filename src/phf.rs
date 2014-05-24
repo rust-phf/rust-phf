@@ -193,7 +193,7 @@ impl<'a, T> Iterator<&'a T> for PhfMapValues<'a, T> {
 /// #[phase(syntax)]
 /// extern crate phf_mac;
 ///
-/// use phf::{PhfMap, PhfSet};
+/// use phf::PhfSet;
 ///
 /// static my_map: PhfSet = phf_set! {
 ///    "hello",
@@ -518,7 +518,7 @@ impl<'a, T> ExactSize<&'a T> for PhfOrderedMapValues<'a, T> {}
 /// #[phase(syntax)]
 /// extern crate phf_mac;
 ///
-/// use phf::{PhfOrderedSet, PhfOrderedMap};
+/// use phf::PhfOrderedSet;
 ///
 /// static my_map: PhfOrderedSet = phf_ordered_set! {
 ///    "hello",

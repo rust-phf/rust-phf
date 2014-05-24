@@ -162,7 +162,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     if entries.len() > phf::MAX_SIZE {
         cx.span_err(parser.span,
                     format!("maps with more than {} entries are not supported",
-                            phf::MAX_SIZE));
+                            phf::MAX_SIZE).as_slice());
         return None;
     }
 
@@ -202,7 +202,7 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     if entries.len() > phf::MAX_SIZE {
         cx.span_err(parser.span,
                     format!("maps with more than {} entries are not supported",
-                            phf::MAX_SIZE));
+                            phf::MAX_SIZE).as_slice());
         return None;
     }
 
@@ -239,7 +239,7 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
                                       |_, &(orig, ref mut first)| {
             if *first {
                 cx.span_err(sp, format!("duplicate key \"{}\"",
-                                        entry.key_str));
+                                        entry.key_str).as_slice());
                 cx.span_note(orig.key.span, "one occurrence here");
                 *first = false;
             }
@@ -266,7 +266,8 @@ fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
     }
     let time = time::precise_time_s() - start;
     if os::getenv("PHF_STATS").is_some() {
-        cx.span_note(sp, format!("PHF generation took {} seconds", time));
+        cx.span_note(sp, format!("PHF generation took {} seconds", time)
+                            .as_slice());
     }
 
     state

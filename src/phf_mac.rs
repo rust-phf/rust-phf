@@ -234,17 +234,21 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
     let mut dups = false;
     let mut strings = HashMap::new();
     for entry in entries.iter() {
-        strings.insert_or_update_with(entry.key_str.clone(), (entry, true),
-                                      |_, &(orig, ref mut first)| {
-            if *first {
-                cx.span_err(sp, format!("duplicate key \"{}\"",
-                                        entry.key_str).as_slice());
-                cx.span_note(orig.key.span, "one occurrence here");
-                *first = false;
-            }
-            cx.span_note(entry.key.span, "one occurrence here");
-            dups = true;
-        });
+        let spans = strings.find_or_insert(entry.key_str.clone(), vec![]);
+        spans.push(entry.key.span);
+    }
+
+    for (key, spans) in strings.iter() {
+        if spans.len() == 1 {
+            continue;
+        }
+
+        dups = true;
+        cx.span_err(sp,
+                format!("duplicate key `{}`", key).as_slice());
+        for span in spans.iter() {
+            cx.span_note(*span, "one occurrence here");
+        }
     }
 
     dups

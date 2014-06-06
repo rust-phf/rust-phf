@@ -6,13 +6,12 @@
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
 #![feature(managed_boxes, macro_registrar, quote)]
 
-extern crate collections;
 extern crate rand;
 extern crate syntax;
 extern crate time;
 extern crate phf;
 
-use collections::HashMap;
+use std::collections::HashMap;
 use std::os;
 use syntax::ast;
 use syntax::ast::{Name, TokenTree, LitStr, Expr, ExprVec, ExprLit};

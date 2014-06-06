@@ -1,12 +1,11 @@
 #![feature(phase)]
 
-extern crate collections;
 #[phase(syntax)]
 extern crate phf_mac;
 extern crate phf;
 
 mod map {
-    use collections::{HashMap, HashSet};
+    use std::collections::{HashMap, HashSet};
     use phf::PhfMap;
 
     #[allow(dead_code)]
@@ -119,7 +118,7 @@ mod map {
 }
 
 mod set {
-    use collections::HashSet;
+    use std::collections::HashSet;
     use phf::PhfSet;
 
     #[allow(dead_code)]

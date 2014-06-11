@@ -4,49 +4,39 @@
 #![crate_id="github.com/sfackler/rust-phf/phf_mac"]
 #![crate_type="dylib"]
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
-#![feature(managed_boxes, macro_registrar, quote)]
+#![feature(managed_boxes, plugin_registrar, quote)]
 
 extern crate rand;
 extern crate syntax;
 extern crate time;
 extern crate phf;
+extern crate rustc;
 
 use std::collections::HashMap;
 use std::os;
 use syntax::ast;
-use syntax::ast::{Name, TokenTree, LitStr, Expr, ExprVec, ExprLit};
+use syntax::ast::{TokenTree, LitStr, Expr, ExprVec, ExprLit};
 use syntax::codemap::Span;
-use syntax::ext::base::{SyntaxExtension,
-                        DummyResult,
+use syntax::ext::base::{DummyResult,
                         ExtCtxt,
                         MacResult,
-                        MacExpr,
-                        NormalTT,
-                        BasicMacroExpander};
+                        MacExpr};
 use syntax::parse;
-use syntax::parse::token;
 use syntax::parse::token::{InternedString, COMMA, EOF, FAT_ARROW};
 use rand::{Rng, SeedableRng, XorShiftRng};
+use rustc::plugin::Registry;
 
 static DEFAULT_LAMBDA: uint = 5;
 
 static FIXED_SEED: [u32, ..4] = [3141592653, 589793238, 462643383, 2795028841];
 
-#[macro_registrar]
+#[plugin_registrar]
 #[doc(hidden)]
-pub fn macro_registrar(register: |Name, SyntaxExtension|) {
-    let reg = |name, fn_| {
-        register(token::intern(name),
-                 NormalTT(box BasicMacroExpander {
-                     expander: fn_,
-                     span: None
-                 },
-                 None));
-    };
-    reg("phf_map", expand_phf_map);
-    reg("phf_set", expand_phf_set);
-    reg("phf_ordered_map", expand_phf_ordered_map);
-    reg("phf_ordered_set", expand_phf_ordered_set);
+pub fn macro_registrar(reg: &mut Registry) {
+    reg.register_macro("phf_map", expand_phf_map);
+    reg.register_macro("phf_set", expand_phf_set);
+    reg.register_macro("phf_ordered_map", expand_phf_ordered_map);
+    reg.register_macro("phf_ordered_set", expand_phf_ordered_set);
 }
 
 struct Entry {

@@ -1,6 +1,6 @@
 #![feature(phase)]
 
-#[phase(syntax)]
+#[phase(plugin)]
 extern crate phf_mac;
 extern crate phf;
 

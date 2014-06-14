@@ -83,7 +83,7 @@ impl<'a, T> Map<&'a str, T> for PhfMap<T> {
 
 impl<T: fmt::Show> fmt::Show for PhfMap<T> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(fmt, r"\{"));
+        try!(write!(fmt, "{{"));
         let mut first = true;
         for (k, v) in self.entries() {
             if !first {
@@ -92,7 +92,7 @@ impl<T: fmt::Show> fmt::Show for PhfMap<T> {
             try!(write!(fmt, "{}: {}", k, v))
             first = false;
         }
-        write!(fmt, r"\}")
+        write!(fmt, "}}")
     }
 }
 
@@ -216,7 +216,7 @@ pub struct PhfSet {
 
 impl fmt::Show for PhfSet {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(fmt, r"\{"));
+        try!(write!(fmt, "{{"));
         let mut first = true;
         for entry in self.iter() {
             if !first {
@@ -225,7 +225,7 @@ impl fmt::Show for PhfSet {
             try!(write!(fmt, "{}", entry));
             first = false;
         }
-        write!(fmt, r"\}")
+        write!(fmt, "}}")
     }
 }
 
@@ -332,7 +332,7 @@ pub struct PhfOrderedMap<T> {
 
 impl<T: fmt::Show> fmt::Show for PhfOrderedMap<T> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(fmt, r"\{"));
+        try!(write!(fmt, "{{"));
         let mut first = true;
         for (k, v) in self.entries() {
             if !first {
@@ -341,7 +341,7 @@ impl<T: fmt::Show> fmt::Show for PhfOrderedMap<T> {
             try!(write!(fmt, "{}: {}", k, v))
             first = false;
         }
-        write!(fmt, r"\}")
+        write!(fmt, "}}")
     }
 }
 
@@ -541,7 +541,7 @@ pub struct PhfOrderedSet {
 
 impl fmt::Show for PhfOrderedSet {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(fmt, r"\{"));
+        try!(write!(fmt, "{{"));
         let mut first = true;
         for entry in self.iter() {
             if !first {
@@ -550,7 +550,7 @@ impl fmt::Show for PhfOrderedSet {
             try!(write!(fmt, "{}", entry));
             first = false;
         }
-        write!(fmt, r"\}")
+        write!(fmt, "}}")
     }
 }
 

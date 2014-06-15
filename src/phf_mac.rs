@@ -4,7 +4,7 @@
 #![crate_id="github.com/sfackler/rust-phf/phf_mac"]
 #![crate_type="dylib"]
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
-#![feature(managed_boxes, plugin_registrar, quote)]
+#![feature(plugin_registrar, quote)]
 
 extern crate rand;
 extern crate syntax;
@@ -13,6 +13,7 @@ extern crate phf;
 extern crate rustc;
 
 use std::collections::HashMap;
+use std::gc::{Gc, GC};
 use std::os;
 use syntax::ast;
 use syntax::ast::{TokenTree, LitStr, Expr, ExprVec, ExprLit};
@@ -41,8 +42,8 @@ pub fn macro_registrar(reg: &mut Registry) {
 
 struct Entry {
     key_str: InternedString,
-    key: @Expr,
-    value: @Expr
+    key: Gc<Expr>,
+    value: Gc<Expr>
 }
 
 struct HashState {
@@ -403,8 +404,8 @@ fn create_ordered_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
     MacExpr::new(quote_expr!(cx, ::phf::PhfOrderedSet { map: $map }))
 }
 
-fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {
-    @Expr {
+fn create_slice_expr(vec: Vec<Gc<Expr>>, sp: Span) -> Gc<Expr> {
+    box (GC) Expr {
         id: ast::DUMMY_NODE_ID,
         node: ExprVec(vec),
         span: sp

@@ -5,7 +5,6 @@ INSTALL_DIR := %PREFIX%
 
 PHF_LIB := src/phf.rs
 PHF := $(foreach file,$(shell $(RUSTC) --crate-file-name $(PHF_LIB)),$(BUILDDIR)/$(file))
-PHF_STAMP := $(BUILDDIR)/phf.stamp
 PHF_MAC_LIB := src/phf_mac.rs
 PHF_MAC := $(BUILDDIR)/$(shell $(RUSTC) --crate-file-name $(PHF_MAC_LIB))
 PHF_TEST_MAIN := src/test.rs
@@ -20,11 +19,10 @@ all: $(PHF) $(PHF_MAC)
 $(BUILDDIR):
 	mkdir -p $@
 
-$(PHF): $(PHF_STAMP)
+.NOTPARALLEL: $(PHF)
 
-$(PHF_STAMP): $(PHF_LIB) | $(BUILDDIR)
+$(PHF): $(PHF_LIB) | $(BUILDDIR)
 	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf.d --out-dir $(@D) $<
-	touch $(PHF_STAMP)
 
 $(PHF_MAC): $(PHF_MAC_LIB) $(PHF) | $(BUILDDIR)
 	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf_mac.d --out-dir $(@D) \

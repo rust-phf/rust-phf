@@ -1,0 +1,15 @@
+[package]
+
+name = "phf_mac"
+authors = ["Steven Fackler <sfackler@gmail.com>"]
+version = "0.0.1"
+
+[[lib]]
+
+name = "phf_mac"
+path = "src/phf_mac.rs"
+crate_type = ["dylib"]
+
+[dependencies.phf]
+
+path = "phf_cargo_hack"

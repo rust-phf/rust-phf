@@ -1,0 +1,10 @@
+[package]
+
+name = "phf"
+authors = ["Steven Fackler <sfackler@gmail.com>"]
+version = "0.0.1"
+
+[[lib]]
+
+name = "phf"
+path = "../src/phf.rs"

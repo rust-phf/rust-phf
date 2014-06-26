@@ -2,7 +2,7 @@
 
 name = "phf_mac"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.0.1"
+version = "0.0.0"
 
 [[lib]]
 

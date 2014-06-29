@@ -1,6 +1,6 @@
 //! Compile time optimized maps
 #![crate_id="github.com/sfackler/rust-phf/phf"]
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
+#![doc(html_root_url="http://www.rust-ci.org/sfackler")]
 #![crate_type="rlib"]
 #![crate_type="dylib"]
 #![warn(missing_doc)]

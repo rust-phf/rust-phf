@@ -10,7 +10,7 @@ It currently uses the
 [CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) and can generate
 a 10,000 entry map in roughly .25 seconds.
 
-Documentation is available at http://sfackler.github.io/rust-phf/doc/phf/index.html.
+Documentation is available at http://www.rust-ci.org/sfackler/rust-phf/doc/phf/.
 
 Example
 =======

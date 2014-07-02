@@ -5,7 +5,7 @@ extern crate phf_mac;
 extern crate phf;
 
 mod map {
-    use std::collections::{HashMap, HashSet};
+    use std::collections::hashmap::{HashMap, HashSet};
     use phf::PhfMap;
 
     #[allow(dead_code)]

@@ -361,8 +361,8 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
     MacExpr::new(quote_expr!(cx, ::phf::PhfMap {
         k1: $k1,
         k2: $k2,
-        disps: &'static $disps,
-        entries: &'static $entries,
+        disps: &$disps,
+        entries: &$entries,
     }))
 }
 
@@ -392,9 +392,9 @@ fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
     MacExpr::new(quote_expr!(cx, ::phf::PhfOrderedMap {
         k1: $k1,
         k2: $k2,
-        disps: &'static $disps,
-        idxs: &'static $idxs,
-        entries: &'static $entries,
+        disps: &$disps,
+        idxs: &$idxs,
+        entries: &$entries,
     }))
 }
 

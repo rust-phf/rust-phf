@@ -1,5 +1,5 @@
 //! Compile time optimized maps
-#![crate_id="github.com/sfackler/rust-phf/phf"]
+#![crate_name="phf"]
 #![doc(html_root_url="http://www.rust-ci.org/sfackler")]
 #![crate_type="rlib"]
 #![crate_type="dylib"]

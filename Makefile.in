@@ -4,11 +4,11 @@ RUSTFLAGS := -O --cfg ndebug
 INSTALL_DIR := %PREFIX%
 
 PHF_LIB := phf/src/lib.rs
-PHF := $(foreach file,$(shell $(RUSTC) --crate-file-name $(PHF_LIB)),$(BUILDDIR)/$(file))
+PHF := $(foreach file,$(shell $(RUSTC) --print-file-name $(PHF_LIB)),$(BUILDDIR)/$(file))
 PHF_MAC_LIB := phf_mac/src/lib.rs
-PHF_MAC := $(BUILDDIR)/$(shell $(RUSTC) --crate-file-name $(PHF_MAC_LIB))
+PHF_MAC := $(BUILDDIR)/$(shell $(RUSTC) --print-file-name $(PHF_MAC_LIB))
 PHF_TEST_MAIN := phf/src/test.rs
-PHF_TEST := $(BUILDDIR)/$(shell $(RUSTC) --crate-file-name $(PHF_TEST_MAIN))
+PHF_TEST := $(BUILDDIR)/$(shell $(RUSTC) --print-file-name $(PHF_TEST_MAIN))
 
 all: $(PHF) $(PHF_MAC)
 

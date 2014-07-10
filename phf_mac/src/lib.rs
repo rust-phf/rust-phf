@@ -257,7 +257,7 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
 
         dups = true;
         cx.span_err(sp, format!("duplicate key {}",
-                                pprust::expr_to_str(&**key)).as_slice());
+                                pprust::expr_to_string(&**key)).as_slice());
         for span in spans.iter() {
             cx.span_note(*span, "one occurrence here");
         }

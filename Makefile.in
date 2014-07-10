@@ -2,6 +2,8 @@ RUSTC := rustc
 BUILDDIR := build
 RUSTFLAGS := -O --cfg ndebug
 INSTALL_DIR := %PREFIX%
+LD_LIBRARY_PATH := $(LD_LIBRARY_PATH):build
+ENV := LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) DYLD_LIBRARY_PATH=$(LD_LIBRARY_PATH)
 
 PHF_LIB := phf/src/lib.rs
 PHF := $(foreach file,$(shell $(RUSTC) --print-file-name $(PHF_LIB)),$(BUILDDIR)/$(file))
@@ -22,14 +24,14 @@ $(BUILDDIR):
 .NOTPARALLEL: $(PHF)
 
 $(PHF): $(PHF_LIB) | $(BUILDDIR)
-	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf.d --out-dir $(@D) $<
+	$(ENV) $(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf.d --out-dir $(@D) $<
 
 $(PHF_MAC): $(PHF_MAC_LIB) $(PHF) | $(BUILDDIR)
-	$(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf_mac.d --out-dir $(@D) \
+	$(ENV) $(RUSTC) $(RUSTFLAGS) --dep-info $(BUILDDIR)/phf_mac.d --out-dir $(@D) \
 		-L $(BUILDDIR) $<
 
 $(PHF_TEST): $(PHF_TEST_MAIN) $(PHF) $(PHF_MAC) | $(BUILDDIR)
-	$(RUSTC) --test $(RUSTFLAGS) -L $(BUILDDIR) \
+	$(ENV) $(RUSTC) --test $(RUSTFLAGS) -L $(BUILDDIR) \
 		--dep-info $(BUILDDIR)/phf_test.d --out-dir $(@D) $<
 
 doc-test: $(PHF) $(PHF_MAC)
@@ -39,8 +41,8 @@ check: $(PHF_TEST) doc-test
 	$(PHF_TEST)
 
 doc: $(PHF)
-	rustdoc $(PHF_LIB)
-	rustdoc -L $(BUILDDIR) $(PHF_MAC_LIB)
+	$(ENV) rustdoc $(PHF_LIB)
+	$(ENV) rustdoc -L $(BUILDDIR) $(PHF_MAC_LIB)
 
 install: $(PHF) $(PHF_MAC)
 	install $(PHF) $(INSTALL_DIR)

@@ -229,13 +229,13 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
                 LitStr(ref s, _) => Some(KeyStr(s.clone())),
                 LitBinary(ref b) => Some(KeyBinary(b.clone())),
                 _ => {
-                    cx.span_err(e.span, "expected string literal");
+                    cx.span_err(e.span, "unsupported literal type");
                     None
                 }
             }
         }
         _ => {
-            cx.span_err(e.span, "expected string literal");
+            cx.span_err(e.span, "expected a literal");
             None
         }
     }

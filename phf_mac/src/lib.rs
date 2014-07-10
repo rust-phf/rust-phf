@@ -13,13 +13,13 @@ extern crate phf;
 extern crate rustc;
 
 use std::collections::HashMap;
-use std::fmt;
 use std::gc::{Gc, GC};
 use std::hash;
 use std::hash::{Hash};
 use std::os;
+use std::rc::Rc;
 use syntax::ast;
-use syntax::ast::{TokenTree, LitStr, Expr, ExprVec, ExprLit};
+use syntax::ast::{TokenTree, LitStr, LitBinary, Expr, ExprVec, ExprLit};
 use syntax::codemap::Span;
 use syntax::ext::base::{DummyResult,
                         ExtCtxt,
@@ -27,6 +27,7 @@ use syntax::ext::base::{DummyResult,
                         MacExpr};
 use syntax::parse;
 use syntax::parse::token::{InternedString, COMMA, EOF, FAT_ARROW};
+use syntax::print::pprust;
 use rand::{Rng, SeedableRng, XorShiftRng};
 use rustc::plugin::Registry;
 
@@ -45,21 +46,15 @@ pub fn macro_registrar(reg: &mut Registry) {
 
 #[deriving(PartialEq, Eq, Clone)]
 enum Key {
-    StaticStr(InternedString),
+    KeyStr(InternedString),
+    KeyBinary(Rc<Vec<u8>>),
 }
 
 impl<S: hash::Writer> Hash<S> for Key {
     fn hash(&self, state: &mut S) {
         match *self {
-            StaticStr(ref s) => s.get().hash(state),
-        }
-    }
-}
-
-impl fmt::Show for Key {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            StaticStr(ref s) => s.fmt(fmt),
+            KeyStr(ref s) => s.get().hash(state),
+            KeyBinary(ref b) => b.hash(state),
         }
     }
 }
@@ -151,7 +146,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
         let key = cx.expand_expr(parser.parse_expr());
         let key_contents = parse_key(cx, key).unwrap_or_else(|| {
             bad = true;
-            StaticStr(InternedString::new(""))
+            KeyStr(InternedString::new(""))
         });
 
         if !parser.eat(&FAT_ARROW) {
@@ -198,7 +193,7 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
         let key = cx.expand_expr(parser.parse_expr());
         let key_contents = parse_key(cx, key).unwrap_or_else(|| {
             bad = true;
-            StaticStr(InternedString::new(""))
+            KeyStr(InternedString::new(""))
         });
 
         entries.push(Entry {
@@ -231,7 +226,8 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
     match e.node {
         ExprLit(lit) => {
             match lit.node {
-                LitStr(ref s, _) => Some(StaticStr(s.clone())),
+                LitStr(ref s, _) => Some(KeyStr(s.clone())),
+                LitBinary(ref b) => Some(KeyBinary(b.clone())),
                 _ => {
                     cx.span_err(e.span, "expected string literal");
                     None
@@ -249,18 +245,19 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
     let mut dups = false;
     let mut strings = HashMap::new();
     for entry in entries.iter() {
-        let spans = strings.find_or_insert(entry.key_contents.clone(), vec![]);
+        let &(ref mut spans, _) = strings.find_or_insert(&entry.key_contents,
+                                                         (vec![], &entry.key));
         spans.push(entry.key.span);
     }
 
-    for (key, spans) in strings.iter() {
+    for &(ref spans, key) in strings.values() {
         if spans.len() == 1 {
             continue;
         }
 
         dups = true;
-        cx.span_err(sp,
-                format!("duplicate key `{}`", key).as_slice());
+        cx.span_err(sp, format!("duplicate key {}",
+                                pprust::expr_to_str(&**key)).as_slice());
         for span in spans.iter() {
             cx.span_note(*span, "one occurrence here");
         }
@@ -333,7 +330,7 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
     let mut try_map = HashMap::new();
     'buckets: for bucket in buckets.iter() {
         for d1 in range(0, table_len) {
-            'disps_l: for d2 in range(0, table_len) {
+            'disps: for d2 in range(0, table_len) {
                 try_map.clear();
                 for &key in bucket.keys.iter() {
                     let idx = phf::displace(hashes.get(key).f1,
@@ -341,7 +338,7 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
                                             d1,
                                             d2) % table_len;
                     if map.get(idx).is_some() || try_map.find(&idx).is_some() {
-                        continue 'disps_l;
+                        continue 'disps;
                     }
                     try_map.insert(idx, key);
                 }

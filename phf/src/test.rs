@@ -114,6 +114,16 @@ mod map {
         );
         assert_eq!(Some(&0), map.find_equiv(&"a".to_string().as_slice()));
     }
+
+    #[test]
+    fn test_binary_keys() {
+        static map: PhfMap<&'static [u8], int> = phf_map! {
+            b"hello" => 0,
+            b"world" => 1
+        };
+        assert_eq!(Some(&0), map.find(&b"hello"));
+        assert_eq!(Some(&1), map.find(&b"world"));
+    }
 }
 
 mod set {

@@ -6,32 +6,12 @@
 #![warn(missing_doc)]
 
 use std::fmt;
-use std::hash::{Hash, Hasher};
-use std::hash::sip::SipHasher;
+use std::hash::Hash;
 use std::slice;
 use std::collections::Collection;
 
-static LOG_MAX_SIZE: uint = 21;
-
-#[doc(hidden)]
-pub static MAX_SIZE: uint = 1 << LOG_MAX_SIZE;
-
-#[doc(hidden)]
-#[inline]
-pub fn hash<T: Hash>(s: &T, k1: u64, k2: u64) -> (uint, uint, uint) {
-    let hash = SipHasher::new_with_keys(k1, k2).hash(s);
-    let mask = (MAX_SIZE - 1) as u64;
-
-    ((hash & mask) as uint,
-     ((hash >> LOG_MAX_SIZE) & mask) as uint,
-     ((hash >> (2 * LOG_MAX_SIZE)) & mask) as uint)
-}
-
-#[doc(hidden)]
-#[inline]
-pub fn displace(f1: uint, f2: uint, d1: uint, d2: uint) -> uint {
-    d2 + f1 * d1 + f2
-}
+#[path="../../phf_shared/phf_shared.rs"]
+mod phf_shared;
 
 /// An immutable map constructed at compile time.
 ///
@@ -102,9 +82,9 @@ impl<K: fmt::Show, V: fmt::Show> fmt::Show for PhfMap<K, V> {
 impl<K: Hash+Eq, V> PhfMap<K, V> {
     fn get_entry<'a, T: Hash>(&'a self, key: &T, check: |&K| -> bool)
                               -> Option<&'a (K, V)> {
-        let (g, f1, f2) = hash(key, self.k1, self.k2);
+        let (g, f1, f2) = phf_shared::hash(key, self.k1, self.k2);
         let (d1, d2) = self.disps[g % self.disps.len()];
-        let entry @ &(ref s, _) = &self.entries[displace(f1, f2, d1, d2) %
+        let entry @ &(ref s, _) = &self.entries[phf_shared::displace(f1, f2, d1, d2) %
                                                 self.entries.len()];
         if check(s) {
             Some(entry)
@@ -389,9 +369,9 @@ impl<'a, T> Map<&'a str, T> for PhfOrderedMap<T> {
 
 impl<T> PhfOrderedMap<T> {
     fn find_entry(&self, key: & &str) -> Option<&'static (&'static str, T)> {
-        let (g, f1, f2) = hash(key, self.k1, self.k2);
+        let (g, f1, f2) = phf_shared::hash(key, self.k1, self.k2);
         let (d1, d2) = self.disps[g % self.disps.len()];
-        let idx = self.idxs[displace(f1, f2, d1, d2) % self.idxs.len()];
+        let idx = self.idxs[phf_shared::displace(f1, f2, d1, d2) % self.idxs.len()];
         let entry @ &(s, _) = &self.entries[idx];
 
         if s == *key {

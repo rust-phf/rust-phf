@@ -4,7 +4,7 @@
 #![crate_name="phf_mac"]
 #![crate_type="dylib"]
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
-#![feature(plugin_registrar, quote)]
+#![feature(plugin_registrar, quote, default_type_params)]
 
 extern crate rand;
 extern crate syntax;
@@ -13,7 +13,10 @@ extern crate phf;
 extern crate rustc;
 
 use std::collections::HashMap;
+use std::fmt;
 use std::gc::{Gc, GC};
+use std::hash;
+use std::hash::{Hash};
 use std::os;
 use syntax::ast;
 use syntax::ast::{TokenTree, LitStr, Expr, ExprVec, ExprLit};
@@ -40,8 +43,29 @@ pub fn macro_registrar(reg: &mut Registry) {
     reg.register_macro("phf_ordered_set", expand_phf_ordered_set);
 }
 
+#[deriving(PartialEq, Eq, Clone)]
+enum Key {
+    StaticStr(InternedString),
+}
+
+impl<S: hash::Writer> Hash<S> for Key {
+    fn hash(&self, state: &mut S) {
+        match *self {
+            StaticStr(ref s) => s.get().hash(state),
+        }
+    }
+}
+
+impl fmt::Show for Key {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            StaticStr(ref s) => s.fmt(fmt),
+        }
+    }
+}
+
 struct Entry {
-    key_str: InternedString,
+    key_contents: Key,
     key: Gc<Expr>,
     value: Gc<Expr>
 }
@@ -125,9 +149,9 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     let mut bad = false;
     while parser.token != EOF {
         let key = cx.expand_expr(parser.parse_expr());
-        let key_str = parse_str(cx, key).unwrap_or_else(|| {
+        let key_contents = parse_key(cx, key).unwrap_or_else(|| {
             bad = true;
-            InternedString::new("")
+            StaticStr(InternedString::new(""))
         });
 
         if !parser.eat(&FAT_ARROW) {
@@ -138,7 +162,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
         let value = parser.parse_expr();
 
         entries.push(Entry {
-            key_str: key_str,
+            key_contents: key_contents,
             key: key,
             value: value
         });
@@ -172,13 +196,13 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     let mut bad = false;
     while parser.token != EOF {
         let key = cx.expand_expr(parser.parse_expr());
-        let key_str = parse_str(cx, key).unwrap_or_else(|| {
+        let key_contents = parse_key(cx, key).unwrap_or_else(|| {
             bad = true;
-            InternedString::new("")
+            StaticStr(InternedString::new(""))
         });
 
         entries.push(Entry {
-            key_str: key_str,
+            key_contents: key_contents,
             key: key,
             value: value,
         });
@@ -203,11 +227,11 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     Some(entries)
 }
 
-fn parse_str(cx: &mut ExtCtxt, e: &Expr) -> Option<InternedString> {
+fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
     match e.node {
         ExprLit(lit) => {
             match lit.node {
-                LitStr(ref s, _) => Some(s.clone()),
+                LitStr(ref s, _) => Some(StaticStr(s.clone())),
                 _ => {
                     cx.span_err(e.span, "expected string literal");
                     None
@@ -225,7 +249,7 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
     let mut dups = false;
     let mut strings = HashMap::new();
     for entry in entries.iter() {
-        let spans = strings.find_or_insert(entry.key_str.clone(), vec![]);
+        let spans = strings.find_or_insert(entry.key_contents.clone(), vec![]);
         spans.push(entry.key.span);
     }
 
@@ -284,7 +308,7 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
     let k2 = rng.gen();
 
     let hashes: Vec<Hashes> = entries.iter().map(|entry| {
-        let (g, f1, f2) = phf::hash(&entry.key_str.get(), k1, k2);
+        let (g, f1, f2) = phf::hash(&entry.key_contents, k1, k2);
         Hashes {
             g: g,
             f1: f1,

@@ -334,7 +334,7 @@ impl<'a, T> Iterator<&'a T> for PhfSetValues<'a, T> {
 ///
 /// use phf::PhfOrderedMap;
 ///
-/// static MY_MAP: PhfOrderedMap<int> = phf_ordered_map! {
+/// static MY_MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map! {
 ///    "hello" => 10,
 ///    "world" => 11,
 /// };
@@ -347,7 +347,7 @@ impl<'a, T> Iterator<&'a T> for PhfSetValues<'a, T> {
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_ordered_map` macro. They are subject to change at any time and should
 /// never be accessed directly.
-pub struct PhfOrderedMap<T> {
+pub struct PhfOrderedMap<K, V> {
     #[doc(hidden)]
     pub k1: u64,
     #[doc(hidden)]
@@ -357,14 +357,14 @@ pub struct PhfOrderedMap<T> {
     #[doc(hidden)]
     pub idxs: &'static [uint],
     #[doc(hidden)]
-    pub entries: &'static [(&'static str, T)],
+    pub entries: &'static [(K, V)],
 }
 
-impl<T: fmt::Show> fmt::Show for PhfOrderedMap<T> {
+impl<K: fmt::Show, V: fmt::Show> fmt::Show for PhfOrderedMap<K, V> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));
         let mut first = true;
-        for (k, v) in self.entries() {
+        for &(ref k, ref v) in self.entries() {
             if !first {
                 try!(write!(fmt, ", "));
             }
@@ -375,26 +375,29 @@ impl<T: fmt::Show> fmt::Show for PhfOrderedMap<T> {
     }
 }
 
-impl<T> Collection for PhfOrderedMap<T> {
+impl<K, V> Collection for PhfOrderedMap<K, V> {
     fn len(&self) -> uint {
         self.entries.len()
     }
 }
 
-impl<'a, T> Map<&'a str, T> for PhfOrderedMap<T> {
-    fn find<'a>(&'a self, key: & &str) -> Option<&'a T> {
-        self.find_entry(key).map(|&(_, ref v)| v)
+impl<'a, K: Hash+Eq, V> Map<K, V> for PhfOrderedMap<K, V> {
+    fn find<'a>(&'a self, key: &K) -> Option<&'a V> {
+        self.find_entry(key).map(|e| {
+            let &(_, ref v) = e;
+            v
+        })
     }
 }
 
-impl<T> PhfOrderedMap<T> {
-    fn find_entry(&self, key: & &str) -> Option<&'static (&'static str, T)> {
+impl<K: Hash+Eq, V> PhfOrderedMap<K, V> {
+    fn find_entry<'a>(&'a self, key: &K) -> Option<&'a (K, V)> {
         let (g, f1, f2) = hash(key, self.k1, self.k2);
         let (d1, d2) = self.disps[g % self.disps.len()];
         let idx = self.idxs[displace(f1, f2, d1, d2) % self.idxs.len()];
-        let entry @ &(s, _) = &self.entries[idx];
+        let entry @ &(ref s, _) = &self.entries[idx];
 
-        if s == *key {
+        if s == key {
             Some(entry)
         } else {
             None
@@ -405,40 +408,45 @@ impl<T> PhfOrderedMap<T> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn find_key(&self, key: & &str) -> Option<&'static str> {
-        self.find_entry(key).map(|&(s, _)| s)
+    pub fn find_key<'a>(&'a self, key: &K) -> Option<&'a K> {
+        self.find_entry(key).map(|e| {
+            let &(ref k, _) = e;
+            k
+        })
     }
+}
 
+impl<K, V> PhfOrderedMap<K, V> {
     /// Returns an iterator over the key/value pairs in the map.
     ///
     /// Entries are retuned in the same order in which they were defined.
-    pub fn entries<'a>(&'a self) -> PhfOrderedMapEntries<'a, T> {
+    pub fn entries<'a>(&'a self) -> PhfOrderedMapEntries<'a, K, V> {
         PhfOrderedMapEntries { iter: self.entries.iter() }
     }
 
     /// Returns an iterator over the keys in the map.
     ///
     /// Keys are returned in the same order in which they were defined.
-    pub fn keys<'a>(&'a self) -> PhfOrderedMapKeys<'a, T> {
+    pub fn keys<'a>(&'a self) -> PhfOrderedMapKeys<'a, K, V> {
         PhfOrderedMapKeys { iter: self.entries() }
     }
 
     /// Returns an iterator over the values in the map.
     ///
     /// Values are returned in the same order in which they were defined.
-    pub fn values<'a>(&'a self) -> PhfOrderedMapValues<'a, T> {
+    pub fn values<'a>(&'a self) -> PhfOrderedMapValues<'a, K, V> {
         PhfOrderedMapValues { iter: self.entries() }
     }
 }
 
 /// An iterator over the entries in a `PhfOrderedMap`.
-pub struct PhfOrderedMapEntries<'a, T> {
-    iter: slice::Items<'a, (&'static str, T)>,
+pub struct PhfOrderedMapEntries<'a, K, V> {
+    iter: slice::Items<'a, (K, V)>,
 }
 
-impl<'a, T> Iterator<(&'static str, &'a T)> for PhfOrderedMapEntries<'a, T> {
-    fn next(&mut self) -> Option<(&'static str, &'a T)> {
-        self.iter.next().map(|&(key, ref value)| (key, value))
+impl<'a, K, V> Iterator<&'a (K, V)> for PhfOrderedMapEntries<'a, K, V> {
+    fn next(&mut self) -> Option<&'a (K, V)> {
+        self.iter.next()
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {
@@ -446,38 +454,34 @@ impl<'a, T> Iterator<(&'static str, &'a T)> for PhfOrderedMapEntries<'a, T> {
     }
 }
 
-impl<'a, T> DoubleEndedIterator<(&'static str, &'a T)>
-        for PhfOrderedMapEntries<'a, T> {
-    fn next_back(&mut self) -> Option<(&'static str, &'a T)> {
-        self.iter.next_back().map(|&(key, ref value)| (key, value))
+impl<'a, K, V> DoubleEndedIterator<&'a (K, V)>
+        for PhfOrderedMapEntries<'a, K, V> {
+    fn next_back(&mut self) -> Option<&'a (K, V)> {
+        self.iter.next_back()
     }
 }
 
-impl<'a, T> RandomAccessIterator<(&'static str, &'a T)>
-        for PhfOrderedMapEntries<'a, T> {
+impl<'a, K, V> RandomAccessIterator<&'a (K, V)>
+        for PhfOrderedMapEntries<'a, K, V> {
     fn indexable(&self) -> uint {
         self.iter.indexable()
     }
 
-    fn idx(&mut self, index: uint) -> Option<(&'static str, &'a T)> {
-        // FIXME: mozilla/rust#13167
-        self.iter.idx(index).map(|pair| {
-            let &(key, ref value) = pair;
-            (key, value)
-        })
+    fn idx(&mut self, index: uint) -> Option<&'a (K, V)> {
+        self.iter.idx(index)
     }
 }
 
-impl<'a, T> ExactSize<(&'static str, &'a T)> for PhfOrderedMapEntries<'a, T> {}
+impl<'a, K, V> ExactSize<&'a (K, V)> for PhfOrderedMapEntries<'a, K, V> {}
 
 /// An iterator over the keys in a `PhfOrderedMap`.
-pub struct PhfOrderedMapKeys<'a, T> {
-    iter: PhfOrderedMapEntries<'a, T>,
+pub struct PhfOrderedMapKeys<'a, K, V> {
+    iter: PhfOrderedMapEntries<'a, K, V>,
 }
 
-impl<'a, T> Iterator<&'static str> for PhfOrderedMapKeys<'a, T> {
-    fn next(&mut self) -> Option<&'static str> {
-        self.iter.next().map(|(key, _)| key)
+impl<'a, K, V> Iterator<&'a K> for PhfOrderedMapKeys<'a, K, V> {
+    fn next(&mut self) -> Option<&'a K> {
+        self.iter.next().map(|&(ref key, _)| key)
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {
@@ -485,32 +489,32 @@ impl<'a, T> Iterator<&'static str> for PhfOrderedMapKeys<'a, T> {
     }
 }
 
-impl<'a, T> DoubleEndedIterator<&'static str> for PhfOrderedMapKeys<'a, T> {
-    fn next_back(&mut self) -> Option<&'static str> {
-        self.iter.next_back().map(|(key, _)| key)
+impl<'a, K, V> DoubleEndedIterator<&'a K> for PhfOrderedMapKeys<'a, K, V> {
+    fn next_back(&mut self) -> Option<&'a K> {
+        self.iter.next_back().map(|&(ref key, _)| key)
     }
 }
 
-impl<'a, T> RandomAccessIterator<&'static str> for PhfOrderedMapKeys<'a, T> {
+impl<'a, K, V> RandomAccessIterator<&'a K> for PhfOrderedMapKeys<'a, K, V> {
     fn indexable(&self) -> uint {
         self.iter.indexable()
     }
 
-    fn idx(&mut self, index: uint) -> Option<&'static str> {
-        self.iter.idx(index).map(|(key, _)| key)
+    fn idx(&mut self, index: uint) -> Option<&'a K> {
+        self.iter.idx(index).map(|&(ref key, _)| key)
     }
 }
 
-impl<'a, T> ExactSize<&'static str> for PhfOrderedMapKeys<'a, T> {}
+impl<'a, K, V> ExactSize<&'a K> for PhfOrderedMapKeys<'a, K, V> {}
 
 /// An iterator over the values in a `PhfOrderedMap`.
-pub struct PhfOrderedMapValues<'a, T> {
-    iter: PhfOrderedMapEntries<'a, T>,
+pub struct PhfOrderedMapValues<'a, K, V> {
+    iter: PhfOrderedMapEntries<'a, K, V>,
 }
 
-impl<'a, T> Iterator<&'a T> for PhfOrderedMapValues<'a, T> {
-    fn next(&mut self) -> Option<&'a T> {
-        self.iter.next().map(|(_, value)| value)
+impl<'a, K, V> Iterator<&'a V> for PhfOrderedMapValues<'a, K, V> {
+    fn next(&mut self) -> Option<&'a V> {
+        self.iter.next().map(|&(_, ref value)| value)
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {
@@ -518,23 +522,23 @@ impl<'a, T> Iterator<&'a T> for PhfOrderedMapValues<'a, T> {
     }
 }
 
-impl<'a, T> DoubleEndedIterator<&'a T> for PhfOrderedMapValues<'a, T> {
-    fn next_back(&mut self) -> Option<&'a T> {
-        self.iter.next_back().map(|(_, value)| value)
+impl<'a, K, V> DoubleEndedIterator<&'a V> for PhfOrderedMapValues<'a, K, V> {
+    fn next_back(&mut self) -> Option<&'a V> {
+        self.iter.next_back().map(|&(_, ref value)| value)
     }
 }
 
-impl<'a, T> RandomAccessIterator<&'a T> for PhfOrderedMapValues<'a, T> {
+impl<'a, K, V> RandomAccessIterator<&'a V> for PhfOrderedMapValues<'a, K, V> {
     fn indexable(&self) -> uint {
         self.iter.indexable()
     }
 
-    fn idx(&mut self, index: uint) -> Option<&'a T> {
-        self.iter.idx(index).map(|(_, value)| value)
+    fn idx(&mut self, index: uint) -> Option<&'a V> {
+        self.iter.idx(index).map(|&(_, ref value)| value)
     }
 }
 
-impl<'a, T> ExactSize<&'a T> for PhfOrderedMapValues<'a, T> {}
+impl<'a, K, V> ExactSize<&'a V> for PhfOrderedMapValues<'a, K, V> {}
 
 /// An order-preserving immutable set constructed at compile time.
 ///
@@ -551,7 +555,7 @@ impl<'a, T> ExactSize<&'a T> for PhfOrderedMapValues<'a, T> {}
 ///
 /// use phf::PhfOrderedSet;
 ///
-/// static MY_SET: PhfOrderedSet = phf_ordered_set! {
+/// static MY_SET: PhfOrderedSet<&'static str> = phf_ordered_set! {
 ///    "hello",
 ///    "world",
 /// };
@@ -564,12 +568,12 @@ impl<'a, T> ExactSize<&'a T> for PhfOrderedMapValues<'a, T> {}
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_ordered_set` macro. They are subject to change at any time and should
 /// never be accessed directly.
-pub struct PhfOrderedSet {
+pub struct PhfOrderedSet<T> {
     #[doc(hidden)]
-    pub map: PhfOrderedMap<()>,
+    pub map: PhfOrderedMap<T, ()>,
 }
 
-impl fmt::Show for PhfOrderedSet {
+impl<T: fmt::Show> fmt::Show for PhfOrderedSet<T> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));
         let mut first = true;
@@ -584,57 +588,59 @@ impl fmt::Show for PhfOrderedSet {
     }
 }
 
-impl Collection for PhfOrderedSet {
+impl<T> Collection for PhfOrderedSet<T> {
     #[inline]
     fn len(&self) -> uint {
         self.map.len()
     }
 }
 
-impl<'a> Set<&'a str> for PhfOrderedSet {
+impl<T: Hash+Eq> Set<T> for PhfOrderedSet<T> {
     #[inline]
-    fn contains(&self, value: & &'a str) -> bool {
+    fn contains(&self, value: &T) -> bool {
         self.map.contains_key(value)
     }
 
     #[inline]
-    fn is_disjoint(&self, other: &PhfOrderedSet) -> bool {
-        !self.iter().any(|value| other.contains(&value))
+    fn is_disjoint(&self, other: &PhfOrderedSet<T>) -> bool {
+        !self.iter().any(|value| other.contains(value))
     }
 
     #[inline]
-    fn is_subset(&self, other: &PhfOrderedSet) -> bool {
-        self.iter().all(|value| other.contains(&value))
+    fn is_subset(&self, other: &PhfOrderedSet<T>) -> bool {
+        self.iter().all(|value| other.contains(value))
     }
 }
 
-impl PhfOrderedSet {
+impl<T: Hash+Eq> PhfOrderedSet<T> {
     /// Returns a reference to the set's internal static instance of the given
     /// key.
     ///
     /// This can be useful for interning schemes.
     #[inline]
-    pub fn find_key(&self, key: & &str) -> Option<&'static str> {
+    pub fn find_key<'a>(&'a self, key: &T) -> Option<&'a T> {
         self.map.find_key(key)
     }
+}
 
+impl<T> PhfOrderedSet<T> {
     /// Returns an iterator over the values in the set.
     ///
     /// Values are returned in the same order in which they were defined.
     #[inline]
-    pub fn iter<'a>(&'a self) -> PhfOrderedSetValues<'a> {
+    pub fn iter<'a>(&'a self) -> PhfOrderedSetValues<'a, T> {
         PhfOrderedSetValues { iter: self.map.keys() }
     }
 }
 
 /// An iterator over the values in a `PhfOrderedSet`.
-pub struct PhfOrderedSetValues<'a> {
-    iter: PhfOrderedMapKeys<'a, ()>,
+pub struct PhfOrderedSetValues<'a, T> {
+    iter: PhfOrderedMapKeys<'a, T, ()>,
 }
 
-impl<'a> Iterator<&'static str> for PhfOrderedSetValues<'a> {
+impl<'a, T> Iterator<&'a T> for PhfOrderedSetValues<'a, T> {
     #[inline]
-    fn next(&mut self) -> Option<&'static str> {
+    fn next(&mut self) -> Option<&'a T> {
         self.iter.next()
     }
 
@@ -644,23 +650,23 @@ impl<'a> Iterator<&'static str> for PhfOrderedSetValues<'a> {
     }
 }
 
-impl<'a> DoubleEndedIterator<&'static str> for PhfOrderedSetValues<'a> {
+impl<'a, T> DoubleEndedIterator<&'a T> for PhfOrderedSetValues<'a, T> {
     #[inline]
-    fn next_back(&mut self) -> Option<&'static str> {
+    fn next_back(&mut self) -> Option<&'a T> {
         self.iter.next_back()
     }
 }
 
-impl<'a> RandomAccessIterator<&'static str> for PhfOrderedSetValues<'a> {
+impl<'a, T> RandomAccessIterator<&'a T> for PhfOrderedSetValues<'a, T> {
     #[inline]
     fn indexable(&self) -> uint {
         self.iter.indexable()
     }
 
     #[inline]
-    fn idx(&mut self, index: uint) -> Option<&'static str> {
+    fn idx(&mut self, index: uint) -> Option<&'a T> {
         self.iter.idx(index)
     }
 }
 
-impl<'a> ExactSize<&'static str> for PhfOrderedSetValues<'a> {}
+impl<'a, T> ExactSize<&'a T> for PhfOrderedSetValues<'a, T> {}

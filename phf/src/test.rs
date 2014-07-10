@@ -159,18 +159,18 @@ mod ordered_map {
     use phf::PhfOrderedMap;
 
     #[allow(dead_code)]
-    static TRAILING_COMMA: PhfOrderedMap<int> = phf_ordered_map!(
+    static TRAILING_COMMA: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
         "foo" => 10,
     );
 
     #[allow(dead_code)]
-    static NO_TRAILING_COMMA: PhfOrderedMap<int> = phf_ordered_map!(
+    static NO_TRAILING_COMMA: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
         "foo" => 10
     );
 
     #[test]
     fn test_two() {
-        static map: PhfOrderedMap<int> = phf_ordered_map!(
+        static map: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
         );
@@ -182,29 +182,29 @@ mod ordered_map {
 
     #[test]
     fn test_entries() {
-        static MAP: PhfOrderedMap<int> = phf_ordered_map!(
+        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
             "baz" => 12,
         );
-        let vec = MAP.entries().map(|(k, &v)| (k, v)).collect::<Vec<_>>();
+        let vec = MAP.entries().map(|&(k, v)| (k, v)).collect::<Vec<_>>();
         assert_eq!(vec, vec!(("foo", 10i), ("bar", 11), ("baz", 12)));
     }
 
     #[test]
     fn test_keys() {
-        static MAP: PhfOrderedMap<int> = phf_ordered_map!(
+        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
             "baz" => 12,
         );
-        let vec = MAP.keys().collect::<Vec<_>>();
+        let vec = MAP.keys().map(|&e| e).collect::<Vec<_>>();
         assert_eq!(vec, vec!("foo", "bar", "baz"));
     }
 
     #[test]
     fn test_values() {
-        static MAP: PhfOrderedMap<int> = phf_ordered_map!(
+        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
             "baz" => 12,
@@ -218,18 +218,18 @@ mod ordered_set {
     use phf::PhfOrderedSet;
 
     #[allow(dead_code)]
-    static TRAILING_COMMA: PhfOrderedSet = phf_ordered_set! {
+    static TRAILING_COMMA: PhfOrderedSet<&'static str> = phf_ordered_set! {
         "foo",
     };
 
     #[allow(dead_code)]
-    static NO_TRAILING_COMMA: PhfOrderedSet = phf_ordered_set! {
+    static NO_TRAILING_COMMA: PhfOrderedSet<&'static str> = phf_ordered_set! {
         "foo"
     };
 
     #[test]
     fn test_two() {
-        static SET: PhfOrderedSet = phf_ordered_set! {
+        static SET: PhfOrderedSet<&'static str> = phf_ordered_set! {
             "hello",
             "there",
             "world",
@@ -243,12 +243,12 @@ mod ordered_set {
 
     #[test]
     fn test_iter() {
-        static SET: PhfOrderedSet = phf_ordered_set! {
+        static SET: PhfOrderedSet<&'static str> = phf_ordered_set! {
             "hello",
             "there",
             "world",
         };
-        let vec = SET.iter().collect::<Vec<_>>();
+        let vec = SET.iter().map(|&e| e).collect::<Vec<_>>();
         assert_eq!(vec, vec!("hello", "there", "world"));
     }
 }

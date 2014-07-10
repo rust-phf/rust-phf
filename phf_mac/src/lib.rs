@@ -284,7 +284,7 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
     let k2 = rng.gen();
 
     let hashes: Vec<Hashes> = entries.iter().map(|entry| {
-        let (g, f1, f2) = phf::hash(entry.key_str.get(), k1, k2);
+        let (g, f1, f2) = phf::hash(&entry.key_str.get(), k1, k2);
         Hashes {
             g: g,
             f1: f1,

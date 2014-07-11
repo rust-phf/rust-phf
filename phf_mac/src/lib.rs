@@ -19,7 +19,7 @@ use std::hash::{Hash};
 use std::os;
 use std::rc::Rc;
 use syntax::ast;
-use syntax::ast::{TokenTree, LitStr, LitBinary, Expr, ExprVec, ExprLit};
+use syntax::ast::{TokenTree, LitStr, LitBinary, LitByte, LitChar, Expr, ExprVec, ExprLit};
 use syntax::codemap::Span;
 use syntax::ext::base::{DummyResult,
                         ExtCtxt,
@@ -48,6 +48,8 @@ pub fn macro_registrar(reg: &mut Registry) {
 enum Key {
     KeyStr(InternedString),
     KeyBinary(Rc<Vec<u8>>),
+    KeyByte(u8),
+    KeyChar(char),
 }
 
 impl<S: hash::Writer> Hash<S> for Key {
@@ -55,6 +57,8 @@ impl<S: hash::Writer> Hash<S> for Key {
         match *self {
             KeyStr(ref s) => s.get().hash(state),
             KeyBinary(ref b) => b.hash(state),
+            KeyByte(b) => b.hash(state),
+            KeyChar(c) => c.hash(state),
         }
     }
 }
@@ -228,6 +232,8 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
             match lit.node {
                 LitStr(ref s, _) => Some(KeyStr(s.clone())),
                 LitBinary(ref b) => Some(KeyBinary(b.clone())),
+                LitByte(b) => Some(KeyByte(b)),
+                LitChar(c) => Some(KeyChar(c)),
                 _ => {
                     cx.span_err(e.span, "unsupported literal type");
                     None

@@ -124,6 +124,26 @@ mod map {
         assert_eq!(Some(&0), map.find(&b"hello"));
         assert_eq!(Some(&1), map.find(&b"world"));
     }
+
+    #[test]
+    fn test_byte_keys() {
+        static map: PhfMap<u8, int> = phf_map! {
+            b'a' => 0,
+            b'b' => 1,
+        };
+        assert_eq!(Some(&0), map.find(&b'a'));
+        assert_eq!(Some(&1), map.find(&b'b'));
+    }
+
+    #[test]
+    fn test_char_keys() {
+        static map: PhfMap<char, int> = phf_map! {
+            'a' => 0,
+            'b' => 1,
+        };
+        assert_eq!(Some(&0), map.find(&'a'));
+        assert_eq!(Some(&1), map.find(&'b'));
+    }
 }
 
 mod set {

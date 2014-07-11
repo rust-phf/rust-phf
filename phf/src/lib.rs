@@ -1,4 +1,7 @@
 //! Compile time optimized maps
+//!
+//! Keys can be string literals, byte string literals, byte literals, char
+//! literals, or any of the fixed-size integral types.
 #![crate_name="phf"]
 #![doc(html_root_url="http://www.rust-ci.org/sfackler")]
 #![crate_type="rlib"]
@@ -34,8 +37,6 @@ pub fn displace(f1: uint, f2: uint, d1: uint, d2: uint) -> uint {
 }
 
 /// An immutable map constructed at compile time.
-///
-/// Keys may be string, binary string, byte, or character literals.
 ///
 /// `PhfMap`s may be created with the `phf_map` macro:
 ///
@@ -216,8 +217,6 @@ impl<'a, K, V> Iterator<&'a V> for PhfMapValues<'a, K, V> {
 
 /// An immutable set constructed at compile time.
 ///
-/// Values may be string, binary string, byte, or character literals.
-///
 /// `PhfSet`s may be created with the `phf_set` macro:
 ///
 /// ```rust
@@ -324,8 +323,6 @@ impl<'a, T> Iterator<&'a T> for PhfSetValues<'a, T> {
 }
 
 /// An order-preserving immutable map constructed at compile time.
-///
-/// Keys may be string, binary string, byte, or character literals.
 ///
 /// Unlike a `PhfMap`, the order of entries in a `PhfOrderedMap` is guaranteed
 /// to be the order the entries were listed in.
@@ -547,8 +544,6 @@ impl<'a, K, V> RandomAccessIterator<&'a V> for PhfOrderedMapValues<'a, K, V> {
 impl<'a, K, V> ExactSize<&'a V> for PhfOrderedMapValues<'a, K, V> {}
 
 /// An order-preserving immutable set constructed at compile time.
-///
-/// Values may be string, binary string, byte, or character literals.
 ///
 /// Unlike a `PhfSet`, the order of entries in a `PhfOrderedSet` is guaranteed
 /// to be the order the entries were listed in.

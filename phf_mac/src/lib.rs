@@ -48,8 +48,16 @@ pub fn macro_registrar(reg: &mut Registry) {
 enum Key {
     KeyStr(InternedString),
     KeyBinary(Rc<Vec<u8>>),
-    KeyByte(u8),
     KeyChar(char),
+    KeyU8(u8),
+    KeyI8(i8),
+    KeyU16(u16),
+    KeyI16(i16),
+    KeyU32(u32),
+    KeyI32(i32),
+    KeyU64(u64),
+    KeyI64(i64),
+    KeyBool(bool),
 }
 
 impl<S: hash::Writer> Hash<S> for Key {
@@ -57,8 +65,16 @@ impl<S: hash::Writer> Hash<S> for Key {
         match *self {
             KeyStr(ref s) => s.get().hash(state),
             KeyBinary(ref b) => b.hash(state),
-            KeyByte(b) => b.hash(state),
             KeyChar(c) => c.hash(state),
+            KeyU8(b) => b.hash(state),
+            KeyI8(b) => b.hash(state),
+            KeyU16(b) => b.hash(state),
+            KeyI16(b) => b.hash(state),
+            KeyU32(b) => b.hash(state),
+            KeyI32(b) => b.hash(state),
+            KeyU64(b) => b.hash(state),
+            KeyI64(b) => b.hash(state),
+            KeyBool(b) => b.hash(state),
         }
     }
 }
@@ -230,10 +246,19 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
     match e.node {
         ExprLit(lit) => {
             match lit.node {
-                LitStr(ref s, _) => Some(KeyStr(s.clone())),
-                LitBinary(ref b) => Some(KeyBinary(b.clone())),
-                LitByte(b) => Some(KeyByte(b)),
-                LitChar(c) => Some(KeyChar(c)),
+                ast::LitStr(ref s, _) => Some(KeyStr(s.clone())),
+                ast::LitBinary(ref b) => Some(KeyBinary(b.clone())),
+                ast::LitByte(b) => Some(KeyU8(b)),
+                ast::LitChar(c) => Some(KeyChar(c)),
+                ast::LitInt(i, ast::TyI8) => Some(KeyI8(i as i8)),
+                ast::LitInt(i, ast::TyI16) => Some(KeyI16(i as i16)),
+                ast::LitInt(i, ast::TyI32) => Some(KeyI32(i as i32)),
+                ast::LitInt(i, ast::TyI64) => Some(KeyI64(i as i64)),
+                ast::LitUint(i, ast::TyU8) => Some(KeyU8(i as u8)),
+                ast::LitUint(i, ast::TyU16) => Some(KeyU16(i as u16)),
+                ast::LitUint(i, ast::TyU32) => Some(KeyU32(i as u32)),
+                ast::LitUint(i, ast::TyU64) => Some(KeyU64(i as u64)),
+                ast::LitBool(b) => Some(KeyBool(b)),
                 _ => {
                     cx.span_err(e.span, "unsupported literal type");
                     None

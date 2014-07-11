@@ -24,13 +24,13 @@ extern crate phf;
 
 use phf::PhfMap;
 
-static KEYWORDS: PhfMap<Keyword> = phf_map!(
+static KEYWORDS: PhfMap<&'static str, Keyword> = phf_map! {
     "loop" => LOOP,
     "continue" => CONTINUE,
     "break" => BREAK,
     "fn" => FN,
     "extern" => EXTERN,
-);
+};
 
 pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
     KEYWORDS.find(keyword).map(|t| t.clone())

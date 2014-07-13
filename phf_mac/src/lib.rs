@@ -31,7 +31,7 @@ use rand::{Rng, SeedableRng, XorShiftRng};
 use rustc::plugin::Registry;
 
 #[path="../../shared/mod.rs"]
-mod phf_shared;
+mod shared;
 
 static DEFAULT_LAMBDA: uint = 5;
 
@@ -190,10 +190,10 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
         }
     }
 
-    if entries.len() > phf_shared::MAX_SIZE {
+    if entries.len() > shared::MAX_SIZE {
         cx.span_err(parser.span,
                     format!("maps with more than {} entries are not supported",
-                            phf_shared::MAX_SIZE).as_slice());
+                            shared::MAX_SIZE).as_slice());
         return None;
     }
 
@@ -230,10 +230,10 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
         }
     }
 
-    if entries.len() > phf_shared::MAX_SIZE {
+    if entries.len() > shared::MAX_SIZE {
         cx.span_err(parser.span,
                     format!("maps with more than {} entries are not supported",
-                            phf_shared::MAX_SIZE).as_slice());
+                            shared::MAX_SIZE).as_slice());
         return None;
     }
 
@@ -338,7 +338,7 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
     let k2 = rng.gen();
 
     let hashes: Vec<Hashes> = entries.iter().map(|entry| {
-        let (g, f1, f2) = phf_shared::hash(&entry.key_contents, k1, k2);
+        let (g, f1, f2) = shared::hash(&entry.key_contents, k1, k2);
         Hashes {
             g: g,
             f1: f1,
@@ -366,10 +366,10 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
             'disps: for d2 in range(0, table_len) {
                 try_map.clear();
                 for &key in bucket.keys.iter() {
-                    let idx = phf_shared::displace(hashes.get(key).f1,
-                                                   hashes.get(key).f2,
-                                                   d1,
-                                                   d2) % table_len;
+                    let idx = shared::displace(hashes.get(key).f1,
+                                               hashes.get(key).f2,
+                                               d1,
+                                               d2) % table_len;
                     if map.get(idx).is_some() || try_map.find(&idx).is_some() {
                         continue 'disps;
                     }

@@ -15,7 +15,7 @@ use std::slice;
 use std::collections::Collection;
 
 #[path="../../shared/mod.rs"]
-mod phf_shared;
+mod shared;
 
 /// An immutable map constructed at compile time.
 ///
@@ -86,9 +86,9 @@ impl<K: fmt::Show, V: fmt::Show> fmt::Show for PhfMap<K, V> {
 impl<K: Hash+Eq, V> PhfMap<K, V> {
     fn get_entry<'a, T: Hash>(&'a self, key: &T, check: |&K| -> bool)
                               -> Option<&'a (K, V)> {
-        let (g, f1, f2) = phf_shared::hash(key, self.k1, self.k2);
+        let (g, f1, f2) = shared::hash(key, self.k1, self.k2);
         let (d1, d2) = self.disps[g % self.disps.len()];
-        let entry @ &(ref s, _) = &self.entries[phf_shared::displace(f1, f2, d1, d2) %
+        let entry @ &(ref s, _) = &self.entries[shared::displace(f1, f2, d1, d2) %
                                                 self.entries.len()];
         if check(s) {
             Some(entry)
@@ -406,9 +406,9 @@ impl<'a, K: Hash+Eq, V> Map<K, V> for PhfOrderedMap<K, V> {
 
 impl<K: Hash+Eq, V> PhfOrderedMap<K, V> {
     fn find_entry<'a>(&'a self, key: &K) -> Option<&'a (K, V)> {
-        let (g, f1, f2) = phf_shared::hash(key, self.k1, self.k2);
+        let (g, f1, f2) = shared::hash(key, self.k1, self.k2);
         let (d1, d2) = self.disps[g % self.disps.len()];
-        let idx = self.idxs[phf_shared::displace(f1, f2, d1, d2) % self.idxs.len()];
+        let idx = self.idxs[shared::displace(f1, f2, d1, d2) % self.idxs.len()];
         let entry @ &(ref s, _) = &self.entries[idx];
 
         if s == key {

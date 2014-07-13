@@ -9,3 +9,4 @@ version = "0.0.0"
 name = "phf_mac"
 path = "src/lib.rs"
 plugin = true
+test = false

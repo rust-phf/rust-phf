@@ -185,6 +185,14 @@ impl<'a, K, V> Iterator<&'a (K, V)> for PhfMapEntries<'a, K, V> {
     }
 }
 
+impl<'a, K, V> DoubleEndedIterator<&'a (K, V)> for PhfMapEntries<'a, K, V> {
+    fn next_back(&mut self) -> Option<&'a (K, V)> {
+        self.iter.next_back()
+    }
+}
+
+impl<'a, K, V> ExactSize<&'a (K, V)> for PhfMapEntries<'a, K, V> {}
+
 /// An iterator over the keys in a `PhfMap`.
 pub struct PhfMapKeys<'a, K, V> {
     iter: PhfMapEntries<'a, K, V>,
@@ -192,13 +200,21 @@ pub struct PhfMapKeys<'a, K, V> {
 
 impl<'a, K, V> Iterator<&'a K> for PhfMapKeys<'a, K, V> {
     fn next(&mut self) -> Option<&'a K> {
-        self.iter.next().map(|&(ref key, _)| key)
+        self.iter.next().map(|&(ref k, _)| k)
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {
         self.iter.size_hint()
     }
 }
+
+impl<'a, K, V> DoubleEndedIterator<&'a K> for PhfMapKeys<'a, K, V> {
+    fn next_back(&mut self) -> Option<&'a K> {
+        self.iter.next_back().map(|&(ref k, _)| k)
+    }
+}
+
+impl<'a, K, V> ExactSize<&'a K> for PhfMapKeys<'a, K, V> {}
 
 /// An iterator over the values in a `PhfMap`.
 pub struct PhfMapValues<'a, K, V> {
@@ -207,13 +223,21 @@ pub struct PhfMapValues<'a, K, V> {
 
 impl<'a, K, V> Iterator<&'a V> for PhfMapValues<'a, K, V> {
     fn next(&mut self) -> Option<&'a V> {
-        self.iter.next().map(|&(_, ref value)| value)
+        self.iter.next().map(|&(_, ref v)| v)
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {
         self.iter.size_hint()
     }
 }
+
+impl<'a, K, V> DoubleEndedIterator<&'a V> for PhfMapValues<'a, K, V> {
+    fn next_back(&mut self) -> Option<&'a V> {
+        self.iter.next_back().map(|&(_, ref v)| v)
+    }
+}
+
+impl<'a, K, V> ExactSize<&'a V> for PhfMapValues<'a, K, V> {}
 
 /// An immutable set constructed at compile time.
 ///
@@ -311,16 +335,22 @@ pub struct PhfSetValues<'a, T> {
 }
 
 impl<'a, T> Iterator<&'a T> for PhfSetValues<'a, T> {
-    #[inline]
     fn next(&mut self) -> Option<&'a T> {
         self.iter.next()
     }
 
-    #[inline]
     fn size_hint(&self) -> (uint, Option<uint>) {
         self.iter.size_hint()
     }
 }
+
+impl<'a, T> DoubleEndedIterator<&'a T> for PhfSetValues<'a, T> {
+    fn next_back(&mut self) -> Option<&'a T> {
+        self.iter.next_back()
+    }
+}
+
+impl<'a, T> ExactSize<&'a T> for PhfSetValues<'a, T> {}
 
 /// An order-preserving immutable map constructed at compile time.
 ///

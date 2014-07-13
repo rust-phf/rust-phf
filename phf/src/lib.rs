@@ -11,6 +11,7 @@
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::hash::sip::SipHasher;
+use std::iter;
 use std::slice;
 use std::collections::Collection;
 
@@ -159,14 +160,14 @@ impl<K, V> PhfMap<K, V> {
     ///
     /// Keys are returned in an arbitrary but fixed order.
     pub fn keys<'a>(&'a self) -> PhfMapKeys<'a, K, V> {
-        PhfMapKeys { iter: self.entries() }
+        PhfMapKeys { iter: self.entries().map(|&(ref k, _)| k) }
     }
 
     /// Returns an iterator over the values in the map.
     ///
     /// Values are returned in an arbitrary but fixed order.
     pub fn values<'a>(&'a self) -> PhfMapValues<'a, K, V> {
-        PhfMapValues { iter: self.entries() }
+        PhfMapValues { iter: self.entries().map(|&(_, ref v)| v) }
     }
 }
 
@@ -195,12 +196,12 @@ impl<'a, K, V> ExactSize<&'a (K, V)> for PhfMapEntries<'a, K, V> {}
 
 /// An iterator over the keys in a `PhfMap`.
 pub struct PhfMapKeys<'a, K, V> {
-    iter: PhfMapEntries<'a, K, V>,
+    iter: iter::Map<'a, &'a (K, V), &'a K, PhfMapEntries<'a, K, V>>,
 }
 
 impl<'a, K, V> Iterator<&'a K> for PhfMapKeys<'a, K, V> {
     fn next(&mut self) -> Option<&'a K> {
-        self.iter.next().map(|&(ref k, _)| k)
+        self.iter.next()
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {
@@ -210,7 +211,7 @@ impl<'a, K, V> Iterator<&'a K> for PhfMapKeys<'a, K, V> {
 
 impl<'a, K, V> DoubleEndedIterator<&'a K> for PhfMapKeys<'a, K, V> {
     fn next_back(&mut self) -> Option<&'a K> {
-        self.iter.next_back().map(|&(ref k, _)| k)
+        self.iter.next_back()
     }
 }
 
@@ -218,12 +219,12 @@ impl<'a, K, V> ExactSize<&'a K> for PhfMapKeys<'a, K, V> {}
 
 /// An iterator over the values in a `PhfMap`.
 pub struct PhfMapValues<'a, K, V> {
-    iter: PhfMapEntries<'a, K, V>,
+    iter: iter::Map<'a, &'a (K, V), &'a V, PhfMapEntries<'a, K, V>>,
 }
 
 impl<'a, K, V> Iterator<&'a V> for PhfMapValues<'a, K, V> {
     fn next(&mut self) -> Option<&'a V> {
-        self.iter.next().map(|&(_, ref v)| v)
+        self.iter.next()
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {
@@ -233,7 +234,7 @@ impl<'a, K, V> Iterator<&'a V> for PhfMapValues<'a, K, V> {
 
 impl<'a, K, V> DoubleEndedIterator<&'a V> for PhfMapValues<'a, K, V> {
     fn next_back(&mut self) -> Option<&'a V> {
-        self.iter.next_back().map(|&(_, ref v)| v)
+        self.iter.next_back()
     }
 }
 
@@ -461,14 +462,14 @@ impl<K, V> PhfOrderedMap<K, V> {
     ///
     /// Keys are returned in the same order in which they were defined.
     pub fn keys<'a>(&'a self) -> PhfOrderedMapKeys<'a, K, V> {
-        PhfOrderedMapKeys { iter: self.entries() }
+        PhfOrderedMapKeys { iter: self.entries().map(|&(ref k, _)| k) }
     }
 
     /// Returns an iterator over the values in the map.
     ///
     /// Values are returned in the same order in which they were defined.
     pub fn values<'a>(&'a self) -> PhfOrderedMapValues<'a, K, V> {
-        PhfOrderedMapValues { iter: self.entries() }
+        PhfOrderedMapValues { iter: self.entries().map(|&(_, ref v)| v) }
     }
 }
 
@@ -509,12 +510,12 @@ impl<'a, K, V> ExactSize<&'a (K, V)> for PhfOrderedMapEntries<'a, K, V> {}
 
 /// An iterator over the keys in a `PhfOrderedMap`.
 pub struct PhfOrderedMapKeys<'a, K, V> {
-    iter: PhfOrderedMapEntries<'a, K, V>,
+    iter: iter::Map<'a, &'a (K, V), &'a K, PhfOrderedMapEntries<'a, K, V>>,
 }
 
 impl<'a, K, V> Iterator<&'a K> for PhfOrderedMapKeys<'a, K, V> {
     fn next(&mut self) -> Option<&'a K> {
-        self.iter.next().map(|&(ref key, _)| key)
+        self.iter.next()
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {
@@ -524,7 +525,7 @@ impl<'a, K, V> Iterator<&'a K> for PhfOrderedMapKeys<'a, K, V> {
 
 impl<'a, K, V> DoubleEndedIterator<&'a K> for PhfOrderedMapKeys<'a, K, V> {
     fn next_back(&mut self) -> Option<&'a K> {
-        self.iter.next_back().map(|&(ref key, _)| key)
+        self.iter.next_back()
     }
 }
 
@@ -534,7 +535,7 @@ impl<'a, K, V> RandomAccessIterator<&'a K> for PhfOrderedMapKeys<'a, K, V> {
     }
 
     fn idx(&mut self, index: uint) -> Option<&'a K> {
-        self.iter.idx(index).map(|&(ref key, _)| key)
+        self.iter.idx(index)
     }
 }
 
@@ -542,12 +543,12 @@ impl<'a, K, V> ExactSize<&'a K> for PhfOrderedMapKeys<'a, K, V> {}
 
 /// An iterator over the values in a `PhfOrderedMap`.
 pub struct PhfOrderedMapValues<'a, K, V> {
-    iter: PhfOrderedMapEntries<'a, K, V>,
+    iter: iter::Map<'a, &'a (K, V), &'a V, PhfOrderedMapEntries<'a, K, V>>,
 }
 
 impl<'a, K, V> Iterator<&'a V> for PhfOrderedMapValues<'a, K, V> {
     fn next(&mut self) -> Option<&'a V> {
-        self.iter.next().map(|&(_, ref value)| value)
+        self.iter.next()
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {
@@ -557,7 +558,7 @@ impl<'a, K, V> Iterator<&'a V> for PhfOrderedMapValues<'a, K, V> {
 
 impl<'a, K, V> DoubleEndedIterator<&'a V> for PhfOrderedMapValues<'a, K, V> {
     fn next_back(&mut self) -> Option<&'a V> {
-        self.iter.next_back().map(|&(_, ref value)| value)
+        self.iter.next_back()
     }
 }
 
@@ -567,7 +568,7 @@ impl<'a, K, V> RandomAccessIterator<&'a V> for PhfOrderedMapValues<'a, K, V> {
     }
 
     fn idx(&mut self, index: uint) -> Option<&'a V> {
-        self.iter.idx(index).map(|&(_, ref value)| value)
+        self.iter.idx(index)
     }
 }
 

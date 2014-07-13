@@ -14,7 +14,7 @@ use std::iter;
 use std::slice;
 use std::collections::Collection;
 
-#[path="../../phf_shared/mod.rs"]
+#[path="../../shared/mod.rs"]
 mod phf_shared;
 
 /// An immutable map constructed at compile time.

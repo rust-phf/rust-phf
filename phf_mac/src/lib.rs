@@ -30,7 +30,7 @@ use syntax::print::pprust;
 use rand::{Rng, SeedableRng, XorShiftRng};
 use rustc::plugin::Registry;
 
-#[path="../../phf_shared/mod.rs"]
+#[path="../../shared/mod.rs"]
 mod phf_shared;
 
 static DEFAULT_LAMBDA: uint = 5;

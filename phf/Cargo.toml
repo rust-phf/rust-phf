@@ -8,3 +8,12 @@ version = "0.0.0"
 
 name = "phf"
 path = "src/lib.rs"
+
+[dev_dependencies.phf_mac]
+
+path = "../phf_mac"
+
+[[test]]
+
+name = "test"
+path = "src/test.rs"

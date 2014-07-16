@@ -110,7 +110,7 @@ impl<K: Hash+Eq, V> PhfMap<K, V> {
 
     /// Like `find`, but can operate on any type that is equivalent to a key.
     pub fn find_equiv<'a, T: Hash+Equiv<K>>(&'a self, key: &T)
-                                       -> Option<&'a V> {
+                                            -> Option<&'a V> {
         self.get_entry(key, |k| key.equiv(k)).map(|e| {
             let &(_, ref v) = e;
             v
@@ -120,7 +120,7 @@ impl<K: Hash+Eq, V> PhfMap<K, V> {
     /// Like `find_key`, but can operate on any type that is equivalent to a
     /// key.
     pub fn find_key_equiv<'a, T: Hash+Equiv<K>>(&'a self, key: &T)
-                                           -> Option<&'a K> {
+                                                -> Option<&'a K> {
         self.get_entry(key, |k| key.equiv(k)).map(|e| {
             let &(ref k, _) = e;
             k

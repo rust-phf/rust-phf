@@ -366,11 +366,11 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
             'disps: for d2 in range(0, table_len) {
                 try_map.clear();
                 for &key in bucket.keys.iter() {
-                    let idx = shared::displace(hashes.get(key).f1,
-                                               hashes.get(key).f2,
+                    let idx = shared::displace(hashes[key].f1,
+                                               hashes[key].f2,
                                                d1,
                                                d2) % table_len;
-                    if map.get(idx).is_some() || try_map.find(&idx).is_some() {
+                    if map[idx].is_some() || try_map.find(&idx).is_some() {
                         continue 'disps;
                     }
                     try_map.insert(idx, key);
@@ -405,7 +405,7 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
     let disps = create_slice_expr(disps, sp);
 
     let entries = state.map.iter().map(|&idx| {
-        let &Entry { key, value, .. } = entries.get(idx);
+        let &Entry { key, value, .. } = &entries[idx];
         quote_expr!(&*cx, ($key, $value))
     }).collect();
     let entries = create_slice_expr(entries, sp);

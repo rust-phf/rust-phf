@@ -115,6 +115,23 @@ mod map {
         assert_eq!(Some(&0), map.find_equiv(&"a".to_string().as_slice()));
     }
 
+    #[test]
+    fn test_index_ok() {
+        static map: PhfMap<&'static str, int> = phf_map!(
+            "a" => 0,
+        );
+        assert_eq!(0, map["a"]);
+    }
+
+    #[test]
+    #[should_fail]
+    fn test_index_fail() {
+        static map: PhfMap<&'static str, int> = phf_map!(
+            "a" => 0,
+        );
+        map["b"];
+    }
+
     macro_rules! test_key_type(
         ($t:ty, $($k:expr => $v:expr),+) => ({
             static map: PhfMap<$t, int> = phf_map! {
@@ -282,6 +299,23 @@ mod ordered_map {
         );
         let vec = MAP.values().map(|&v| v).collect::<Vec<_>>();
         assert_eq!(vec, vec!(10i, 11, 12));
+    }
+
+    #[test]
+    fn test_index_ok() {
+        static map: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+            "a" => 0,
+        );
+        assert_eq!(0, map["a"]);
+    }
+
+    #[test]
+    #[should_fail]
+    fn test_index_fail() {
+        static map: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+            "a" => 0,
+        );
+        map["b"];
     }
 }
 

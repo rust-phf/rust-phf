@@ -83,6 +83,12 @@ impl<K: fmt::Show, V: fmt::Show> fmt::Show for PhfMap<K, V> {
     }
 }
 
+impl<K: Hash+Eq, V> Index<K, V> for PhfMap<K, V> {
+    fn index<'a>(&'a self, k: &K) -> &'a V {
+        self.find(k).expect("invalid key")
+    }
+}
+
 impl<K: Hash+Eq, V> PhfMap<K, V> {
     fn get_entry<'a, T: Hash>(&'a self, key: &T, check: |&K| -> bool)
                               -> Option<&'a (K, V)> {
@@ -401,6 +407,12 @@ impl<'a, K: Hash+Eq, V> Map<K, V> for PhfOrderedMap<K, V> {
             let &(_, ref v) = e;
             v
         })
+    }
+}
+
+impl<K: Hash+Eq, V> Index<K, V> for PhfOrderedMap<K, V> {
+    fn index<'a>(&'a self, k: &K) -> &'a V {
+        self.find(k).expect("invalid key")
     }
 }
 

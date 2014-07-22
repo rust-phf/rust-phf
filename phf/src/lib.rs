@@ -60,7 +60,7 @@ impl<K, V> Collection for PhfMap<K, V> {
 }
 
 impl<'a, K: Hash+Eq, V> Map<K, V> for PhfMap<K, V> {
-    fn find<'a>(&'a self, key: &K) -> Option<&'a V> {
+    fn find(&self, key: &K) -> Option<&V> {
         self.get_entry(key, |k| key == k).map(|e| {
             let &(_, ref v) = e;
             v
@@ -84,14 +84,14 @@ impl<K: fmt::Show, V: fmt::Show> fmt::Show for PhfMap<K, V> {
 }
 
 impl<K: Hash+Eq, V> Index<K, V> for PhfMap<K, V> {
-    fn index<'a>(&'a self, k: &K) -> &'a V {
+    fn index(&self, k: &K) -> &V {
         self.find(k).expect("invalid key")
     }
 }
 
 impl<K: Hash+Eq, V> PhfMap<K, V> {
-    fn get_entry<'a, T: Hash>(&'a self, key: &T, check: |&K| -> bool)
-                              -> Option<&'a (K, V)> {
+    fn get_entry<T: Hash>(&self, key: &T, check: |&K| -> bool)
+                          -> Option<&(K, V)> {
         let (g, f1, f2) = shared::hash(key, self.k1, self.k2);
         let (d1, d2) = self.disps[g % self.disps.len()];
         let entry @ &(ref s, _) = &self.entries[shared::displace(f1, f2, d1, d2) %
@@ -107,7 +107,7 @@ impl<K: Hash+Eq, V> PhfMap<K, V> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn find_key<'a>(&'a self, key: &K) -> Option<&'a K> {
+    pub fn find_key(&self, key: &K) -> Option<&K> {
         self.get_entry(key, |k| key == k).map(|e| {
             let &(ref k, _) = e;
             k
@@ -115,8 +115,7 @@ impl<K: Hash+Eq, V> PhfMap<K, V> {
     }
 
     /// Like `find`, but can operate on any type that is equivalent to a key.
-    pub fn find_equiv<'a, T: Hash+Equiv<K>>(&'a self, key: &T)
-                                            -> Option<&'a V> {
+    pub fn find_equiv<T: Hash+Equiv<K>>(&self, key: &T) -> Option<&V> {
         self.get_entry(key, |k| key.equiv(k)).map(|e| {
             let &(_, ref v) = e;
             v
@@ -125,8 +124,7 @@ impl<K: Hash+Eq, V> PhfMap<K, V> {
 
     /// Like `find_key`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn find_key_equiv<'a, T: Hash+Equiv<K>>(&'a self, key: &T)
-                                                -> Option<&'a K> {
+    pub fn find_key_equiv<T: Hash+Equiv<K>>(&self, key: &T) -> Option<&K> {
         self.get_entry(key, |k| key.equiv(k)).map(|e| {
             let &(ref k, _) = e;
             k
@@ -301,7 +299,7 @@ impl<T: Hash+Eq> PhfSet<T> {
     ///
     /// This can be useful for interning schemes.
     #[inline]
-    pub fn find_key<'a>(&'a self, key: &T) -> Option<&'a T> {
+    pub fn find_key(&self, key: &T) -> Option<&T> {
         self.map.find_key(key)
     }
 }
@@ -401,8 +399,8 @@ impl<K, V> Collection for PhfOrderedMap<K, V> {
     }
 }
 
-impl<'a, K: Hash+Eq, V> Map<K, V> for PhfOrderedMap<K, V> {
-    fn find<'a>(&'a self, key: &K) -> Option<&'a V> {
+impl<K: Hash+Eq, V> Map<K, V> for PhfOrderedMap<K, V> {
+    fn find(&self, key: &K) -> Option<&V> {
         self.find_entry(key).map(|e| {
             let &(_, ref v) = e;
             v
@@ -411,13 +409,13 @@ impl<'a, K: Hash+Eq, V> Map<K, V> for PhfOrderedMap<K, V> {
 }
 
 impl<K: Hash+Eq, V> Index<K, V> for PhfOrderedMap<K, V> {
-    fn index<'a>(&'a self, k: &K) -> &'a V {
+    fn index(&self, k: &K) -> &V {
         self.find(k).expect("invalid key")
     }
 }
 
 impl<K: Hash+Eq, V> PhfOrderedMap<K, V> {
-    fn find_entry<'a>(&'a self, key: &K) -> Option<&'a (K, V)> {
+    fn find_entry(&self, key: &K) -> Option<&(K, V)> {
         let (g, f1, f2) = shared::hash(key, self.k1, self.k2);
         let (d1, d2) = self.disps[g % self.disps.len()];
         let idx = self.idxs[shared::displace(f1, f2, d1, d2) % self.idxs.len()];
@@ -434,7 +432,7 @@ impl<K: Hash+Eq, V> PhfOrderedMap<K, V> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn find_key<'a>(&'a self, key: &K) -> Option<&'a K> {
+    pub fn find_key(&self, key: &K) -> Option<&K> {
         self.find_entry(key).map(|e| {
             let &(ref k, _) = e;
             k
@@ -644,7 +642,7 @@ impl<T: Hash+Eq> PhfOrderedSet<T> {
     ///
     /// This can be useful for interning schemes.
     #[inline]
-    pub fn find_key<'a>(&'a self, key: &T) -> Option<&'a T> {
+    pub fn find_key(&self, key: &T) -> Option<&T> {
         self.map.find_key(key)
     }
 }

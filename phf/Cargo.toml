@@ -13,8 +13,3 @@ test = false
 [dev_dependencies.phf_mac]
 
 path = "../phf_mac"
-
-[[test]]
-
-name = "test"
-path = "src/test.rs"

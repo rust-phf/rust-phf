@@ -90,6 +90,19 @@ impl<K: Hash+Eq, V> Index<K, V> for PhfMap<K, V> {
 }
 
 impl<K: Hash+Eq, V> PhfMap<K, V> {
+    /// Returns a reference to the map's internal static instance of the given
+    /// key.
+    ///
+    /// This can be useful for interning schemes.
+    pub fn find_key(&self, key: &K) -> Option<&K> {
+        self.get_entry(key, |k| key == k).map(|e| {
+            let &(ref k, _) = e;
+            k
+        })
+    }
+}
+
+impl<K, V> PhfMap<K, V> {
     fn get_entry<T: Hash>(&self, key: &T, check: |&K| -> bool)
                           -> Option<&(K, V)> {
         let (g, f1, f2) = shared::hash(key, self.k1, self.k2);
@@ -101,17 +114,6 @@ impl<K: Hash+Eq, V> PhfMap<K, V> {
         } else {
             None
         }
-    }
-
-    /// Returns a reference to the map's internal static instance of the given
-    /// key.
-    ///
-    /// This can be useful for interning schemes.
-    pub fn find_key(&self, key: &K) -> Option<&K> {
-        self.get_entry(key, |k| key == k).map(|e| {
-            let &(ref k, _) = e;
-            k
-        })
     }
 
     /// Like `find`, but can operate on any type that is equivalent to a key.
@@ -305,6 +307,22 @@ impl<T: Hash+Eq> PhfSet<T> {
 }
 
 impl<T> PhfSet<T> {
+    /// Like `contains`, but can operate on any type that is equivalent to a
+    /// value
+    #[inline]
+    pub fn contains_equiv<U: Hash+Equiv<T>>(&self, key: &U) -> bool {
+        self.map.find_equiv(key).is_some()
+    }
+
+    /// Like `find_key`, but can operate on any type that is equivalent to a
+    /// value
+    #[inline]
+    pub fn find_key_equiv<U: Hash+Equiv<T>>(&self, key: &U) -> Option<&T> {
+        self.map.find_key_equiv(key)
+    }
+}
+
+impl<T> PhfSet<T> {
     /// Returns an iterator over the values in the set.
     ///
     /// Values are returned in an arbitrary but fixed order.
@@ -401,7 +419,7 @@ impl<K, V> Collection for PhfOrderedMap<K, V> {
 
 impl<K: Hash+Eq, V> Map<K, V> for PhfOrderedMap<K, V> {
     fn find(&self, key: &K) -> Option<&V> {
-        self.find_entry(key).map(|e| {
+        self.find_entry(key, |k| k == key).map(|e| {
             let &(_, ref v) = e;
             v
         })
@@ -415,25 +433,45 @@ impl<K: Hash+Eq, V> Index<K, V> for PhfOrderedMap<K, V> {
 }
 
 impl<K: Hash+Eq, V> PhfOrderedMap<K, V> {
-    fn find_entry(&self, key: &K) -> Option<&(K, V)> {
+    /// Returns a reference to the map's internal static instance of the given
+    /// key.
+    ///
+    /// This can be useful for interning schemes.
+    pub fn find_key(&self, key: &K) -> Option<&K> {
+        self.find_entry(key, |k| k == key).map(|e| {
+            let &(ref k, _) = e;
+            k
+        })
+    }
+}
+
+impl<K, V> PhfOrderedMap<K, V> {
+    fn find_entry<T: Hash>(&self, key: &T, check: |&K| -> bool)
+                           -> Option<&(K, V)> {
         let (g, f1, f2) = shared::hash(key, self.k1, self.k2);
         let (d1, d2) = self.disps[g % self.disps.len()];
         let idx = self.idxs[shared::displace(f1, f2, d1, d2) % self.idxs.len()];
         let entry @ &(ref s, _) = &self.entries[idx];
 
-        if s == key {
+        if check(s) {
             Some(entry)
         } else {
             None
         }
     }
 
-    /// Returns a reference to the map's internal static instance of the given
+    /// Like `find`, but can operate on any type that is equivalent to a key.
+    pub fn find_equiv<T: Hash+Equiv<K>>(&self, key: &T) -> Option<&V> {
+        self.find_entry(key, |k| key.equiv(k)).map(|e| {
+            let &(_, ref v) = e;
+            v
+        })
+    }
+
+    /// Like `find_key`, but can operate on any type that is equivalent to a
     /// key.
-    ///
-    /// This can be useful for interning schemes.
-    pub fn find_key(&self, key: &K) -> Option<&K> {
-        self.find_entry(key).map(|e| {
+    pub fn find_key_equiv<T: Hash+Equiv<K>>(&self, key: &T) -> Option<&K> {
+        self.find_entry(key, |k| key.equiv(k)).map(|e| {
             let &(ref k, _) = e;
             k
         })
@@ -648,6 +686,20 @@ impl<T: Hash+Eq> PhfOrderedSet<T> {
 }
 
 impl<T> PhfOrderedSet<T> {
+    /// Like `contains`, but can operate on any type that is equivalent to a
+    /// value
+    #[inline]
+    pub fn contains_equiv<U: Hash+Equiv<T>>(&self, key: &U) -> bool {
+        self.map.find_equiv(key).is_some()
+    }
+
+    /// Like `find_key`, but can operate on any type that is equivalent to a
+    /// value
+    #[inline]
+    pub fn find_key_equiv<U: Hash+Equiv<T>>(&self, key: &U) -> Option<&T> {
+        self.map.find_key_equiv(key)
+    }
+
     /// Returns an iterator over the values in the set.
     ///
     /// Values are returned in the same order in which they were defined.

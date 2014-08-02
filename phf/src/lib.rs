@@ -107,8 +107,9 @@ impl<K, V> PhfMap<K, V> {
                           -> Option<&(K, V)> {
         let (g, f1, f2) = shared::hash(key, self.k1, self.k2);
         let (d1, d2) = self.disps[g % self.disps.len()];
-        let entry @ &(ref s, _) = &self.entries[shared::displace(f1, f2, d1, d2) %
-                                                self.entries.len()];
+        let entry = &self.entries[shared::displace(f1, f2, d1, d2) %
+                                  self.entries.len()];
+        let &(ref s, _) = entry;
         if check(s) {
             Some(entry)
         } else {
@@ -451,7 +452,8 @@ impl<K, V> PhfOrderedMap<K, V> {
         let (g, f1, f2) = shared::hash(key, self.k1, self.k2);
         let (d1, d2) = self.disps[g % self.disps.len()];
         let idx = self.idxs[shared::displace(f1, f2, d1, d2) % self.idxs.len()];
-        let entry @ &(ref s, _) = &self.entries[idx];
+        let entry = &self.entries[idx];
+        let &(ref s, _) = entry;
 
         if check(s) {
             Some(entry)

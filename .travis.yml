@@ -5,7 +5,6 @@ install:
   - curl http://www.rust-lang.org/rustup.sh | sudo sh -
 script:
   - (cd phf && cargo test)
-  - (cd phf && rustdoc -L target/test -L target/test/deps --test src/lib.rs)
   - rustdoc -L phf/target/test -L phf/target/test/deps phf/src/lib.rs
   - rustdoc phf_mac/src/lib.rs
 after_script:

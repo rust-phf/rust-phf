@@ -4,7 +4,7 @@
 #![crate_name="phf_mac"]
 #![crate_type="dylib"]
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
-#![feature(plugin_registrar, quote, default_type_params)]
+#![feature(plugin_registrar, quote, default_type_params, macro_rules)]
 
 extern crate rand;
 extern crate syntax;
@@ -13,10 +13,10 @@ extern crate rustc;
 
 use std::collections::HashMap;
 use std::gc::{Gc, GC};
-use std::hash;
-use std::hash::Hash;
 use std::os;
 use std::rc::Rc;
+use std::hash;
+use std::hash::Hash;
 use syntax::ast;
 use syntax::ast::{TokenTree, LitStr, LitBinary, LitByte, LitChar, Expr, ExprVec, ExprLit};
 use syntax::codemap::Span;
@@ -30,6 +30,8 @@ use syntax::parse::token::{InternedString, COMMA, EOF, FAT_ARROW};
 use syntax::print::pprust;
 use rand::{Rng, SeedableRng, XorShiftRng};
 use rustc::plugin::Registry;
+
+use shared::PhfHash;
 
 #[path="../../shared/mod.rs"]
 mod shared;
@@ -82,6 +84,25 @@ impl<S: hash::Writer> Hash<S> for Key {
     }
 }
 
+impl PhfHash for Key {
+    fn phf_hash(&self, key: u64) -> (u32, u32, u32) {
+        match *self {
+            KeyStr(ref s) => s.get().phf_hash(key),
+            KeyBinary(ref b) => b.as_slice().phf_hash(key),
+            KeyChar(c) => c.phf_hash(key),
+            KeyU8(b) => b.phf_hash(key),
+            KeyI8(b) => b.phf_hash(key),
+            KeyU16(b) => b.phf_hash(key),
+            KeyI16(b) => b.phf_hash(key),
+            KeyU32(b) => b.phf_hash(key),
+            KeyI32(b) => b.phf_hash(key),
+            KeyU64(b) => b.phf_hash(key),
+            KeyI64(b) => b.phf_hash(key),
+            KeyBool(b) => b.phf_hash(key),
+        }
+    }
+}
+
 struct Entry {
     key_contents: Key,
     key: Gc<Expr>,
@@ -89,9 +110,8 @@ struct Entry {
 }
 
 struct HashState {
-    k1: u64,
-    k2: u64,
-    disps: Vec<(uint, uint)>,
+    key: u64,
+    disps: Vec<(u32, u32)>,
     map: Vec<uint>,
 }
 
@@ -334,16 +354,15 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
     }
 
     struct Hashes {
-        g: uint,
-        f1: uint,
-        f2: uint,
+        g: u32,
+        f1: u32,
+        f2: u32,
     }
 
-    let k1 = rng.gen();
-    let k2 = rng.gen();
+    let key = rng.gen();
 
     let hashes: Vec<Hashes> = entries.iter().map(|entry| {
-        let (g, f1, f2) = shared::hash(&entry.key_contents, k1, k2);
+        let (g, f1, f2) = entry.key_contents.phf_hash(key);
         Hashes {
             g: g,
             f1: f1,
@@ -356,7 +375,7 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
                                    |i| Bucket { idx: i, keys: Vec::new() });
 
     for (i, hash) in hashes.iter().enumerate() {
-        buckets.get_mut(hash.g % buckets_len).keys.push(i);
+        buckets.get_mut((hash.g % (buckets_len as u32)) as uint).keys.push(i);
     }
 
     // Sort descending
@@ -364,17 +383,15 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
 
     let table_len = entries.len();
     let mut map = Vec::from_elem(table_len, None);
-    let mut disps = Vec::from_elem(buckets_len, (0u, 0u));
+    let mut disps = Vec::from_elem(buckets_len, (0u32, 0u32));
     let mut try_map = HashMap::new();
     'buckets: for bucket in buckets.iter() {
-        for d1 in range(0, table_len) {
-            'disps: for d2 in range(0, table_len) {
+        for d1 in range(0, table_len as u32) {
+            'disps: for d2 in range(0, table_len as u32) {
                 try_map.clear();
                 for &key in bucket.keys.iter() {
-                    let idx = shared::displace(hashes[key].f1,
-                                               hashes[key].f2,
-                                               d1,
-                                               d2) % table_len;
+                    let idx = (shared::displace(hashes[key].f1, hashes[key].f2, d1, d2)
+                                % (table_len as u32)) as uint;
                     if map[idx].is_some() || try_map.find(&idx).is_some() {
                         continue 'disps;
                     }
@@ -395,8 +412,7 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
     }
 
     Some(HashState {
-        k1: k1,
-        k2: k2,
+        key: key,
         disps: disps,
         map: map.move_iter().map(|i| i.unwrap()).collect(),
     })
@@ -415,11 +431,9 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
     }).collect();
     let entries = create_slice_expr(entries, sp);
 
-    let k1 = state.k1;
-    let k2 = state.k2;
+    let key = state.key;
     MacExpr::new(quote_expr!(cx, ::phf::PhfMap {
-        k1: $k1,
-        k2: $k2,
+        key: $key,
         disps: &$disps,
         entries: &$entries,
     }))
@@ -446,11 +460,9 @@ fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
     }).collect();
     let entries = create_slice_expr(entries, sp);
 
-    let k1 = state.k1;
-    let k2 = state.k2;
+    let key = state.key;
     MacExpr::new(quote_expr!(cx, ::phf::PhfOrderedMap {
-        k1: $k1,
-        k2: $k2,
+        key: $key,
         disps: &$disps,
         idxs: &$idxs,
         entries: &$entries,

@@ -12,12 +12,14 @@ pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 fn split(hash: u64) -> (u32, u32, u32) {
     let mask = (MAX_SIZE - 1) as u64;
 
-    ((hash & mask) as u32, 
+    ((hash & mask) as u32,
      ((hash >> LOG_MAX_SIZE) & mask) as u32,
      ((hash >> (2 * LOG_MAX_SIZE)) & mask) as u32)
 }
 
+/// A trait implemented by types which can be used in PHF data structures
 pub trait PhfHash {
+    /// Hashes the value of `self`, factoring in a seed
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32);
 }
 

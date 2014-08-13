@@ -8,6 +8,7 @@ version = "0.0.0"
 
 name = "phf"
 path = "src/lib.rs"
+test = false
 
 [dev_dependencies.phf_mac]
 

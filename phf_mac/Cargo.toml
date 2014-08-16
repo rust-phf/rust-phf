@@ -4,7 +4,7 @@ name = "phf_mac"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 version = "0.0.0"
 
-[[lib]]
+[lib]
 
 name = "phf_mac"
 path = "src/lib.rs"

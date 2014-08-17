@@ -204,12 +204,6 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
         }
     }
 
-    if entries.len() > shared::MAX_SIZE {
-        cx.span_err(parser.span, format!("maps with more than {} entries are not supported",
-                                         shared::MAX_SIZE).as_slice());
-        return None;
-    }
-
     if bad {
         return None;
     }
@@ -240,12 +234,6 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
             cx.span_err(parser.span, "expected `,`");
             return None;
         }
-    }
-
-    if entries.len() > shared::MAX_SIZE {
-        cx.span_err(parser.span, format!("maps with more than {} entries are not supported",
-                                         shared::MAX_SIZE).as_slice());
-        return None;
     }
 
     if bad {

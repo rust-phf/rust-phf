@@ -1,20 +1,17 @@
 use std::hash::{Hash, Hasher, Writer};
 use std::hash::sip::{SipHasher, SipState};
 
-static LOG_MAX_SIZE: uint = 21;
-
-pub static MAX_SIZE: uint = 1 << LOG_MAX_SIZE;
-
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
     d2 + f1 * d1 + f2
 }
 
 fn split(hash: u64) -> (u32, u32, u32) {
-    let mask = (MAX_SIZE - 1) as u64;
+    let bits = 21;
+    let mask = (1 << bits) - 1;
 
     ((hash & mask) as u32,
-     ((hash >> LOG_MAX_SIZE) & mask) as u32,
-     ((hash >> (2 * LOG_MAX_SIZE)) & mask) as u32)
+     ((hash >> bits) & mask) as u32,
+     ((hash >> (2 * bits)) & mask) as u32)
 }
 
 /// A trait implemented by types which can be used in PHF data structures

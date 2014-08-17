@@ -103,7 +103,7 @@ impl<K, V> PhfMap<K, V> where K: PhfHash+Eq {
 }
 
 impl<K, V> PhfMap<K, V> {
-    fn get_entry<T: PhfHash>(&self, key: &T, check: |&K| -> bool) -> Option<&(K, V)> {
+    fn get_entry<T>(&self, key: &T, check: |&K| -> bool) -> Option<&(K, V)> where T: PhfHash {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
         let entry = &self.entries[(shared::displace(f1, f2, d1, d2) % (self.entries.len() as u32))

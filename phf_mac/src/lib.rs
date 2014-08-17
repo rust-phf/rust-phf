@@ -1,8 +1,6 @@
 //! Compiler plugin for Rust-PHF
 //!
 //! See the documentation for the `phf` crate for more details.
-#![crate_name="phf_mac"]
-#![crate_type="dylib"]
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
 #![feature(plugin_registrar, quote, default_type_params, macro_rules)]
 
@@ -65,7 +63,7 @@ enum Key {
     KeyBool(bool),
 }
 
-impl<S: hash::Writer> Hash<S> for Key {
+impl<S> Hash<S> for Key where S: hash::Writer {
     fn hash(&self, state: &mut S) {
         match *self {
             KeyStr(ref s) => s.get().hash(state),
@@ -115,8 +113,7 @@ struct HashState {
     map: Vec<uint>,
 }
 
-fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
-                  -> Box<MacResult> {
+fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult> {
     let entries = match parse_map(cx, tts) {
         Some(entries) => entries,
         None => return DummyResult::expr(sp)
@@ -131,8 +128,7 @@ fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
     create_map(cx, sp, entries, state)
 }
 
-fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
-                  -> Box<MacResult> {
+fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult> {
     let entries = match parse_set(cx, tts) {
         Some(entries) => entries,
         None => return DummyResult::expr(sp)
@@ -147,8 +143,7 @@ fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
     create_set(cx, sp, entries, state)
 }
 
-fn expand_phf_ordered_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
-                          -> Box<MacResult> {
+fn expand_phf_ordered_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult> {
     let entries = match parse_map(cx, tts) {
         Some(entries) => entries,
         None => return DummyResult::expr(sp),
@@ -163,8 +158,7 @@ fn expand_phf_ordered_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
     create_ordered_map(cx, sp, entries, state)
 }
 
-fn expand_phf_ordered_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
-                          -> Box<MacResult> {
+fn expand_phf_ordered_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult> {
     let entries = match parse_set(cx, tts) {
         Some(entries) => entries,
         None => return DummyResult::expr(sp)
@@ -180,8 +174,7 @@ fn expand_phf_ordered_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
 }
 
 fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
-    let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(),
-                                                Vec::from_slice(tts));
+    let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(), Vec::from_slice(tts));
     let mut entries = Vec::new();
 
     let mut bad = false;
@@ -212,9 +205,8 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     }
 
     if entries.len() > shared::MAX_SIZE {
-        cx.span_err(parser.span,
-                    format!("maps with more than {} entries are not supported",
-                            shared::MAX_SIZE).as_slice());
+        cx.span_err(parser.span, format!("maps with more than {} entries are not supported",
+                                         shared::MAX_SIZE).as_slice());
         return None;
     }
 
@@ -226,8 +218,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
 }
 
 fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
-    let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(),
-                                                Vec::from_slice(tts));
+    let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(), Vec::from_slice(tts));
     let mut entries = Vec::new();
     let value = quote_expr!(&*cx, ());
 
@@ -252,9 +243,8 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     }
 
     if entries.len() > shared::MAX_SIZE {
-        cx.span_err(parser.span,
-                    format!("maps with more than {} entries are not supported",
-                            shared::MAX_SIZE).as_slice());
+        cx.span_err(parser.span, format!("maps with more than {} entries are not supported",
+                                         shared::MAX_SIZE).as_slice());
         return None;
     }
 
@@ -314,8 +304,7 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
         }
 
         dups = true;
-        cx.span_err(sp, format!("duplicate key {}",
-                                pprust::expr_to_string(&**key)).as_slice());
+        cx.span_err(sp, format!("duplicate key {}", pprust::expr_to_string(&**key)).as_slice());
         for span in spans.iter() {
             cx.span_note(*span, "one occurrence here");
         }
@@ -339,15 +328,13 @@ fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
     }
     let time = time::precise_time_s() - start;
     if os::getenv("PHF_STATS").is_some() {
-        cx.span_note(sp, format!("PHF generation took {} seconds", time)
-                            .as_slice());
+        cx.span_note(sp, format!("PHF generation took {} seconds", time).as_slice());
     }
 
     state
 }
 
-fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
-                     -> Option<HashState> {
+fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<HashState> {
     struct Bucket {
         idx: uint,
         keys: Vec<uint>,
@@ -371,8 +358,7 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng)
     }).collect();
 
     let buckets_len = (entries.len() + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA;
-    let mut buckets = Vec::from_fn(buckets_len,
-                                   |i| Bucket { idx: i, keys: Vec::new() });
+    let mut buckets = Vec::from_fn(buckets_len, |i| Bucket { idx: i, keys: Vec::new() });
 
     for (i, hash) in hashes.iter().enumerate() {
         buckets.get_mut((hash.g % (buckets_len as u32)) as uint).keys.push(i);
@@ -445,8 +431,8 @@ fn create_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
     MacExpr::new(quote_expr!(cx, ::phf::PhfSet { map: $map }))
 }
 
-fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
-                      state: HashState) -> Box<MacResult> {
+fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
+                      -> Box<MacResult> {
     let disps = state.disps.iter().map(|&(d1, d2)| {
         quote_expr!(&*cx, ($d1, $d2))
     }).collect();
@@ -469,8 +455,8 @@ fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
     }))
 }
 
-fn create_ordered_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>,
-                      state: HashState) -> Box<MacResult> {
+fn create_ordered_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
+                      -> Box<MacResult> {
     let map = create_ordered_map(cx, sp, entries, state).make_expr().unwrap();
     MacExpr::new(quote_expr!(cx, ::phf::PhfOrderedSet { map: $map }))
 }

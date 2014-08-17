@@ -2,10 +2,7 @@
 //!
 //! Keys can be string literals, byte string literals, byte literals, char
 //! literals, or any of the fixed-size integral types.
-#![crate_name="phf"]
 #![doc(html_root_url="http://www.rust-ci.org/sfackler")]
-#![crate_type="rlib"]
-#![crate_type="dylib"]
 #![warn(missing_doc)]
 #![feature(macro_rules)]
 

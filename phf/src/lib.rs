@@ -59,7 +59,7 @@ impl<K, V> Collection for PhfMap<K, V> {
     }
 }
 
-impl<'a, K: PhfHash+Eq, V> Map<K, V> for PhfMap<K, V> {
+impl<'a, K, V> Map<K, V> for PhfMap<K, V> where K: PhfHash+Eq {
     fn find(&self, key: &K) -> Option<&V> {
         self.get_entry(key, |k| key == k).map(|e| {
             let &(_, ref v) = e;
@@ -68,7 +68,7 @@ impl<'a, K: PhfHash+Eq, V> Map<K, V> for PhfMap<K, V> {
     }
 }
 
-impl<K: fmt::Show, V: fmt::Show> fmt::Show for PhfMap<K, V> {
+impl<K, V> fmt::Show for PhfMap<K, V> where K: fmt::Show, V: fmt::Show {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));
         let mut first = true;
@@ -83,13 +83,13 @@ impl<K: fmt::Show, V: fmt::Show> fmt::Show for PhfMap<K, V> {
     }
 }
 
-impl<K: PhfHash+Eq, V> Index<K, V> for PhfMap<K, V> {
+impl<K, V> Index<K, V> for PhfMap<K, V> where K: PhfHash+Eq {
     fn index(&self, k: &K) -> &V {
         self.find(k).expect("invalid key")
     }
 }
 
-impl<K: PhfHash+Eq, V> PhfMap<K, V> {
+impl<K, V> PhfMap<K, V> where K: PhfHash+Eq {
     /// Returns a reference to the map's internal static instance of the given
     /// key.
     ///
@@ -117,7 +117,7 @@ impl<K, V> PhfMap<K, V> {
     }
 
     /// Like `find`, but can operate on any type that is equivalent to a key.
-    pub fn find_equiv<T: PhfHash+Equiv<K>>(&self, key: &T) -> Option<&V> {
+    pub fn find_equiv<T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
         self.get_entry(key, |k| key.equiv(k)).map(|e| {
             let &(_, ref v) = e;
             v
@@ -126,7 +126,7 @@ impl<K, V> PhfMap<K, V> {
 
     /// Like `find_key`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn find_key_equiv<T: PhfHash+Equiv<K>>(&self, key: &T) -> Option<&K> {
+    pub fn find_key_equiv<T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
         self.get_entry(key, |k| key.equiv(k)).map(|e| {
             let &(ref k, _) = e;
             k
@@ -256,7 +256,7 @@ pub struct PhfSet<T> {
     pub map: PhfMap<T, ()>
 }
 
-impl<T: fmt::Show> fmt::Show for PhfSet<T> {
+impl<T> fmt::Show for PhfSet<T> where T: fmt::Show {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));
         let mut first = true;
@@ -278,7 +278,7 @@ impl<T> Collection for PhfSet<T> {
     }
 }
 
-impl<'a, T: PhfHash+Eq> Set<T> for PhfSet<T> {
+impl<'a, T> Set<T> for PhfSet<T> where T: PhfHash+Eq {
     #[inline]
     fn contains(&self, value: &T) -> bool {
         self.map.contains_key(value)
@@ -295,7 +295,7 @@ impl<'a, T: PhfHash+Eq> Set<T> for PhfSet<T> {
     }
 }
 
-impl<T: PhfHash+Eq> PhfSet<T> {
+impl<T> PhfSet<T> where T: PhfHash+Eq {
     /// Returns a reference to the set's internal static instance of the given
     /// key.
     ///
@@ -310,14 +310,14 @@ impl<T> PhfSet<T> {
     /// Like `contains`, but can operate on any type that is equivalent to a
     /// value
     #[inline]
-    pub fn contains_equiv<U: PhfHash+Equiv<T>>(&self, key: &U) -> bool {
+    pub fn contains_equiv<U>(&self, key: &U) -> bool where U: PhfHash+Equiv<T> {
         self.map.find_equiv(key).is_some()
     }
 
     /// Like `find_key`, but can operate on any type that is equivalent to a
     /// value
     #[inline]
-    pub fn find_key_equiv<U: PhfHash+Equiv<T>>(&self, key: &U) -> Option<&T> {
+    pub fn find_key_equiv<U>(&self, key: &U) -> Option<&T> where U: PhfHash+Equiv<T> {
         self.map.find_key_equiv(key)
     }
 }
@@ -394,7 +394,7 @@ pub struct PhfOrderedMap<K, V> {
     pub entries: &'static [(K, V)],
 }
 
-impl<K: fmt::Show, V: fmt::Show> fmt::Show for PhfOrderedMap<K, V> {
+impl<K, V> fmt::Show for PhfOrderedMap<K, V> where K: fmt::Show, V: fmt::Show {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));
         let mut first = true;
@@ -415,7 +415,7 @@ impl<K, V> Collection for PhfOrderedMap<K, V> {
     }
 }
 
-impl<K: PhfHash+Eq, V> Map<K, V> for PhfOrderedMap<K, V> {
+impl<K, V> Map<K, V> for PhfOrderedMap<K, V> where K: PhfHash+Eq {
     fn find(&self, key: &K) -> Option<&V> {
         self.find_entry(key, |k| k == key).map(|e| {
             let &(_, ref v) = e;
@@ -424,13 +424,13 @@ impl<K: PhfHash+Eq, V> Map<K, V> for PhfOrderedMap<K, V> {
     }
 }
 
-impl<K: PhfHash+Eq, V> Index<K, V> for PhfOrderedMap<K, V> {
+impl<K, V> Index<K, V> for PhfOrderedMap<K, V> where K: PhfHash+Eq {
     fn index(&self, k: &K) -> &V {
         self.find(k).expect("invalid key")
     }
 }
 
-impl<K: PhfHash+Eq, V> PhfOrderedMap<K, V> {
+impl<K, V> PhfOrderedMap<K, V> where K: PhfHash+Eq {
     /// Returns a reference to the map's internal static instance of the given
     /// key.
     ///
@@ -444,7 +444,7 @@ impl<K: PhfHash+Eq, V> PhfOrderedMap<K, V> {
 }
 
 impl<K, V> PhfOrderedMap<K, V> {
-    fn find_entry<T: PhfHash>(&self, key: &T, check: |&K| -> bool) -> Option<&(K, V)> {
+    fn find_entry<T>(&self, key: &T, check: |&K| -> bool) -> Option<&(K, V)> where T: PhfHash {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
         let idx = self.idxs[(shared::displace(f1, f2, d1, d2) % (self.idxs.len() as u32)) as uint];
@@ -459,7 +459,7 @@ impl<K, V> PhfOrderedMap<K, V> {
     }
 
     /// Like `find`, but can operate on any type that is equivalent to a key.
-    pub fn find_equiv<T: PhfHash+Equiv<K>>(&self, key: &T) -> Option<&V> {
+    pub fn find_equiv<T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
         self.find_entry(key, |k| key.equiv(k)).map(|e| {
             let &(_, ref v) = e;
             v
@@ -468,7 +468,7 @@ impl<K, V> PhfOrderedMap<K, V> {
 
     /// Like `find_key`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn find_key_equiv<T: PhfHash+Equiv<K>>(&self, key: &T) -> Option<&K> {
+    pub fn find_key_equiv<T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
         self.find_entry(key, |k| key.equiv(k)).map(|e| {
             let &(ref k, _) = e;
             k
@@ -633,7 +633,7 @@ pub struct PhfOrderedSet<T> {
     pub map: PhfOrderedMap<T, ()>,
 }
 
-impl<T: fmt::Show> fmt::Show for PhfOrderedSet<T> {
+impl<T> fmt::Show for PhfOrderedSet<T> where T: fmt::Show {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));
         let mut first = true;
@@ -655,7 +655,7 @@ impl<T> Collection for PhfOrderedSet<T> {
     }
 }
 
-impl<T: PhfHash+Eq> Set<T> for PhfOrderedSet<T> {
+impl<T> Set<T> for PhfOrderedSet<T> where T: PhfHash+Eq {
     #[inline]
     fn contains(&self, value: &T) -> bool {
         self.map.contains_key(value)
@@ -687,14 +687,14 @@ impl<T> PhfOrderedSet<T> {
     /// Like `contains`, but can operate on any type that is equivalent to a
     /// value
     #[inline]
-    pub fn contains_equiv<U: PhfHash+Equiv<T>>(&self, key: &U) -> bool {
+    pub fn contains_equiv<U>(&self, key: &U) -> bool where U: PhfHash+Equiv<T> {
         self.map.find_equiv(key).is_some()
     }
 
     /// Like `find_key`, but can operate on any type that is equivalent to a
     /// value
     #[inline]
-    pub fn find_key_equiv<U: PhfHash+Equiv<T>>(&self, key: &U) -> Option<&T> {
+    pub fn find_key_equiv<U>(&self, key: &U) -> Option<&T> where U: PhfHash+Equiv<T> {
         self.map.find_key_equiv(key)
     }
 

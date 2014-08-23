@@ -1,8 +1,7 @@
+language: rust
 env:
   global:
     - secure: ffCiAwT3mkRQ57yTyTKUV4nRsnsdDuTSXbwSFpNg/AXLn6KTt35wpp2kbKTUhU4fUikpoKh30+TMiXp1vhc7XSUo/E06JyjccRIE6oXas07NcYhYd0JRlPPWKZU8q33jvFYFB7U63vY/65tGk+wlrWm7NFyqqXwGMuysd7XT1tE=
-install:
-  - curl http://www.rust-lang.org/rustup.sh | sudo sh -
 script:
   - (cd phf && cargo test)
   - rustdoc -L phf/target/test -L phf/target/test/deps phf/src/lib.rs

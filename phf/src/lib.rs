@@ -5,6 +5,7 @@
 #![doc(html_root_url="http://www.rust-ci.org/sfackler")]
 #![warn(missing_doc)]
 #![feature(macro_rules)]
+#![crate_name="phf"]
 
 use std::fmt;
 use std::iter;

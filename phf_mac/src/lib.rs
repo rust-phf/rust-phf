@@ -359,23 +359,41 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<HashSta
     let table_len = entries.len();
     let mut map = Vec::from_elem(table_len, None);
     let mut disps = Vec::from_elem(buckets_len, (0u32, 0u32));
-    let mut try_map = HashMap::new();
+
+    // store whether an element from the bucket being placed is
+    // located at a certain position, to allow for efficient overlap
+    // checks. It works by storing the generation in each cell and
+    // each new placement-attempt is a new generation, so you can tell
+    // if this is legitimately full by checking that the generations
+    // are equal. (A u64 is far too large to overflow in a reasonable
+    // time for current hardware.)
+    let mut try_map = Vec::from_elem(table_len, 0u64);
+    let mut generation = 0u64;
+
+    // the actual values corresponding to the markers above, as
+    // (index, key) pairs, for adding to the main map once we've
+    // chosen the right disps.
+    let mut values_to_add = vec![];
+
     'buckets: for bucket in buckets.iter() {
         for d1 in range(0, table_len as u32) {
             'disps: for d2 in range(0, table_len as u32) {
-                try_map.clear();
+                values_to_add.clear();
+                generation += 1;
+
                 for &key in bucket.keys.iter() {
                     let idx = (shared::displace(hashes[key].f1, hashes[key].f2, d1, d2)
                                 % (table_len as u32)) as uint;
-                    if map[idx].is_some() || try_map.find(&idx).is_some() {
+                    if map[idx].is_some() || try_map[idx] == generation {
                         continue 'disps;
                     }
-                    try_map.insert(idx, key);
+                    *try_map.get_mut(idx) = generation;
+                    values_to_add.push((idx, key));
                 }
 
                 // We've picked a good set of disps
                 *disps.get_mut(bucket.idx) = (d1, d2);
-                for (&idx, &key) in try_map.iter() {
+                for &(idx, key) in values_to_add.iter() {
                     *map.get_mut(idx) = Some(key);
                 }
                 continue 'buckets;

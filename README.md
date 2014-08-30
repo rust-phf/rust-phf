@@ -8,7 +8,7 @@ Rust-PHF is a library to generate efficient lookup tables at compile time using
 
 It currently uses the
 [CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) and can generate
-a 10,000 entry map in roughly .25 seconds.
+a 100,000 entry map in roughly .4 seconds.
 
 Documentation is available at http://www.rust-ci.org/sfackler/rust-phf/doc/phf/.
 

@@ -42,7 +42,7 @@ mod shared;
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_map` macro. They are subject to change at any time and should never
 /// be accessed directly.
-pub struct PhfMap<K, V> {
+pub struct PhfMap<K:'static, V:'static> {
     #[doc(hidden)]
     pub key: u64,
     #[doc(hidden)]
@@ -156,7 +156,7 @@ impl<K, V> PhfMap<K, V> {
 }
 
 /// An iterator over the key/value pairs in a `PhfMap`.
-pub struct PhfMapEntries<'a, K, V> {
+pub struct PhfMapEntries<'a, K:'a, V:'a> {
     iter: slice::Items<'a, (K, V)>,
 }
 
@@ -179,7 +179,7 @@ impl<'a, K, V> DoubleEndedIterator<&'a (K, V)> for PhfMapEntries<'a, K, V> {
 impl<'a, K, V> ExactSize<&'a (K, V)> for PhfMapEntries<'a, K, V> {}
 
 /// An iterator over the keys in a `PhfMap`.
-pub struct PhfMapKeys<'a, K, V> {
+pub struct PhfMapKeys<'a, K:'a, V:'a> {
     iter: iter::Map<'a, &'a (K, V), &'a K, PhfMapEntries<'a, K, V>>,
 }
 
@@ -202,7 +202,7 @@ impl<'a, K, V> DoubleEndedIterator<&'a K> for PhfMapKeys<'a, K, V> {
 impl<'a, K, V> ExactSize<&'a K> for PhfMapKeys<'a, K, V> {}
 
 /// An iterator over the values in a `PhfMap`.
-pub struct PhfMapValues<'a, K, V> {
+pub struct PhfMapValues<'a, K:'a, V:'a> {
     iter: iter::Map<'a, &'a (K, V), &'a V, PhfMapEntries<'a, K, V>>,
 }
 
@@ -249,7 +249,7 @@ impl<'a, K, V> ExactSize<&'a V> for PhfMapValues<'a, K, V> {}
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_set` macro. They are subject to change at any time and should never be
 /// accessed directly.
-pub struct PhfSet<T> {
+pub struct PhfSet<T:'static> {
     #[doc(hidden)]
     pub map: PhfMap<T, ()>
 }
@@ -331,7 +331,7 @@ impl<T> PhfSet<T> {
 }
 
 /// An iterator over the values in a `PhfSet`.
-pub struct PhfSetValues<'a, T> {
+pub struct PhfSetValues<'a, T:'static> {
     iter: PhfMapKeys<'a, T, ()>,
 }
 
@@ -381,7 +381,7 @@ impl<'a, T> ExactSize<&'a T> for PhfSetValues<'a, T> {}
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_ordered_map` macro. They are subject to change at any time and should
 /// never be accessed directly.
-pub struct PhfOrderedMap<K, V> {
+pub struct PhfOrderedMap<K:'static, V:'static> {
     #[doc(hidden)]
     pub key: u64,
     #[doc(hidden)]
@@ -498,7 +498,7 @@ impl<K, V> PhfOrderedMap<K, V> {
 }
 
 /// An iterator over the entries in a `PhfOrderedMap`.
-pub struct PhfOrderedMapEntries<'a, K, V> {
+pub struct PhfOrderedMapEntries<'a, K:'a, V:'a> {
     iter: slice::Items<'a, (K, V)>,
 }
 
@@ -533,7 +533,7 @@ impl<'a, K, V> RandomAccessIterator<&'a (K, V)>
 impl<'a, K, V> ExactSize<&'a (K, V)> for PhfOrderedMapEntries<'a, K, V> {}
 
 /// An iterator over the keys in a `PhfOrderedMap`.
-pub struct PhfOrderedMapKeys<'a, K, V> {
+pub struct PhfOrderedMapKeys<'a, K:'a, V:'a> {
     iter: iter::Map<'a, &'a (K, V), &'a K, PhfOrderedMapEntries<'a, K, V>>,
 }
 
@@ -566,7 +566,7 @@ impl<'a, K, V> RandomAccessIterator<&'a K> for PhfOrderedMapKeys<'a, K, V> {
 impl<'a, K, V> ExactSize<&'a K> for PhfOrderedMapKeys<'a, K, V> {}
 
 /// An iterator over the values in a `PhfOrderedMap`.
-pub struct PhfOrderedMapValues<'a, K, V> {
+pub struct PhfOrderedMapValues<'a, K:'a, V:'a> {
     iter: iter::Map<'a, &'a (K, V), &'a V, PhfOrderedMapEntries<'a, K, V>>,
 }
 
@@ -626,7 +626,7 @@ impl<'a, K, V> ExactSize<&'a V> for PhfOrderedMapValues<'a, K, V> {}
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_ordered_set` macro. They are subject to change at any time and should
 /// never be accessed directly.
-pub struct PhfOrderedSet<T> {
+pub struct PhfOrderedSet<T:'static> {
     #[doc(hidden)]
     pub map: PhfOrderedMap<T, ()>,
 }
@@ -706,7 +706,7 @@ impl<T> PhfOrderedSet<T> {
 }
 
 /// An iterator over the values in a `PhfOrderedSet`.
-pub struct PhfOrderedSetValues<'a, T> {
+pub struct PhfOrderedSetValues<'a, T:'a> {
     iter: PhfOrderedMapKeys<'a, T, ()>,
 }
 

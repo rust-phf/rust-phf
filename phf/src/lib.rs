@@ -415,7 +415,7 @@ impl<K, V> Collection for PhfOrderedMap<K, V> {
 
 impl<K, V> Map<K, V> for PhfOrderedMap<K, V> where K: PhfHash+Eq {
     fn find(&self, key: &K) -> Option<&V> {
-        self.find_entry(key, |k| k == key).map(|e| {
+        self.find_entry(key, |k| k == key).map(|(_, e)| {
             let &(_, ref v) = e;
             v
         })
@@ -434,15 +434,22 @@ impl<K, V> PhfOrderedMap<K, V> where K: PhfHash+Eq {
     ///
     /// This can be useful for interning schemes.
     pub fn find_key(&self, key: &K) -> Option<&K> {
-        self.find_entry(key, |k| k == key).map(|e| {
+        self.find_entry(key, |k| k == key).map(|(_, e)| {
             let &(ref k, _) = e;
             k
         })
     }
+
+    /// Returns the index of the key within the list used to initialize
+    /// the ordered map.
+    pub fn find_index(&self, key: &K) -> Option<uint> {
+        self.find_entry(key, |k| k == key).map(|(i, _)| i)
+    }
 }
 
 impl<K, V> PhfOrderedMap<K, V> {
-    fn find_entry<T>(&self, key: &T, check: |&K| -> bool) -> Option<&(K, V)> where T: PhfHash {
+    fn find_entry<T>(&self, key: &T, check: |&K| -> bool)
+            -> Option<(uint, &(K, V))> where T: PhfHash {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
         let idx = self.idxs[(shared::displace(f1, f2, d1, d2) % (self.idxs.len() as u32)) as uint];
@@ -450,7 +457,7 @@ impl<K, V> PhfOrderedMap<K, V> {
         let &(ref s, _) = entry;
 
         if check(s) {
-            Some(entry)
+            Some((idx, entry))
         } else {
             None
         }
@@ -458,7 +465,7 @@ impl<K, V> PhfOrderedMap<K, V> {
 
     /// Like `find`, but can operate on any type that is equivalent to a key.
     pub fn find_equiv<T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
-        self.find_entry(key, |k| key.equiv(k)).map(|e| {
+        self.find_entry(key, |k| key.equiv(k)).map(|(_, e)| {
             let &(_, ref v) = e;
             v
         })
@@ -467,10 +474,17 @@ impl<K, V> PhfOrderedMap<K, V> {
     /// Like `find_key`, but can operate on any type that is equivalent to a
     /// key.
     pub fn find_key_equiv<T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
-        self.find_entry(key, |k| key.equiv(k)).map(|e| {
+        self.find_entry(key, |k| key.equiv(k)).map(|(_, e)| {
             let &(ref k, _) = e;
             k
         })
+    }
+
+    /// Like `find_index`, but can operate on any type that is equivalent to a
+    /// key.
+    pub fn find_index_equiv<T>(&self, key: &T) -> Option<uint>
+            where T: PhfHash+Equiv<K> {
+        self.find_entry(key, |k| key.equiv(k)).map(|(i, _)| i)
     }
 }
 
@@ -679,6 +693,12 @@ impl<T: PhfHash+Eq> PhfOrderedSet<T> {
     pub fn find_key(&self, key: &T) -> Option<&T> {
         self.map.find_key(key)
     }
+
+    /// Returns the index of the key within the list used to initialize
+    /// the ordered set.
+    pub fn find_index(&self, key: &T) -> Option<uint> {
+        self.map.find_index(key)
+    }
 }
 
 impl<T> PhfOrderedSet<T> {
@@ -694,6 +714,13 @@ impl<T> PhfOrderedSet<T> {
     #[inline]
     pub fn find_key_equiv<U>(&self, key: &U) -> Option<&T> where U: PhfHash+Equiv<T> {
         self.map.find_key_equiv(key)
+    }
+
+    /// Like `find_index`, but can operate on any type that is equivalent to a
+    /// key.
+    pub fn find_index_equiv<U>(&self, key: &U) -> Option<uint>
+            where U: PhfHash+Equiv<T> {
+        self.map.find_index_equiv(key)
     }
 
     /// Returns an iterator over the values in the set.

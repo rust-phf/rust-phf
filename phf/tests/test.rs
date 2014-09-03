@@ -278,6 +278,23 @@ mod ordered_map {
     }
 
     #[test]
+    fn test_find_index() {
+        static map: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+            "foo" => 5,
+            "bar" => 5,
+            "baz" => 5,
+        );
+        assert_eq!(Some(0), map.find_index(&"foo"));
+        assert_eq!(Some(2), map.find_index(&"baz"));
+        assert_eq!(None, map.find_index(&"xyz"));
+        assert_eq!(&"baz", map.keys().idx(map.find_index(&"baz").unwrap()).unwrap());
+
+        assert_eq!(Some(0), map.find_index_equiv(&"foo".to_string().as_slice()));
+        assert_eq!(Some(2), map.find_index_equiv(&"baz".to_string().as_slice()));
+        assert_eq!(None, map.find_index_equiv(&"xyz".to_string().as_slice()));
+    }
+
+    #[test]
     fn test_entries() {
         static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
             "foo" => 10,
@@ -361,6 +378,23 @@ mod ordered_set {
         assert!(SET.contains(&"world"));
         assert!(!SET.contains(&"foo"));
         assert_eq!(3, SET.len());
+    }
+
+    #[test]
+    fn test_find_index() {
+        static SET: PhfOrderedSet<&'static str> = phf_ordered_set! {
+            "foo",
+            "bar",
+            "baz",
+        };
+        assert_eq!(Some(0), SET.find_index(&"foo"));
+        assert_eq!(Some(2), SET.find_index(&"baz"));
+        assert_eq!(None, SET.find_index(&"xyz"));
+        assert_eq!(&"baz", SET.iter().idx(SET.find_index(&"baz").unwrap()).unwrap());
+
+        assert_eq!(Some(0), SET.find_index_equiv(&"foo".to_string().as_slice()));
+        assert_eq!(Some(2), SET.find_index_equiv(&"baz".to_string().as_slice()));
+        assert_eq!(None, SET.find_index_equiv(&"xyz".to_string().as_slice()));
     }
 
     #[test]

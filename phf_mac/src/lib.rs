@@ -23,6 +23,7 @@ use syntax::ext::base::{DummyResult,
                         ExtCtxt,
                         MacResult,
                         MacExpr};
+use syntax::ext::build::AstBuilder;
 use syntax::fold::Folder;
 use syntax::parse;
 use syntax::parse::token::{InternedString, COMMA, EOF, FAT_ARROW};
@@ -347,14 +348,14 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<HashSta
     }).collect();
 
     let buckets_len = (entries.len() + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA;
-    let mut buckets = Vec::from_fn(buckets_len, |i| Bucket { idx: i, keys: Vec::new() });
+    let mut buckets = Vec::from_fn(buckets_len, |i| Bucket { idx: i, keys: vec![] });
 
     for (i, hash) in hashes.iter().enumerate() {
         buckets.get_mut((hash.g % (buckets_len as u32)) as uint).keys.push(i);
     }
 
     // Sort descending
-    buckets.sort_by(|a, b| b.keys.len().cmp(&a.keys.len()));
+    buckets.sort_by(|a, b| a.keys.len().cmp(&b.keys.len()).reverse());
 
     let table_len = entries.len();
     let mut map = Vec::from_elem(table_len, None);
@@ -416,13 +417,13 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
     let disps = state.disps.iter().map(|&(d1, d2)| {
         quote_expr!(&*cx, ($d1, $d2))
     }).collect();
-    let disps = create_slice_expr(disps, sp);
+    let disps = cx.expr_vec(sp, disps);
 
     let entries = state.map.iter().map(|&idx| {
         let &Entry { key, value, .. } = &entries[idx];
         quote_expr!(&*cx, ($key, $value))
     }).collect();
-    let entries = create_slice_expr(entries, sp);
+    let entries = cx.expr_vec(sp, entries);
 
     let key = state.key;
     MacExpr::new(quote_expr!(cx, ::phf::PhfMap {
@@ -443,15 +444,15 @@ fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: Ha
     let disps = state.disps.iter().map(|&(d1, d2)| {
         quote_expr!(&*cx, ($d1, $d2))
     }).collect();
-    let disps = create_slice_expr(disps, sp);
+    let disps = cx.expr_vec(sp, disps);
 
     let idxs = state.map.iter().map(|&idx| quote_expr!(&*cx, $idx)).collect();
-    let idxs = create_slice_expr(idxs, sp);
+    let idxs =cx.expr_vec(sp, idxs);
 
     let entries = entries.iter().map(|&Entry { key, value, .. }| {
         quote_expr!(&*cx, ($key, $value))
     }).collect();
-    let entries = create_slice_expr(entries, sp);
+    let entries = cx.expr_vec(sp, entries);
 
     let key = state.key;
     MacExpr::new(quote_expr!(cx, ::phf::PhfOrderedMap {
@@ -466,12 +467,4 @@ fn create_ordered_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: Ha
                       -> Box<MacResult+'static> {
     let map = create_ordered_map(cx, sp, entries, state).make_expr().unwrap();
     MacExpr::new(quote_expr!(cx, ::phf::PhfOrderedSet { map: $map }))
-}
-
-fn create_slice_expr(vec: Vec<Gc<Expr>>, sp: Span) -> Gc<Expr> {
-    box (GC) Expr {
-        id: ast::DUMMY_NODE_ID,
-        node: ExprVec(vec),
-        span: sp
-    }
 }

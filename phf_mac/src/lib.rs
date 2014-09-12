@@ -11,13 +11,13 @@ extern crate time;
 extern crate rustc;
 
 use std::collections::HashMap;
-use std::gc::{Gc, GC};
+use std::gc::Gc;
 use std::os;
 use std::rc::Rc;
 use std::hash;
 use std::hash::Hash;
 use syntax::ast;
-use syntax::ast::{TokenTree, LitStr, LitBinary, LitByte, LitChar, Expr, ExprVec, ExprLit};
+use syntax::ast::{TokenTree, LitStr, LitBinary, LitByte, LitChar, Expr, ExprLit};
 use syntax::codemap::Span;
 use syntax::ext::base::{DummyResult,
                         ExtCtxt,

@@ -276,7 +276,7 @@ impl<T> Collection for PhfSet<T> {
     }
 }
 
-impl<'a, T> Set<T> for PhfSet<T> where T: PhfHash+Eq {
+impl<T> Set<T> for PhfSet<T> where T: PhfHash+Eq {
     #[inline]
     fn contains(&self, value: &T) -> bool {
         self.map.contains_key(value)
@@ -486,9 +486,7 @@ impl<K, V> PhfOrderedMap<K, V> {
             where T: PhfHash+Equiv<K> {
         self.find_entry(key, |k| key.equiv(k)).map(|(i, _)| i)
     }
-}
 
-impl<K, V> PhfOrderedMap<K, V> {
     /// Returns an iterator over the key/value pairs in the map.
     ///
     /// Entries are retuned in the same order in which they were defined.
@@ -526,15 +524,13 @@ impl<'a, K, V> Iterator<&'a (K, V)> for PhfOrderedMapEntries<'a, K, V> {
     }
 }
 
-impl<'a, K, V> DoubleEndedIterator<&'a (K, V)>
-        for PhfOrderedMapEntries<'a, K, V> {
+impl<'a, K, V> DoubleEndedIterator<&'a (K, V)> for PhfOrderedMapEntries<'a, K, V> {
     fn next_back(&mut self) -> Option<&'a (K, V)> {
         self.iter.next_back()
     }
 }
 
-impl<'a, K, V> RandomAccessIterator<&'a (K, V)>
-        for PhfOrderedMapEntries<'a, K, V> {
+impl<'a, K, V> RandomAccessIterator<&'a (K, V)> for PhfOrderedMapEntries<'a, K, V> {
     fn indexable(&self) -> uint {
         self.iter.indexable()
     }
@@ -718,8 +714,7 @@ impl<T> PhfOrderedSet<T> {
 
     /// Like `find_index`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn find_index_equiv<U>(&self, key: &U) -> Option<uint>
-            where U: PhfHash+Equiv<T> {
+    pub fn find_index_equiv<U>(&self, key: &U) -> Option<uint> where U: PhfHash+Equiv<T> {
         self.map.find_index_equiv(key)
     }
 

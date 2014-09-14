@@ -448,8 +448,8 @@ impl<K, V> PhfOrderedMap<K, V> where K: PhfHash+Eq {
 }
 
 impl<K, V> PhfOrderedMap<K, V> {
-    fn find_entry<T>(&self, key: &T, check: |&K| -> bool)
-            -> Option<(uint, &(K, V))> where T: PhfHash {
+    fn find_entry<T>(&self, key: &T, check: |&K| -> bool) -> Option<(uint, &(K, V))>
+            where T: PhfHash {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
         let idx = self.idxs[(shared::displace(f1, f2, d1, d2) % (self.idxs.len() as u32)) as uint];
@@ -482,14 +482,13 @@ impl<K, V> PhfOrderedMap<K, V> {
 
     /// Like `find_index`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn find_index_equiv<T>(&self, key: &T) -> Option<uint>
-            where T: PhfHash+Equiv<K> {
+    pub fn find_index_equiv<T>(&self, key: &T) -> Option<uint> where T: PhfHash+Equiv<K> {
         self.find_entry(key, |k| key.equiv(k)).map(|(i, _)| i)
     }
 
     /// Returns an iterator over the key/value pairs in the map.
     ///
-    /// Entries are retuned in the same order in which they were defined.
+    /// Entries are returned in the same order in which they were defined.
     pub fn entries<'a>(&'a self) -> PhfOrderedMapEntries<'a, K, V> {
         PhfOrderedMapEntries { iter: self.entries.iter() }
     }

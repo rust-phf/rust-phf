@@ -355,8 +355,8 @@ impl<'a, T> ExactSize<&'a T> for PhfSetValues<'a, T> {}
 
 /// An order-preserving immutable map constructed at compile time.
 ///
-/// Unlike a `PhfMap`, the order of entries in a `PhfOrderedMap` is guaranteed
-/// to be the order the entries were listed in.
+/// Unlike a `PhfMap`, iteration order is guaranteed to match the definition
+/// order.
 ///
 /// `PhfOrderedMap`s may be created with the `phf_ordered_map` macro:
 ///
@@ -610,8 +610,8 @@ impl<'a, K, V> ExactSize<&'a V> for PhfOrderedMapValues<'a, K, V> {}
 
 /// An order-preserving immutable set constructed at compile time.
 ///
-/// Unlike a `PhfSet`, the order of entries in a `PhfOrderedSet` is guaranteed
-/// to be the order the entries were listed in.
+/// Unlike a `PhfSet`, iteration order is guaranteed to match the definition
+/// order.
 ///
 /// `PhfOrderedSet`s may be created with the `phf_ordered_set` macro:
 ///

@@ -24,7 +24,7 @@ mod shared;
 /// ```rust
 /// # #![feature(phase)]
 /// extern crate phf;
-/// #[phase(syntax)]
+/// #[phase(plugin)]
 /// extern crate phf_mac;
 ///
 /// use phf::PhfMap;
@@ -231,7 +231,7 @@ impl<'a, K, V> ExactSize<&'a V> for PhfMapValues<'a, K, V> {}
 /// ```rust
 /// # #![feature(phase)]
 /// extern crate phf;
-/// #[phase(syntax)]
+/// #[phase(plugin)]
 /// extern crate phf_mac;
 ///
 /// use phf::PhfSet;
@@ -363,7 +363,7 @@ impl<'a, T> ExactSize<&'a T> for PhfSetValues<'a, T> {}
 /// ```rust
 /// # #![feature(phase)]
 /// extern crate phf;
-/// #[phase(syntax)]
+/// #[phase(plugin)]
 /// extern crate phf_mac;
 ///
 /// use phf::PhfOrderedMap;
@@ -618,7 +618,7 @@ impl<'a, K, V> ExactSize<&'a V> for PhfOrderedMapValues<'a, K, V> {}
 /// ```rust
 /// # #![feature(phase)]
 /// extern crate phf;
-/// #[phase(syntax)]
+/// #[phase(plugin)]
 /// extern crate phf_mac;
 ///
 /// use phf::PhfOrderedSet;

@@ -10,7 +10,6 @@ extern crate time;
 extern crate rustc;
 
 use std::collections::HashMap;
-use std::gc::Gc;
 use std::os;
 use std::rc::Rc;
 use std::hash;
@@ -27,6 +26,7 @@ use syntax::fold::Folder;
 use syntax::parse;
 use syntax::parse::token::{InternedString, COMMA, EOF, FAT_ARROW};
 use syntax::print::pprust;
+use syntax::ptr::P;
 use rand::{Rng, SeedableRng, XorShiftRng};
 use rustc::plugin::Registry;
 
@@ -104,8 +104,8 @@ impl PhfHash for Key {
 
 struct Entry {
     key_contents: Key,
-    key: Gc<Expr>,
-    value: Gc<Expr>
+    key: P<Expr>,
+    value: P<Expr>
 }
 
 struct HashState {
@@ -228,7 +228,7 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
         entries.push(Entry {
             key_contents: key_contents,
             key: key,
-            value: value,
+            value: value.clone(),
         });
 
         if !parser.eat(&COMMA) && parser.token != EOF {
@@ -246,7 +246,7 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
 
 fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
     match e.node {
-        ExprLit(lit) => {
+        ExprLit(ref lit) => {
             match lit.node {
                 ast::LitStr(ref s, _) => Some(KeyStr(s.clone())),
                 ast::LitBinary(ref b) => Some(KeyBinary(b.clone())),
@@ -419,7 +419,7 @@ fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
     let disps = cx.expr_vec(sp, disps);
 
     let entries = state.map.iter().map(|&idx| {
-        let &Entry { key, value, .. } = &entries[idx];
+        let &Entry { ref key, ref value, .. } = &entries[idx];
         quote_expr!(&*cx, ($key, $value))
     }).collect();
     let entries = cx.expr_vec(sp, entries);
@@ -448,7 +448,7 @@ fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: Ha
     let idxs = state.map.iter().map(|&idx| quote_expr!(&*cx, $idx)).collect();
     let idxs =cx.expr_vec(sp, idxs);
 
-    let entries = entries.iter().map(|&Entry { key, value, .. }| {
+    let entries = entries.iter().map(|&Entry { ref key, ref value, .. }| {
         quote_expr!(&*cx, ($key, $value))
     }).collect();
     let entries = cx.expr_vec(sp, entries);

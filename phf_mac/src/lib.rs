@@ -3,7 +3,6 @@
 //! See the documentation for the `phf` crate for more details.
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
 #![feature(plugin_registrar, quote, default_type_params, macro_rules)]
-#![crate_name="phf_mac"]
 
 extern crate rand;
 extern crate syntax;

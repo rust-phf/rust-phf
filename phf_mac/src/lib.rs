@@ -407,7 +407,7 @@ fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<HashSta
     Some(HashState {
         key: key,
         disps: disps,
-        map: map.move_iter().map(|i| i.unwrap()).collect(),
+        map: map.into_iter().map(|i| i.unwrap()).collect(),
     })
 }
 

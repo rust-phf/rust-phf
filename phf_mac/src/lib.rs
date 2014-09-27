@@ -10,6 +10,7 @@ extern crate time;
 extern crate rustc;
 
 use std::collections::HashMap;
+use std::collections::hashmap::{Occupied, Vacant};
 use syntax::ast::{mod, TokenTree, LitStr, LitBinary, LitByte, LitChar, Expr, ExprLit};
 use syntax::codemap::Span;
 use syntax::ext::base::{DummyResult,
@@ -206,8 +207,10 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
     let mut dups = false;
     let mut strings = HashMap::new();
     for entry in entries.iter() {
-        let &(ref mut spans, _) = strings.find_or_insert(&entry.key_contents,
-                                                         (vec![], &entry.key));
+        let &(ref mut spans, _) = match strings.entry(&entry.key_contents) {
+            Occupied(e) => e.into_mut(),
+            Vacant(e) => e.set((vec![], &entry.key)),
+        };
         spans.push(entry.key.span);
     }
 

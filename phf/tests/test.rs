@@ -112,7 +112,7 @@ mod map {
         static MAP: PhfMap<&'static str, int> = phf_map!(
             "a" => 0,
         );
-        assert_eq!(Some(&0), MAP.find_equiv(&"a".to_string().as_slice()));
+        assert_eq!(Some(&0), MAP.find_equiv(&"a".to_string()[]));
     }
 
     #[test]
@@ -248,7 +248,7 @@ mod set {
             "hello",
             "world",
         };
-        assert!(SET.contains_equiv(&"hello".to_string().as_slice()));
+        assert!(SET.contains_equiv(&"hello".to_string()[]));
     }
 }
 
@@ -289,9 +289,9 @@ mod ordered_map {
         assert_eq!(None, MAP.find_index(&"xyz"));
         assert_eq!(&"baz", MAP.keys().idx(MAP.find_index(&"baz").unwrap()).unwrap());
 
-        assert_eq!(Some(0), MAP.find_index_equiv(&"foo".to_string().as_slice()));
-        assert_eq!(Some(2), MAP.find_index_equiv(&"baz".to_string().as_slice()));
-        assert_eq!(None, MAP.find_index_equiv(&"xyz".to_string().as_slice()));
+        assert_eq!(Some(0), MAP.find_index_equiv(&"foo".to_string()[]));
+        assert_eq!(Some(2), MAP.find_index_equiv(&"baz".to_string()[]));
+        assert_eq!(None, MAP.find_index_equiv(&"xyz".to_string()[]));
     }
 
     #[test]
@@ -349,7 +349,7 @@ mod ordered_map {
         static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
             "a" => 0,
         );
-        assert_eq!(Some(&0), MAP.find_equiv(&"a".to_string().as_slice()));
+        assert_eq!(Some(&0), MAP.find_equiv(&"a".to_string()[]));
     }
 }
 
@@ -392,9 +392,9 @@ mod ordered_set {
         assert_eq!(None, SET.find_index(&"xyz"));
         assert_eq!(&"baz", SET.iter().idx(SET.find_index(&"baz").unwrap()).unwrap());
 
-        assert_eq!(Some(0), SET.find_index_equiv(&"foo".to_string().as_slice()));
-        assert_eq!(Some(2), SET.find_index_equiv(&"baz".to_string().as_slice()));
-        assert_eq!(None, SET.find_index_equiv(&"xyz".to_string().as_slice()));
+        assert_eq!(Some(0), SET.find_index_equiv(&"foo".to_string()[]));
+        assert_eq!(Some(2), SET.find_index_equiv(&"baz".to_string()[]));
+        assert_eq!(None, SET.find_index_equiv(&"xyz".to_string()[]));
     }
 
     #[test]
@@ -414,6 +414,6 @@ mod ordered_set {
             "hello",
             "world",
         };
-        assert!(SET.contains_equiv(&"hello".to_string().as_slice()));
+        assert!(SET.contains_equiv(&"hello".to_string()[]));
     }
 }

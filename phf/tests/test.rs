@@ -20,23 +20,23 @@ mod map {
 
     #[test]
     fn test_two() {
-        static map: PhfMap<&'static str, int> = phf_map!(
+        static MAP: PhfMap<&'static str, int> = phf_map!(
             "foo" => 10,
             "bar" => 11,
         );
-        assert!(Some(&10) == map.find(&("foo")));
-        assert!(Some(&11) == map.find(&("bar")));
-        assert_eq!(None, map.find(&("asdf")));
-        assert_eq!(2, map.len());
+        assert!(Some(&10) == MAP.find(&("foo")));
+        assert!(Some(&11) == MAP.find(&("bar")));
+        assert_eq!(None, MAP.find(&("asdf")));
+        assert_eq!(2, MAP.len());
     }
 
     #[test]
     fn test_entries() {
-        static map: PhfMap<&'static str, int> = phf_map!(
+        static MAP: PhfMap<&'static str, int> = phf_map!(
             "foo" => 10,
             "bar" => 11,
         );
-        let hash = map.entries().map(|&e| e).collect::<HashMap<_, int>>();
+        let hash = MAP.entries().map(|&e| e).collect::<HashMap<_, int>>();
         assert!(Some(&10) == hash.find(&("foo")));
         assert!(Some(&11) == hash.find(&("bar")));
         assert_eq!(2, hash.len());
@@ -44,11 +44,11 @@ mod map {
 
     #[test]
     fn test_keys() {
-        static map: PhfMap<&'static str, int> = phf_map!(
+        static MAP: PhfMap<&'static str, int> = phf_map!(
             "foo" => 10,
             "bar" => 11,
         );
-        let hash = map.keys().map(|&e| e).collect::<HashSet<_>>();
+        let hash = MAP.keys().map(|&e| e).collect::<HashSet<_>>();
         assert!(hash.contains(&("foo")));
         assert!(hash.contains(&("bar")));
         assert_eq!(2, hash.len());
@@ -56,11 +56,11 @@ mod map {
 
     #[test]
     fn test_values() {
-        static map: PhfMap<&'static str, int> = phf_map!(
+        static MAP: PhfMap<&'static str, int> = phf_map!(
             "foo" => 10,
             "bar" => 11,
         );
-        let hash = map.values().map(|&e| e).collect::<HashSet<int>>();
+        let hash = MAP.values().map(|&e| e).collect::<HashSet<int>>();
         assert!(hash.contains(&10));
         assert!(hash.contains(&11));
         assert_eq!(2, hash.len());
@@ -68,7 +68,7 @@ mod map {
 
     #[test]
     fn test_large() {
-        static map: PhfMap<&'static str, int> = phf_map!(
+        static MAP: PhfMap<&'static str, int> = phf_map!(
             "a" => 0,
             "b" => 1,
             "c" => 2,
@@ -96,49 +96,49 @@ mod map {
             "y" => 24,
             "z" => 25,
         );
-        assert!(map.find(&("a")) == Some(&0));
+        assert!(MAP.find(&("a")) == Some(&0));
     }
 
     #[test]
     fn test_macro_key() {
-        static map: PhfMap<&'static str, int> = phf_map!(
+        static MAP: PhfMap<&'static str, int> = phf_map!(
             concat!("foo", "bar") => 1
         );
-        assert!(Some(&1) == map.find(&("foobar")));
+        assert!(Some(&1) == MAP.find(&("foobar")));
     }
 
     #[test]
     fn test_non_static_str_key() {
-        static map: PhfMap<&'static str, int> = phf_map!(
+        static MAP: PhfMap<&'static str, int> = phf_map!(
             "a" => 0,
         );
-        assert_eq!(Some(&0), map.find_equiv(&"a".to_string().as_slice()));
+        assert_eq!(Some(&0), MAP.find_equiv(&"a".to_string().as_slice()));
     }
 
     #[test]
     fn test_index_ok() {
-        static map: PhfMap<&'static str, int> = phf_map!(
+        static MAP: PhfMap<&'static str, int> = phf_map!(
             "a" => 0,
         );
-        assert_eq!(0, map["a"]);
+        assert_eq!(0, MAP["a"]);
     }
 
     #[test]
     #[should_fail]
     fn test_index_fail() {
-        static map: PhfMap<&'static str, int> = phf_map!(
+        static MAP: PhfMap<&'static str, int> = phf_map!(
             "a" => 0,
         );
-        map["b"];
+        MAP["b"];
     }
 
     macro_rules! test_key_type(
         ($t:ty, $($k:expr => $v:expr),+) => ({
-            static map: PhfMap<$t, int> = phf_map! {
+            static MAP: PhfMap<$t, int> = phf_map! {
                 $($k => $v),+
             };
             $(
-                assert_eq!(Some(&$v), map.find(&$k));
+                assert_eq!(Some(&$v), MAP.find(&$k));
             )+
         })
     )
@@ -267,31 +267,31 @@ mod ordered_map {
 
     #[test]
     fn test_two() {
-        static map: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
         );
-        assert!(Some(&10) == map.find(&"foo"));
-        assert!(Some(&11) == map.find(&"bar"));
-        assert_eq!(None, map.find(&"asdf"));
-        assert_eq!(2, map.len());
+        assert!(Some(&10) == MAP.find(&"foo"));
+        assert!(Some(&11) == MAP.find(&"bar"));
+        assert_eq!(None, MAP.find(&"asdf"));
+        assert_eq!(2, MAP.len());
     }
 
     #[test]
     fn test_find_index() {
-        static map: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
             "foo" => 5,
             "bar" => 5,
             "baz" => 5,
         );
-        assert_eq!(Some(0), map.find_index(&"foo"));
-        assert_eq!(Some(2), map.find_index(&"baz"));
-        assert_eq!(None, map.find_index(&"xyz"));
-        assert_eq!(&"baz", map.keys().idx(map.find_index(&"baz").unwrap()).unwrap());
+        assert_eq!(Some(0), MAP.find_index(&"foo"));
+        assert_eq!(Some(2), MAP.find_index(&"baz"));
+        assert_eq!(None, MAP.find_index(&"xyz"));
+        assert_eq!(&"baz", MAP.keys().idx(MAP.find_index(&"baz").unwrap()).unwrap());
 
-        assert_eq!(Some(0), map.find_index_equiv(&"foo".to_string().as_slice()));
-        assert_eq!(Some(2), map.find_index_equiv(&"baz".to_string().as_slice()));
-        assert_eq!(None, map.find_index_equiv(&"xyz".to_string().as_slice()));
+        assert_eq!(Some(0), MAP.find_index_equiv(&"foo".to_string().as_slice()));
+        assert_eq!(Some(2), MAP.find_index_equiv(&"baz".to_string().as_slice()));
+        assert_eq!(None, MAP.find_index_equiv(&"xyz".to_string().as_slice()));
     }
 
     #[test]
@@ -329,27 +329,27 @@ mod ordered_map {
 
     #[test]
     fn test_index_ok() {
-        static map: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
             "a" => 0,
         );
-        assert_eq!(0, map["a"]);
+        assert_eq!(0, MAP["a"]);
     }
 
     #[test]
     #[should_fail]
     fn test_index_fail() {
-        static map: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
             "a" => 0,
         );
-        map["b"];
+        MAP["b"];
     }
 
     #[test]
     fn test_non_static_str_key() {
-        static map: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
             "a" => 0,
         );
-        assert_eq!(Some(&0), map.find_equiv(&"a".to_string().as_slice()));
+        assert_eq!(Some(&0), MAP.find_equiv(&"a".to_string().as_slice()));
     }
 }
 

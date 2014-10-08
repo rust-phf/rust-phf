@@ -4,7 +4,7 @@
 //! literals, or any of the fixed-size integral types.
 #![doc(html_root_url="http://www.rust-ci.org/sfackler")]
 #![warn(missing_doc)]
-#![feature(macro_rules)]
+#![feature(macro_rules, slicing_syntax)]
 
 use std::fmt;
 use std::iter;

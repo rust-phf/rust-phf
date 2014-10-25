@@ -7,12 +7,12 @@ pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 
 #[inline]
 fn split(hash: u64) -> (u32, u32, u32) {
-    let bits = 21;
-    let mask = (1 << bits) - 1;
+    const BITS: uint = 21;
+    const MASK: u64 = (1 << BITS) - 1;
 
-    ((hash & mask) as u32,
-     ((hash >> bits) & mask) as u32,
-     ((hash >> (2 * bits)) & mask) as u32)
+    ((hash & MASK) as u32,
+     ((hash >> BITS) & MASK) as u32,
+     ((hash >> (2 * BITS)) & MASK) as u32)
 }
 
 /// A trait implemented by types which can be used in PHF data structures

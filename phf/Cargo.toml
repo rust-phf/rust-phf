@@ -1,15 +1,15 @@
 [package]
-
 name = "phf"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 version = "0.0.0"
 
 [lib]
-
 name = "phf"
 path = "src/lib.rs"
 test = false
 
-[dev_dependencies.phf_mac]
+[dependencies.xxhash]
+git = "https://github.com/Jurily/rust-xxhash"
 
+[dev_dependencies.phf_mac]
 path = "../phf_mac"

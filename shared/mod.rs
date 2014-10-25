@@ -1,10 +1,11 @@
-use std::hash::{Hash, Hasher, Writer};
-use std::hash::sip::{SipHasher, SipState};
+extern crate xxhash;
 
+#[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
     d2 + f1 * d1 + f2
 }
 
+#[inline]
 fn split(hash: u64) -> (u32, u32, u32) {
     let bits = 21;
     let mask = (1 << bits) - 1;
@@ -21,24 +22,25 @@ pub trait PhfHash {
 }
 
 impl<'a> PhfHash for &'a str {
+    #[inline]
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        split(SipHasher::new_with_keys(0, seed).hash(self))
+        split(xxhash::hash_with_seed(seed, self))
     }
 }
 
 impl<'a> PhfHash for &'a [u8] {
+    #[inline]
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        let mut state = SipState::new_with_keys(0, seed);
-        state.write(*self);
-        split(state.result())
+        split(xxhash::oneshot(*self, seed))
     }
 }
 
 macro_rules! sip_impl(
     ($t:ty) => (
         impl PhfHash for $t {
+            #[inline]
             fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-                split(SipHasher::new_with_keys(0, seed).hash(self))
+                split(xxhash::hash_with_seed(seed, self))
             }
         }
     )

@@ -2,7 +2,7 @@
 //!
 //! Keys can be string literals, byte string literals, byte literals, char
 //! literals, or any of the fixed-size integral types.
-#![doc(html_root_url="http://www.rust-ci.org/sfackler")]
+#![doc(html_root_url="https://sfackler.github.io/doc")]
 #![warn(missing_doc)]
 #![feature(macro_rules, tuple_indexing)]
 

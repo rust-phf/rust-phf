@@ -1,7 +1,7 @@
 //! Compiler plugin for Rust-PHF
 //!
 //! See the documentation for the `phf` crate for more details.
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
+#![doc(html_root_url="http://sfackler.github.io/doc")]
 #![feature(plugin_registrar, quote, default_type_params, macro_rules)]
 #![feature(slicing_syntax)]
 #![allow(unknown_features)]

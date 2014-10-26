@@ -1,4 +1,4 @@
-//! Compile time optimized maps
+//! Compile time optimized maps and sets.
 //!
 //! Keys can be string literals, byte string literals, byte literals, char
 //! literals, or any of the fixed-size integral types.

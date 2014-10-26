@@ -9,7 +9,6 @@
 use std::fmt;
 use std::iter;
 use std::slice;
-use std::collections::Collection;
 
 pub use shared::PhfHash;
 

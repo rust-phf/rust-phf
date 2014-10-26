@@ -92,7 +92,7 @@ pub fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState
     let start = time::precise_time_s();
     let state;
     loop {
-        match try_generate_hash(entries[], &mut rng) {
+        match try_generate_hash(entries, &mut rng) {
             Some(s) => {
                 state = s;
                 break;
@@ -122,7 +122,7 @@ pub fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<Has
 
     let key = rng.gen();
 
-    let hashes: Vec<Hashes> = entries.iter().map(|entry| {
+    let hashes: Vec<_> = entries.iter().map(|entry| {
         let (g, f1, f2) = entry.key_contents.phf_hash(key);
         Hashes {
             g: g,
@@ -177,9 +177,9 @@ pub fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<Has
                 }
 
                 // We've picked a good set of disps
-                *disps.get_mut(bucket.idx) = (d1, d2);
+                disps[bucket.idx] = (d1, d2);
                 for &(idx, key) in values_to_add.iter() {
-                    *map.get_mut(idx) = Some(key);
+                    map[idx] = Some(key);
                 }
                 continue 'buckets;
             }
@@ -197,7 +197,7 @@ pub fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<Has
 }
 
 pub fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
-              -> Box<MacResult+'static> {
+                  -> Box<MacResult+'static> {
     let disps = state.disps.iter().map(|&(d1, d2)| {
         quote_expr!(&*cx, ($d1, $d2))
     }).collect();
@@ -224,14 +224,14 @@ pub fn create_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashSt
 }
 
 pub fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
-                      -> Box<MacResult+'static> {
+                          -> Box<MacResult+'static> {
     let disps = state.disps.iter().map(|&(d1, d2)| {
         quote_expr!(&*cx, ($d1, $d2))
     }).collect();
     let disps = cx.expr_vec(sp, disps);
 
     let idxs = state.map.iter().map(|&idx| quote_expr!(&*cx, $idx)).collect();
-    let idxs =cx.expr_vec(sp, idxs);
+    let idxs = cx.expr_vec(sp, idxs);
 
     let entries = entries.iter().map(|&Entry { ref key, ref value, .. }| {
         quote_expr!(&*cx, ($key, $value))
@@ -248,7 +248,7 @@ pub fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state
 }
 
 pub fn create_ordered_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
-                      -> Box<MacResult+'static> {
+                          -> Box<MacResult+'static> {
     let map = create_ordered_map(cx, sp, entries, state).make_expr().unwrap();
     MacExpr::new(quote_expr!(cx, ::phf::PhfOrderedSet { map: $map }))
 }

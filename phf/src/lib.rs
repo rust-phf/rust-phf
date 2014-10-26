@@ -4,7 +4,7 @@
 //! literals, or any of the fixed-size integral types.
 #![doc(html_root_url="http://www.rust-ci.org/sfackler")]
 #![warn(missing_doc)]
-#![feature(macro_rules)]
+#![feature(macro_rules, tuple_indexing)]
 
 use std::fmt;
 use std::iter;
@@ -58,10 +58,7 @@ impl<K, V> Collection for PhfMap<K, V> {
 
 impl<'a, K, V> Map<K, V> for PhfMap<K, V> where K: PhfHash+Eq {
     fn find(&self, key: &K) -> Option<&V> {
-        self.get_entry(key, |k| key == k).map(|e| {
-            let &(_, ref v) = e;
-            v
-        })
+        self.get_entry(key, |k| key == k).map(|e| &e.1)
     }
 }
 
@@ -92,10 +89,7 @@ impl<K, V> PhfMap<K, V> where K: PhfHash+Eq {
     ///
     /// This can be useful for interning schemes.
     pub fn find_key(&self, key: &K) -> Option<&K> {
-        self.get_entry(key, |k| key == k).map(|e| {
-            let &(ref k, _) = e;
-            k
-        })
+        self.get_entry(key, |k| key == k).map(|e| &e.0)
     }
 }
 
@@ -105,8 +99,7 @@ impl<K, V> PhfMap<K, V> {
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
         let entry = &self.entries[(shared::displace(f1, f2, d1, d2) % (self.entries.len() as u32))
                                   as uint];
-        let &(ref s, _) = entry;
-        if check(s) {
+        if check(&entry.0) {
             Some(entry)
         } else {
             None
@@ -115,19 +108,13 @@ impl<K, V> PhfMap<K, V> {
 
     /// Like `find`, but can operate on any type that is equivalent to a key.
     pub fn find_equiv<T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
-        self.get_entry(key, |k| key.equiv(k)).map(|e| {
-            let &(_, ref v) = e;
-            v
-        })
+        self.get_entry(key, |k| key.equiv(k)).map(|e| &e.1)
     }
 
     /// Like `find_key`, but can operate on any type that is equivalent to a
     /// key.
     pub fn find_key_equiv<T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
-        self.get_entry(key, |k| key.equiv(k)).map(|e| {
-            let &(ref k, _) = e;
-            k
-        })
+        self.get_entry(key, |k| key.equiv(k)).map(|e| &e.0)
     }
 }
 
@@ -143,14 +130,14 @@ impl<K, V> PhfMap<K, V> {
     ///
     /// Keys are returned in an arbitrary but fixed order.
     pub fn keys<'a>(&'a self) -> PhfMapKeys<'a, K, V> {
-        PhfMapKeys { iter: self.entries().map(|&(ref k, _)| k) }
+        PhfMapKeys { iter: self.entries().map(|e| &e.0) }
     }
 
     /// Returns an iterator over the values in the map.
     ///
     /// Values are returned in an arbitrary but fixed order.
     pub fn values<'a>(&'a self) -> PhfMapValues<'a, K, V> {
-        PhfMapValues { iter: self.entries().map(|&(_, ref v)| v) }
+        PhfMapValues { iter: self.entries().map(|e | &e.1) }
     }
 }
 
@@ -414,10 +401,7 @@ impl<K, V> Collection for PhfOrderedMap<K, V> {
 
 impl<K, V> Map<K, V> for PhfOrderedMap<K, V> where K: PhfHash+Eq {
     fn find(&self, key: &K) -> Option<&V> {
-        self.find_entry(key, |k| k == key).map(|(_, e)| {
-            let &(_, ref v) = e;
-            v
-        })
+        self.find_entry(key, |k| k == key).map(|(_, e)| &e.1)
     }
 }
 
@@ -433,10 +417,7 @@ impl<K, V> PhfOrderedMap<K, V> where K: PhfHash+Eq {
     ///
     /// This can be useful for interning schemes.
     pub fn find_key(&self, key: &K) -> Option<&K> {
-        self.find_entry(key, |k| k == key).map(|(_, e)| {
-            let &(ref k, _) = e;
-            k
-        })
+        self.find_entry(key, |k| k == key).map(|(_, e)| &e.0)
     }
 
     /// Returns the index of the key within the list used to initialize
@@ -453,9 +434,8 @@ impl<K, V> PhfOrderedMap<K, V> {
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
         let idx = self.idxs[(shared::displace(f1, f2, d1, d2) % (self.idxs.len() as u32)) as uint];
         let entry = &self.entries[idx];
-        let &(ref s, _) = entry;
 
-        if check(s) {
+        if check(&entry.0) {
             Some((idx, entry))
         } else {
             None
@@ -464,19 +444,13 @@ impl<K, V> PhfOrderedMap<K, V> {
 
     /// Like `find`, but can operate on any type that is equivalent to a key.
     pub fn find_equiv<T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
-        self.find_entry(key, |k| key.equiv(k)).map(|(_, e)| {
-            let &(_, ref v) = e;
-            v
-        })
+        self.find_entry(key, |k| key.equiv(k)).map(|(_, e)| &e.1)
     }
 
     /// Like `find_key`, but can operate on any type that is equivalent to a
     /// key.
     pub fn find_key_equiv<T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
-        self.find_entry(key, |k| key.equiv(k)).map(|(_, e)| {
-            let &(ref k, _) = e;
-            k
-        })
+        self.find_entry(key, |k| key.equiv(k)).map(|(_, e)| &e.0)
     }
 
     /// Like `find_index`, but can operate on any type that is equivalent to a
@@ -496,14 +470,14 @@ impl<K, V> PhfOrderedMap<K, V> {
     ///
     /// Keys are returned in the same order in which they were defined.
     pub fn keys<'a>(&'a self) -> PhfOrderedMapKeys<'a, K, V> {
-        PhfOrderedMapKeys { iter: self.entries().map(|&(ref k, _)| k) }
+        PhfOrderedMapKeys { iter: self.entries().map(|e| &e.0) }
     }
 
     /// Returns an iterator over the values in the map.
     ///
     /// Values are returned in the same order in which they were defined.
     pub fn values<'a>(&'a self) -> PhfOrderedMapValues<'a, K, V> {
-        PhfOrderedMapValues { iter: self.entries().map(|&(_, ref v)| v) }
+        PhfOrderedMapValues { iter: self.entries().map(|e| &e.1) }
     }
 }
 

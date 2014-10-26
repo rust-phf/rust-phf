@@ -4,16 +4,27 @@
 //! literals, or any of the fixed-size integral types.
 #![doc(html_root_url="https://sfackler.github.io/doc")]
 #![warn(missing_doc)]
-#![feature(macro_rules, tuple_indexing)]
+#![feature(macro_rules, tuple_indexing, phase, globs)]
+#![no_std]
 
-use std::fmt;
-use std::iter;
-use std::slice;
+#[phase(plugin, link)]
+extern crate core;
+extern crate collections;
+
+use core::fmt;
+use core::iter;
+use core::slice;
+use core::prelude::*;
+use collections::{Map, Set};
 
 pub use shared::PhfHash;
 
 #[path="../../shared/mod.rs"]
 mod shared;
+
+mod std {
+    pub use core::fmt;
+}
 
 /// An immutable map constructed at compile time.
 ///

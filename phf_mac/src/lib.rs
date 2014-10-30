@@ -20,7 +20,7 @@ use syntax::ext::base::{DummyResult,
                         MacResult};
 use syntax::fold::Folder;
 use syntax::parse;
-use syntax::parse::token::{InternedString, COMMA, EOF, FAT_ARROW};
+use syntax::parse::token::{InternedString, Comma, Eof, FatArrow};
 use syntax::print::pprust;
 use rustc::plugin::Registry;
 
@@ -106,14 +106,14 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     let mut entries = Vec::new();
 
     let mut bad = false;
-    while parser.token != EOF {
+    while parser.token != Eof {
         let key = cx.expander().fold_expr(parser.parse_expr());
         let key_contents = parse_key(cx, &*key).unwrap_or_else(|| {
             bad = true;
             KeyStr(InternedString::new(""))
         });
 
-        if !parser.eat(&FAT_ARROW) {
+        if !parser.eat(&FatArrow) {
             cx.span_err(parser.span, "expected `=>`");
             return None;
         }
@@ -126,7 +126,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
             value: value
         });
 
-        if !parser.eat(&COMMA) && parser.token != EOF {
+        if !parser.eat(&Comma) && parser.token != Eof {
             cx.span_err(parser.span, "expected `,`");
             return None;
         }
@@ -145,7 +145,7 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     let value = quote_expr!(&*cx, ());
 
     let mut bad = false;
-    while parser.token != EOF {
+    while parser.token != Eof {
         let key = cx.expander().fold_expr(parser.parse_expr());
         let key_contents = parse_key(cx, &*key).unwrap_or_else(|| {
             bad = true;
@@ -158,7 +158,7 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
             value: value.clone(),
         });
 
-        if !parser.eat(&COMMA) && parser.token != EOF {
+        if !parser.eat(&Comma) && parser.token != Eof {
             cx.span_err(parser.span, "expected `,`");
             return None;
         }

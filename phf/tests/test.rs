@@ -206,21 +206,21 @@ mod map {
 
 mod set {
     use std::collections::HashSet;
-    use phf::PhfSet;
+    use phf;
 
     #[allow(dead_code)]
-    static TRAILING_COMMA: PhfSet<&'static str> = phf_set! {
+    static TRAILING_COMMA: phf::Set<&'static str> = phf_set! {
         "foo",
     };
 
     #[allow(dead_code)]
-    static NO_TRAILING_COMMA: PhfSet<&'static str> = phf_set! {
+    static NO_TRAILING_COMMA: phf::Set<&'static str> = phf_set! {
         "foo"
     };
 
     #[test]
     fn test_two() {
-        static SET: PhfSet<&'static str> = phf_set! {
+        static SET: phf::Set<&'static str> = phf_set! {
             "hello",
             "world",
         };
@@ -232,7 +232,7 @@ mod set {
 
     #[test]
     fn test_iter() {
-        static SET: PhfSet<&'static str> = phf_set! {
+        static SET: phf::Set<&'static str> = phf_set! {
             "hello",
             "world",
         };
@@ -244,7 +244,7 @@ mod set {
 
     #[test]
     fn test_non_static_str_contains() {
-        static SET: PhfSet<&'static str> = phf_set! {
+        static SET: phf::Set<&'static str> = phf_set! {
             "hello",
             "world",
         };

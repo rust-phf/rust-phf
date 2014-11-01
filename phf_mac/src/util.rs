@@ -220,7 +220,7 @@ pub fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashSt
 pub fn create_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
               -> Box<MacResult+'static> {
     let map = create_map(cx, sp, entries, state).make_expr().unwrap();
-    MacExpr::new(quote_expr!(cx, ::phf::PhfSet { map: $map }))
+    MacExpr::new(quote_expr!(cx, ::phf::Set { map: $map }))
 }
 
 pub fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)

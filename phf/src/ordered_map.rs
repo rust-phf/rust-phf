@@ -9,7 +9,7 @@ use collections::Map as MapTrait;
 
 /// An order-preserving immutable map constructed at compile time.
 ///
-/// Unlike a `PhfMap`, iteration order is guaranteed to match the definition
+/// Unlike a `Map`, iteration order is guaranteed to match the definition
 /// order.
 ///
 /// `OrderedMap`s may be created with the `phf_ordered_map` macro:
@@ -20,9 +20,7 @@ use collections::Map as MapTrait;
 /// #[phase(plugin)]
 /// extern crate phf_mac;
 ///
-/// use phf::OrderedMap;
-///
-/// static MY_MAP: OrderedMap<&'static str, int> = phf_ordered_map! {
+/// static MY_MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map! {
 ///    "hello" => 10,
 ///    "world" => 11,
 /// };

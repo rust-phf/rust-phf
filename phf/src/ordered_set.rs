@@ -8,7 +8,7 @@ use collections::Set as SetTrait;
 
 /// An order-preserving immutable set constructed at compile time.
 ///
-/// Unlike a `PhfSet`, iteration order is guaranteed to match the definition
+/// Unlike a `Set`, iteration order is guaranteed to match the definition
 /// order.
 ///
 /// `OrderedSet`s may be created with the `phf_ordered_set` macro:
@@ -19,9 +19,7 @@ use collections::Set as SetTrait;
 /// #[phase(plugin)]
 /// extern crate phf_mac;
 ///
-/// use phf::OrderedSet;
-///
-/// static MY_SET: OrderedSet<&'static str> = phf_ordered_set! {
+/// static MY_SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
 ///    "hello",
 ///    "world",
 /// };

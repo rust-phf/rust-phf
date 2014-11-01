@@ -17,9 +17,7 @@ use map;
 /// #[phase(plugin)]
 /// extern crate phf_mac;
 ///
-/// use phf::Set;
-///
-/// static MY_SET: Set<&'static str> = phf_set! {
+/// static MY_SET: phf::Set<&'static str> = phf_set! {
 ///    "hello",
 ///    "world",
 /// };

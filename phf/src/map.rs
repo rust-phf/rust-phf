@@ -17,9 +17,7 @@ use shared::PhfHash;
 /// #[phase(plugin)]
 /// extern crate phf_mac;
 ///
-/// use phf::Map;
-///
-/// static MY_MAP: Map<&'static str, int> = phf_map! {
+/// static MY_MAP: phf::Map<&'static str, int> = phf_map! {
 ///    "hello" => 10,
 ///    "world" => 11,
 /// };

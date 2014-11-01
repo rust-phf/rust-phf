@@ -12,9 +12,13 @@ extern crate core;
 extern crate collections;
 
 pub use shared::PhfHash;
+#[doc(inline)]
 pub use map::Map;
+#[doc(inline)]
 pub use set::Set;
+#[doc(inline)]
 pub use ordered_map::OrderedMap;
+#[doc(inline)]
 pub use ordered_set::OrderedSet;
 
 #[path="../../shared/mod.rs"]

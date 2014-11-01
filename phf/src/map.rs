@@ -4,7 +4,6 @@ use core::iter;
 use core::slice;
 use core::fmt;
 use shared;
-use collections::Map as MapTrait;
 use shared::PhfHash;
 
 /// An immutable map constructed at compile time.
@@ -39,18 +38,6 @@ pub struct Map<K:'static, V:'static> {
     pub entries: &'static [(K, V)],
 }
 
-impl<K, V> Collection for Map<K, V> {
-    fn len(&self) -> uint {
-        self.entries.len()
-    }
-}
-
-impl<'a, K, V> MapTrait<K, V> for Map<K, V> where K: PhfHash+Eq {
-    fn find(&self, key: &K) -> Option<&V> {
-        self.get_entry(key, |k| key == k).map(|e| &e.1)
-    }
-}
-
 impl<K, V> fmt::Show for Map<K, V> where K: fmt::Show, V: fmt::Show {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));
@@ -73,6 +60,16 @@ impl<K, V> Index<K, V> for Map<K, V> where K: PhfHash+Eq {
 }
 
 impl<K, V> Map<K, V> where K: PhfHash+Eq {
+    /// Returns a reference to the value that `key` maps to.
+    pub fn find(&self, key: &K) -> Option<&V> {
+        self.get_entry(key, |k| key == k).map(|e| &e.1)
+    }
+
+    /// Determines if `key` is in the `Map`.
+    pub fn contains_key(&self, key: &K) -> bool {
+        self.find(key).is_some()
+    }
+
     /// Returns a reference to the map's internal static instance of the given
     /// key.
     ///
@@ -83,6 +80,16 @@ impl<K, V> Map<K, V> where K: PhfHash+Eq {
 }
 
 impl<K, V> Map<K, V> {
+    /// Returns true if the `Map` is empty.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Returns the number of entries in the `Map`.
+    pub fn len(&self) -> uint {
+        self.entries.len()
+    }
+
     fn get_entry<Sized? T>(&self, key: &T, check: |&K| -> bool) -> Option<&(K, V)> where T: PhfHash {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
@@ -105,9 +112,7 @@ impl<K, V> Map<K, V> {
     pub fn find_key_equiv<Sized? T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
         self.get_entry(key, |k| key.equiv(k)).map(|e| &e.0)
     }
-}
 
-impl<K, V> Map<K, V> {
     /// Returns an iterator over the key/value pairs in the map.
     ///
     /// Entries are retuned in an arbitrary but fixed order.

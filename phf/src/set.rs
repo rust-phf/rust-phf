@@ -3,8 +3,6 @@ use core::prelude::*;
 use Map;
 use core::fmt;
 use shared::PhfHash;
-use collections::Set as SetTrait;
-use collections::Map as MapTrait;
 use map;
 
 /// An immutable set constructed at compile time.
@@ -50,30 +48,6 @@ impl<T> fmt::Show for Set<T> where T: fmt::Show {
     }
 }
 
-impl<T> Collection for Set<T> {
-    #[inline]
-    fn len(&self) -> uint {
-        self.map.len()
-    }
-}
-
-impl<T> SetTrait<T> for Set<T> where T: PhfHash+Eq {
-    #[inline]
-    fn contains(&self, value: &T) -> bool {
-        self.map.contains_key(value)
-    }
-
-    #[inline]
-    fn is_disjoint(&self, other: &Set<T>) -> bool {
-        !self.iter().any(|value| other.contains(value))
-    }
-
-    #[inline]
-    fn is_subset(&self, other: &Set<T>) -> bool {
-        self.iter().all(|value| other.contains(value))
-    }
-}
-
 impl<T> Set<T> where T: PhfHash+Eq {
     /// Returns a reference to the set's internal static instance of the given
     /// key.
@@ -83,9 +57,45 @@ impl<T> Set<T> where T: PhfHash+Eq {
     pub fn find_key(&self, key: &T) -> Option<&T> {
         self.map.find_key(key)
     }
+
+    /// Returns true if `value` is in the `Set`.
+    #[inline]
+    pub fn contains(&self, value: &T) -> bool {
+        self.map.contains_key(value)
+    }
+
+    /// Returns true if `other` shares no elements with `self`.
+    #[inline]
+    pub fn is_disjoint(&self, other: &Set<T>) -> bool {
+        !self.iter().any(|value| other.contains(value))
+    }
+
+    /// Returns true if `other` contains all values in `self`.
+    #[inline]
+    pub fn is_subset(&self, other: &Set<T>) -> bool {
+        self.iter().all(|value| other.contains(value))
+    }
+
+    /// Returns true if `self` contains all values in `other`.
+    #[inline]
+    pub fn is_superset(&self, other: &Set<T>) -> bool {
+        other.is_subset(self)
+    }
 }
 
 impl<T> Set<T> {
+    /// Returns the number of elements in the `Set`.
+    #[inline]
+    pub fn len(&self) -> uint {
+        self.map.len()
+    }
+
+    /// Returns true if the `Set` contains no elements.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Like `contains`, but can operate on any type that is equivalent to a
     /// value
     #[inline]
@@ -106,17 +116,17 @@ impl<T> Set<T> {
     ///
     /// Values are returned in an arbitrary but fixed order.
     #[inline]
-    pub fn iter<'a>(&'a self) -> Entries<'a, T> {
-        Entries { iter: self.map.keys() }
+    pub fn iter<'a>(&'a self) -> Items<'a, T> {
+        Items { iter: self.map.keys() }
     }
 }
 
 /// An iterator over the values in a `Set`.
-pub struct Entries<'a, T:'static> {
+pub struct Items<'a, T:'static> {
     iter: map::Keys<'a, T, ()>,
 }
 
-impl<'a, T> Iterator<&'a T> for Entries<'a, T> {
+impl<'a, T> Iterator<&'a T> for Items<'a, T> {
     fn next(&mut self) -> Option<&'a T> {
         self.iter.next()
     }
@@ -126,12 +136,12 @@ impl<'a, T> Iterator<&'a T> for Entries<'a, T> {
     }
 }
 
-impl<'a, T> DoubleEndedIterator<&'a T> for Entries<'a, T> {
+impl<'a, T> DoubleEndedIterator<&'a T> for Items<'a, T> {
     fn next_back(&mut self) -> Option<&'a T> {
         self.iter.next_back()
     }
 }
 
-impl<'a, T> ExactSize<&'a T> for Entries<'a, T> {}
+impl<'a, T> ExactSize<&'a T> for Items<'a, T> {}
 
 

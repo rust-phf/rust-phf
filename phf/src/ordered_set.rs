@@ -3,8 +3,6 @@ use core::prelude::*;
 use core::fmt;
 use ordered_map;
 use {PhfHash, OrderedMap};
-use collections::Map as MapTrait;
-use collections::Set as SetTrait;
 
 /// An order-preserving immutable set constructed at compile time.
 ///
@@ -52,30 +50,6 @@ impl<T> fmt::Show for OrderedSet<T> where T: fmt::Show {
     }
 }
 
-impl<T> Collection for OrderedSet<T> {
-    #[inline]
-    fn len(&self) -> uint {
-        self.map.len()
-    }
-}
-
-impl<T> SetTrait<T> for OrderedSet<T> where T: PhfHash+Eq {
-    #[inline]
-    fn contains(&self, value: &T) -> bool {
-        self.map.contains_key(value)
-    }
-
-    #[inline]
-    fn is_disjoint(&self, other: &OrderedSet<T>) -> bool {
-        !self.iter().any(|value| other.contains(value))
-    }
-
-    #[inline]
-    fn is_subset(&self, other: &OrderedSet<T>) -> bool {
-        self.iter().all(|value| other.contains(value))
-    }
-}
-
 impl<T: PhfHash+Eq> OrderedSet<T> {
     /// Returns a reference to the set's internal static instance of the given
     /// key.
@@ -91,9 +65,45 @@ impl<T: PhfHash+Eq> OrderedSet<T> {
     pub fn find_index(&self, key: &T) -> Option<uint> {
         self.map.find_index(key)
     }
+
+    /// Returns true if `value` is in the `Set`.
+    #[inline]
+    pub fn contains(&self, value: &T) -> bool {
+        self.map.contains_key(value)
+    }
+
+    /// Returns true if `other` shares no elements with `self`.
+    #[inline]
+    pub fn is_disjoint(&self, other: &OrderedSet<T>) -> bool {
+        !self.iter().any(|value| other.contains(value))
+    }
+
+    /// Returns true if `other` contains all values in `self`.
+    #[inline]
+    pub fn is_subset(&self, other: &OrderedSet<T>) -> bool {
+        self.iter().all(|value| other.contains(value))
+    }
+
+    /// Returns true if `self` contains all values in `other`.
+    #[inline]
+    pub fn is_superset(&self, other: &OrderedSet<T>) -> bool {
+        other.is_subset(self)
+    }
 }
 
 impl<T> OrderedSet<T> {
+    /// Returns the number of elements in the `Set`.
+    #[inline]
+    pub fn len(&self) -> uint {
+        self.map.len()
+    }
+
+    /// Returns true if the `Set` contains no elements.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Like `contains`, but can operate on any type that is equivalent to a
     /// value
     #[inline]

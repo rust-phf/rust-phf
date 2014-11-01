@@ -9,7 +9,6 @@
 
 #[phase(plugin, link)]
 extern crate core;
-extern crate collections;
 
 pub use shared::PhfHash;
 #[doc(inline)]

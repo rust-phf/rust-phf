@@ -5,7 +5,6 @@ use core::slice;
 use core::iter;
 use PhfHash;
 use shared;
-use collections::Map as MapTrait;
 
 /// An order-preserving immutable map constructed at compile time.
 ///
@@ -59,18 +58,6 @@ impl<K, V> fmt::Show for OrderedMap<K, V> where K: fmt::Show, V: fmt::Show {
     }
 }
 
-impl<K, V> Collection for OrderedMap<K, V> {
-    fn len(&self) -> uint {
-        self.entries.len()
-    }
-}
-
-impl<K, V> MapTrait<K, V> for OrderedMap<K, V> where K: PhfHash+Eq {
-    fn find(&self, key: &K) -> Option<&V> {
-        self.find_entry(key, |k| k == key).map(|(_, e)| &e.1)
-    }
-}
-
 impl<K, V> Index<K, V> for OrderedMap<K, V> where K: PhfHash+Eq {
     fn index(&self, k: &K) -> &V {
         self.find(k).expect("invalid key")
@@ -78,6 +65,16 @@ impl<K, V> Index<K, V> for OrderedMap<K, V> where K: PhfHash+Eq {
 }
 
 impl<K, V> OrderedMap<K, V> where K: PhfHash+Eq {
+    /// Returns a reference to the value that `key` maps to.
+    pub fn find(&self, key: &K) -> Option<&V> {
+        self.find_entry(key, |k| key == k).map(|(_, e)| &e.1)
+    }
+
+    /// Determines if `key` is in the `Map`.
+    pub fn contains_key(&self, key: &K) -> bool {
+        self.find(key).is_some()
+    }
+
     /// Returns a reference to the map's internal static instance of the given
     /// key.
     ///
@@ -94,6 +91,16 @@ impl<K, V> OrderedMap<K, V> where K: PhfHash+Eq {
 }
 
 impl<K, V> OrderedMap<K, V> {
+    /// Returns true if the `Map` is empty.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Returns the number of entries in the `Map`.
+    pub fn len(&self) -> uint {
+        self.entries.len()
+    }
+
     fn find_entry<Sized? T>(&self, key: &T, check: |&K| -> bool) -> Option<(uint, &(K, V))>
             where T: PhfHash {
         let (g, f1, f2) = key.phf_hash(self.key);

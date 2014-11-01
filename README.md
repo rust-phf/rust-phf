@@ -22,9 +22,7 @@ Example
 extern crate phf_mac;
 extern crate phf;
 
-use phf::PhfMap;
-
-static KEYWORDS: PhfMap<&'static str, Keyword> = phf_map! {
+static KEYWORDS: phf::Map<&'static str, Keyword> = phf_map! {
     "loop" => LOOP,
     "continue" => CONTINUE,
     "break" => BREAK,

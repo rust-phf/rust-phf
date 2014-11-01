@@ -1,4 +1,7 @@
 extern crate xxhash;
+extern crate core;
+
+use self::core::kinds::Sized;
 
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
@@ -16,7 +19,7 @@ fn split(hash: u64) -> (u32, u32, u32) {
 }
 
 /// A trait implemented by types which can be used in PHF data structures
-pub trait PhfHash {
+pub trait PhfHash for Sized? {
     /// Hashes the value of `self`, factoring in a seed
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32);
 }
@@ -34,6 +37,21 @@ impl<'a> PhfHash for &'a [u8] {
         split(xxhash::oneshot(*self, seed))
     }
 }
+
+impl PhfHash for str {
+    #[inline]
+    fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
+        split(xxhash::hash_with_seed(seed, &self))
+    }
+}
+
+impl PhfHash for [u8] {
+    #[inline]
+    fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
+        split(xxhash::oneshot(self, seed))
+    }
+}
+
 
 macro_rules! sip_impl(
     ($t:ty) => (

@@ -104,7 +104,7 @@ impl<K, V> PhfMap<K, V> where K: PhfHash+Eq {
 }
 
 impl<K, V> PhfMap<K, V> {
-    fn get_entry<T>(&self, key: &T, check: |&K| -> bool) -> Option<&(K, V)> where T: PhfHash {
+    fn get_entry<Sized? T>(&self, key: &T, check: |&K| -> bool) -> Option<&(K, V)> where T: PhfHash {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
         let entry = &self.entries[(shared::displace(f1, f2, d1, d2) % (self.entries.len() as u32))
@@ -117,13 +117,13 @@ impl<K, V> PhfMap<K, V> {
     }
 
     /// Like `find`, but can operate on any type that is equivalent to a key.
-    pub fn find_equiv<T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
+    pub fn find_equiv<Sized? T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
         self.get_entry(key, |k| key.equiv(k)).map(|e| &e.1)
     }
 
     /// Like `find_key`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn find_key_equiv<T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
+    pub fn find_key_equiv<Sized? T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
         self.get_entry(key, |k| key.equiv(k)).map(|e| &e.0)
     }
 }
@@ -304,14 +304,14 @@ impl<T> PhfSet<T> {
     /// Like `contains`, but can operate on any type that is equivalent to a
     /// value
     #[inline]
-    pub fn contains_equiv<U>(&self, key: &U) -> bool where U: PhfHash+Equiv<T> {
+    pub fn contains_equiv<Sized? U>(&self, key: &U) -> bool where U: PhfHash+Equiv<T> {
         self.map.find_equiv(key).is_some()
     }
 
     /// Like `find_key`, but can operate on any type that is equivalent to a
     /// value
     #[inline]
-    pub fn find_key_equiv<U>(&self, key: &U) -> Option<&T> where U: PhfHash+Equiv<T> {
+    pub fn find_key_equiv<Sized? U>(&self, key: &U) -> Option<&T> where U: PhfHash+Equiv<T> {
         self.map.find_key_equiv(key)
     }
 }
@@ -438,7 +438,7 @@ impl<K, V> PhfOrderedMap<K, V> where K: PhfHash+Eq {
 }
 
 impl<K, V> PhfOrderedMap<K, V> {
-    fn find_entry<T>(&self, key: &T, check: |&K| -> bool) -> Option<(uint, &(K, V))>
+    fn find_entry<Sized? T>(&self, key: &T, check: |&K| -> bool) -> Option<(uint, &(K, V))>
             where T: PhfHash {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
@@ -453,19 +453,19 @@ impl<K, V> PhfOrderedMap<K, V> {
     }
 
     /// Like `find`, but can operate on any type that is equivalent to a key.
-    pub fn find_equiv<T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
+    pub fn find_equiv<Sized? T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
         self.find_entry(key, |k| key.equiv(k)).map(|(_, e)| &e.1)
     }
 
     /// Like `find_key`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn find_key_equiv<T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
+    pub fn find_key_equiv<Sized? T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
         self.find_entry(key, |k| key.equiv(k)).map(|(_, e)| &e.0)
     }
 
     /// Like `find_index`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn find_index_equiv<T>(&self, key: &T) -> Option<uint> where T: PhfHash+Equiv<K> {
+    pub fn find_index_equiv<Sized? T>(&self, key: &T) -> Option<uint> where T: PhfHash+Equiv<K> {
         self.find_entry(key, |k| key.equiv(k)).map(|(i, _)| i)
     }
 
@@ -683,20 +683,20 @@ impl<T> PhfOrderedSet<T> {
     /// Like `contains`, but can operate on any type that is equivalent to a
     /// value
     #[inline]
-    pub fn contains_equiv<U>(&self, key: &U) -> bool where U: PhfHash+Equiv<T> {
+    pub fn contains_equiv<Sized? U>(&self, key: &U) -> bool where U: PhfHash+Equiv<T> {
         self.map.find_equiv(key).is_some()
     }
 
     /// Like `find_key`, but can operate on any type that is equivalent to a
     /// value
     #[inline]
-    pub fn find_key_equiv<U>(&self, key: &U) -> Option<&T> where U: PhfHash+Equiv<T> {
+    pub fn find_key_equiv<Sized? U>(&self, key: &U) -> Option<&T> where U: PhfHash+Equiv<T> {
         self.map.find_key_equiv(key)
     }
 
     /// Like `find_index`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn find_index_equiv<U>(&self, key: &U) -> Option<uint> where U: PhfHash+Equiv<T> {
+    pub fn find_index_equiv<Sized? U>(&self, key: &U) -> Option<uint> where U: PhfHash+Equiv<T> {
         self.map.find_index_equiv(key)
     }
 

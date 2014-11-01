@@ -22,12 +22,16 @@ pub use ordered_map::OrderedMap;
 pub use ordered_set::OrderedSet;
 
 #[deprecated = "renamed to Map"]
+#[doc(hidden)]
 pub use Map as PhfMap;
 #[deprecated = "renamed to Set"]
+#[doc(hidden)]
 pub use Set as PhfSet;
 #[deprecated = "renamed to OrderedMap"]
+#[doc(hidden)]
 pub use OrderedMap as PhfOrderedMap;
 #[deprecated = "renamed to OrderedSet"]
+#[doc(hidden)]
 pub use OrderedSet as PhfOrderedSet;
 
 #[path="../../shared/mod.rs"]

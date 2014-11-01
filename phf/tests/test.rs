@@ -354,21 +354,21 @@ mod ordered_map {
 }
 
 mod ordered_set {
-    use phf::PhfOrderedSet;
+    use phf;
 
     #[allow(dead_code)]
-    static TRAILING_COMMA: PhfOrderedSet<&'static str> = phf_ordered_set! {
+    static TRAILING_COMMA: phf::OrderedSet<&'static str> = phf_ordered_set! {
         "foo",
     };
 
     #[allow(dead_code)]
-    static NO_TRAILING_COMMA: PhfOrderedSet<&'static str> = phf_ordered_set! {
+    static NO_TRAILING_COMMA: phf::OrderedSet<&'static str> = phf_ordered_set! {
         "foo"
     };
 
     #[test]
     fn test_two() {
-        static SET: PhfOrderedSet<&'static str> = phf_ordered_set! {
+        static SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
             "hello",
             "there",
             "world",
@@ -382,7 +382,7 @@ mod ordered_set {
 
     #[test]
     fn test_find_index() {
-        static SET: PhfOrderedSet<&'static str> = phf_ordered_set! {
+        static SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
             "foo",
             "bar",
             "baz",
@@ -399,7 +399,7 @@ mod ordered_set {
 
     #[test]
     fn test_iter() {
-        static SET: PhfOrderedSet<&'static str> = phf_ordered_set! {
+        static SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
             "hello",
             "there",
             "world",
@@ -410,7 +410,7 @@ mod ordered_set {
 
     #[test]
     fn test_non_static_str_contains() {
-        static SET: PhfOrderedSet<&'static str> = phf_ordered_set! {
+        static SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
             "hello",
             "world",
         };

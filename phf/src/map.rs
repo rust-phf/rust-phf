@@ -25,7 +25,7 @@ use shared::PhfHash;
 /// # fn main() {}
 /// ```
 ///
-/// # Note
+/// ## Note
 ///
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_map` macro. They are subject to change at any time and should never

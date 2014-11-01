@@ -27,7 +27,7 @@ use collections::Set as SetTrait;
 /// # fn main() {}
 /// ```
 ///
-/// # Note
+/// ## Note
 ///
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_ordered_set` macro. They are subject to change at any time and should

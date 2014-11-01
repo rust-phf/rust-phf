@@ -28,7 +28,7 @@ use collections::Map as MapTrait;
 /// # fn main() {}
 /// ```
 ///
-/// # Note
+/// ## Note
 ///
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_ordered_map` macro. They are subject to change at any time and should

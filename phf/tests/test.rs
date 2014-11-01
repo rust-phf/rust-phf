@@ -253,21 +253,21 @@ mod set {
 }
 
 mod ordered_map {
-    use phf::PhfOrderedMap;
+    use phf;
 
     #[allow(dead_code)]
-    static TRAILING_COMMA: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+    static TRAILING_COMMA: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
         "foo" => 10,
     );
 
     #[allow(dead_code)]
-    static NO_TRAILING_COMMA: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+    static NO_TRAILING_COMMA: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
         "foo" => 10
     );
 
     #[test]
     fn test_two() {
-        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
         );
@@ -279,7 +279,7 @@ mod ordered_map {
 
     #[test]
     fn test_find_index() {
-        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
             "foo" => 5,
             "bar" => 5,
             "baz" => 5,
@@ -296,7 +296,7 @@ mod ordered_map {
 
     #[test]
     fn test_entries() {
-        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
             "baz" => 12,
@@ -307,7 +307,7 @@ mod ordered_map {
 
     #[test]
     fn test_keys() {
-        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
             "baz" => 12,
@@ -318,7 +318,7 @@ mod ordered_map {
 
     #[test]
     fn test_values() {
-        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
             "baz" => 12,
@@ -329,7 +329,7 @@ mod ordered_map {
 
     #[test]
     fn test_index_ok() {
-        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
             "a" => 0,
         );
         assert_eq!(0, MAP["a"]);
@@ -338,7 +338,7 @@ mod ordered_map {
     #[test]
     #[should_fail]
     fn test_index_fail() {
-        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
             "a" => 0,
         );
         MAP["b"];
@@ -346,7 +346,7 @@ mod ordered_map {
 
     #[test]
     fn test_non_static_str_key() {
-        static MAP: PhfOrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
             "a" => 0,
         );
         assert_eq!(Some(&0), MAP.find_equiv("a".to_string()[]));

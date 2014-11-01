@@ -239,7 +239,7 @@ pub fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state
     let entries = cx.expr_vec(sp, entries);
 
     let key = state.key;
-    MacExpr::new(quote_expr!(cx, ::phf::PhfOrderedMap {
+    MacExpr::new(quote_expr!(cx, ::phf::OrderedMap {
         key: $key,
         disps: &$disps,
         idxs: &$idxs,

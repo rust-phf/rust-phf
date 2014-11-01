@@ -6,21 +6,21 @@ extern crate phf;
 
 mod map {
     use std::collections::{HashMap, HashSet};
-    use phf::PhfMap;
+    use phf;
 
     #[allow(dead_code)]
-    static TRAILING_COMMA: PhfMap<&'static str, int> = phf_map!(
+    static TRAILING_COMMA: phf::Map<&'static str, int> = phf_map!(
         "foo" => 10,
     );
 
     #[allow(dead_code)]
-    static NO_TRAILING_COMMA: PhfMap<&'static str, int> = phf_map!(
+    static NO_TRAILING_COMMA: phf::Map<&'static str, int> = phf_map!(
         "foo" => 10
     );
 
     #[test]
     fn test_two() {
-        static MAP: PhfMap<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, int> = phf_map!(
             "foo" => 10,
             "bar" => 11,
         );
@@ -32,7 +32,7 @@ mod map {
 
     #[test]
     fn test_entries() {
-        static MAP: PhfMap<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, int> = phf_map!(
             "foo" => 10,
             "bar" => 11,
         );
@@ -44,7 +44,7 @@ mod map {
 
     #[test]
     fn test_keys() {
-        static MAP: PhfMap<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, int> = phf_map!(
             "foo" => 10,
             "bar" => 11,
         );
@@ -56,7 +56,7 @@ mod map {
 
     #[test]
     fn test_values() {
-        static MAP: PhfMap<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, int> = phf_map!(
             "foo" => 10,
             "bar" => 11,
         );
@@ -68,7 +68,7 @@ mod map {
 
     #[test]
     fn test_large() {
-        static MAP: PhfMap<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, int> = phf_map!(
             "a" => 0,
             "b" => 1,
             "c" => 2,
@@ -101,7 +101,7 @@ mod map {
 
     #[test]
     fn test_macro_key() {
-        static MAP: PhfMap<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, int> = phf_map!(
             concat!("foo", "bar") => 1
         );
         assert!(Some(&1) == MAP.find(&("foobar")));
@@ -109,7 +109,7 @@ mod map {
 
     #[test]
     fn test_non_static_str_key() {
-        static MAP: PhfMap<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, int> = phf_map!(
             "a" => 0,
         );
         assert_eq!(Some(&0), MAP.find_equiv("a".to_string()[]));
@@ -117,7 +117,7 @@ mod map {
 
     #[test]
     fn test_index_ok() {
-        static MAP: PhfMap<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, int> = phf_map!(
             "a" => 0,
         );
         assert_eq!(0, MAP["a"]);
@@ -126,7 +126,7 @@ mod map {
     #[test]
     #[should_fail]
     fn test_index_fail() {
-        static MAP: PhfMap<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, int> = phf_map!(
             "a" => 0,
         );
         MAP["b"];
@@ -134,7 +134,7 @@ mod map {
 
     macro_rules! test_key_type(
         ($t:ty, $($k:expr => $v:expr),+) => ({
-            static MAP: PhfMap<$t, int> = phf_map! {
+            static MAP: phf::Map<$t, int> = phf_map! {
                 $($k => $v),+
             };
             $(

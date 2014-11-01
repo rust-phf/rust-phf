@@ -210,7 +210,7 @@ pub fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashSt
     let entries = cx.expr_vec(sp, entries);
 
     let key = state.key;
-    MacExpr::new(quote_expr!(cx, ::phf::PhfMap {
+    MacExpr::new(quote_expr!(cx, ::phf::Map {
         key: $key,
         disps: &$disps,
         entries: &$entries,

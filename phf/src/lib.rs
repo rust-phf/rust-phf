@@ -3,7 +3,7 @@
 //! Keys can be string literals, byte string literals, byte literals, char
 //! literals, or any of the fixed-size integral types.
 #![doc(html_root_url="https://sfackler.github.io/doc")]
-#![warn(missing_doc)]
+#![warn(missing_docs)]
 #![feature(macro_rules, tuple_indexing, phase, globs)]
 #![no_std]
 

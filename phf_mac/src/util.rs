@@ -135,7 +135,7 @@ pub fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<Has
     let mut buckets = Vec::from_fn(buckets_len, |i| Bucket { idx: i, keys: vec![] });
 
     for (i, hash) in hashes.iter().enumerate() {
-        buckets.get_mut((hash.g % (buckets_len as u32)) as uint).keys.push(i);
+        buckets[(hash.g % (buckets_len as u32)) as uint].keys.push(i);
     }
 
     // Sort descending
@@ -172,7 +172,7 @@ pub fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<Has
                     if map[idx].is_some() || try_map[idx] == generation {
                         continue 'disps;
                     }
-                    *try_map.get_mut(idx) = generation;
+                    try_map[idx] = generation;
                     values_to_add.push((idx, key));
                 }
 

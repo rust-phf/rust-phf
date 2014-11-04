@@ -12,7 +12,7 @@ extern crate time;
 extern crate rustc;
 
 use std::collections::HashMap;
-use std::collections::hashmap::{Occupied, Vacant};
+use std::collections::hash_map::{Occupied, Vacant};
 use syntax::ast::{mod, TokenTree, LitStr, LitBinary, LitByte, LitChar, Expr, ExprLit};
 use syntax::codemap::Span;
 use syntax::ext::base::{DummyResult,

@@ -37,8 +37,8 @@ mod map {
             "bar" => 11,
         );
         let hash = MAP.entries().map(|&e| e).collect::<HashMap<_, int>>();
-        assert!(Some(&10) == hash.find(&("foo")));
-        assert!(Some(&11) == hash.find(&("bar")));
+        assert!(Some(&10) == hash.get(&("foo")));
+        assert!(Some(&11) == hash.get(&("bar")));
         assert_eq!(2, hash.len());
     }
 

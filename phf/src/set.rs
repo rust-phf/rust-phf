@@ -54,8 +54,8 @@ impl<T> Set<T> where T: PhfHash+Eq {
     ///
     /// This can be useful for interning schemes.
     #[inline]
-    pub fn find_key(&self, key: &T) -> Option<&T> {
-        self.map.find_key(key)
+    pub fn get_key(&self, key: &T) -> Option<&T> {
+        self.map.get_key(key)
     }
 
     /// Returns true if `value` is in the `Set`.
@@ -100,14 +100,14 @@ impl<T> Set<T> {
     /// value
     #[inline]
     pub fn contains_equiv<Sized? U>(&self, key: &U) -> bool where U: PhfHash+Equiv<T> {
-        self.map.find_equiv(key).is_some()
+        self.map.get_equiv(key).is_some()
     }
 
-    /// Like `find_key`, but can operate on any type that is equivalent to a
+    /// Like `get_key`, but can operate on any type that is equivalent to a
     /// value
     #[inline]
-    pub fn find_key_equiv<Sized? U>(&self, key: &U) -> Option<&T> where U: PhfHash+Equiv<T> {
-        self.map.find_key_equiv(key)
+    pub fn get_key_equiv<Sized? U>(&self, key: &U) -> Option<&T> where U: PhfHash+Equiv<T> {
+        self.map.get_key_equiv(key)
     }
 }
 

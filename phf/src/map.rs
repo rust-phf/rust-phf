@@ -55,26 +55,26 @@ impl<K, V> fmt::Show for Map<K, V> where K: fmt::Show, V: fmt::Show {
 
 impl<K, V> Index<K, V> for Map<K, V> where K: PhfHash+Eq {
     fn index(&self, k: &K) -> &V {
-        self.find(k).expect("invalid key")
+        self.get(k).expect("invalid key")
     }
 }
 
 impl<K, V> Map<K, V> where K: PhfHash+Eq {
     /// Returns a reference to the value that `key` maps to.
-    pub fn find(&self, key: &K) -> Option<&V> {
+    pub fn get(&self, key: &K) -> Option<&V> {
         self.get_entry(key, |k| key == k).map(|e| &e.1)
     }
 
     /// Determines if `key` is in the `Map`.
     pub fn contains_key(&self, key: &K) -> bool {
-        self.find(key).is_some()
+        self.get(key).is_some()
     }
 
     /// Returns a reference to the map's internal static instance of the given
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn find_key(&self, key: &K) -> Option<&K> {
+    pub fn get_key(&self, key: &K) -> Option<&K> {
         self.get_entry(key, |k| key == k).map(|e| &e.0)
     }
 }
@@ -102,14 +102,14 @@ impl<K, V> Map<K, V> {
         }
     }
 
-    /// Like `find`, but can operate on any type that is equivalent to a key.
-    pub fn find_equiv<Sized? T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
+    /// Like `get`, but can operate on any type that is equivalent to a key.
+    pub fn get_equiv<Sized? T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
         self.get_entry(key, |k| key.equiv(k)).map(|e| &e.1)
     }
 
-    /// Like `find_key`, but can operate on any type that is equivalent to a
+    /// Like `get_key`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn find_key_equiv<Sized? T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
+    pub fn get_key_equiv<Sized? T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
         self.get_entry(key, |k| key.equiv(k)).map(|e| &e.0)
     }
 

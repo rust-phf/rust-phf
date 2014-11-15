@@ -56,14 +56,14 @@ impl<T: PhfHash+Eq> OrderedSet<T> {
     ///
     /// This can be useful for interning schemes.
     #[inline]
-    pub fn find_key(&self, key: &T) -> Option<&T> {
-        self.map.find_key(key)
+    pub fn get_key(&self, key: &T) -> Option<&T> {
+        self.map.get_key(key)
     }
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered set.
-    pub fn find_index(&self, key: &T) -> Option<uint> {
-        self.map.find_index(key)
+    pub fn get_index(&self, key: &T) -> Option<uint> {
+        self.map.get_index(key)
     }
 
     /// Returns true if `value` is in the `Set`.
@@ -108,20 +108,20 @@ impl<T> OrderedSet<T> {
     /// value
     #[inline]
     pub fn contains_equiv<Sized? U>(&self, key: &U) -> bool where U: PhfHash+Equiv<T> {
-        self.map.find_equiv(key).is_some()
+        self.map.get_equiv(key).is_some()
     }
 
-    /// Like `find_key`, but can operate on any type that is equivalent to a
+    /// Like `get_key`, but can operate on any type that is equivalent to a
     /// value
     #[inline]
-    pub fn find_key_equiv<Sized? U>(&self, key: &U) -> Option<&T> where U: PhfHash+Equiv<T> {
-        self.map.find_key_equiv(key)
+    pub fn get_key_equiv<Sized? U>(&self, key: &U) -> Option<&T> where U: PhfHash+Equiv<T> {
+        self.map.get_key_equiv(key)
     }
 
-    /// Like `find_index`, but can operate on any type that is equivalent to a
+    /// Like `get_index`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn find_index_equiv<Sized? U>(&self, key: &U) -> Option<uint> where U: PhfHash+Equiv<T> {
-        self.map.find_index_equiv(key)
+    pub fn get_index_equiv<Sized? U>(&self, key: &U) -> Option<uint> where U: PhfHash+Equiv<T> {
+        self.map.get_index_equiv(key)
     }
 
     /// Returns an iterator over the values in the set.

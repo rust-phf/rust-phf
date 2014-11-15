@@ -24,9 +24,9 @@ mod map {
             "foo" => 10,
             "bar" => 11,
         );
-        assert!(Some(&10) == MAP.find(&("foo")));
-        assert!(Some(&11) == MAP.find(&("bar")));
-        assert_eq!(None, MAP.find(&("asdf")));
+        assert!(Some(&10) == MAP.get(&("foo")));
+        assert!(Some(&11) == MAP.get(&("bar")));
+        assert_eq!(None, MAP.get(&("asdf")));
         assert_eq!(2, MAP.len());
     }
 
@@ -96,7 +96,7 @@ mod map {
             "y" => 24,
             "z" => 25,
         );
-        assert!(MAP.find(&("a")) == Some(&0));
+        assert!(MAP.get(&("a")) == Some(&0));
     }
 
     #[test]
@@ -104,7 +104,7 @@ mod map {
         static MAP: phf::Map<&'static str, int> = phf_map!(
             concat!("foo", "bar") => 1
         );
-        assert!(Some(&1) == MAP.find(&("foobar")));
+        assert!(Some(&1) == MAP.get(&("foobar")));
     }
 
     #[test]
@@ -112,7 +112,7 @@ mod map {
         static MAP: phf::Map<&'static str, int> = phf_map!(
             "a" => 0,
         );
-        assert_eq!(Some(&0), MAP.find_equiv("a".to_string()[]));
+        assert_eq!(Some(&0), MAP.get_equiv("a".to_string()[]));
     }
 
     #[test]
@@ -138,7 +138,7 @@ mod map {
                 $($k => $v),+
             };
             $(
-                assert_eq!(Some(&$v), MAP.find(&$k));
+                assert_eq!(Some(&$v), MAP.get(&$k));
             )+
         })
     )
@@ -271,27 +271,27 @@ mod ordered_map {
             "foo" => 10,
             "bar" => 11,
         );
-        assert!(Some(&10) == MAP.find(&"foo"));
-        assert!(Some(&11) == MAP.find(&"bar"));
-        assert_eq!(None, MAP.find(&"asdf"));
+        assert!(Some(&10) == MAP.get(&"foo"));
+        assert!(Some(&11) == MAP.get(&"bar"));
+        assert_eq!(None, MAP.get(&"asdf"));
         assert_eq!(2, MAP.len());
     }
 
     #[test]
-    fn test_find_index() {
+    fn test_get_index() {
         static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
             "foo" => 5,
             "bar" => 5,
             "baz" => 5,
         );
-        assert_eq!(Some(0), MAP.find_index(&"foo"));
-        assert_eq!(Some(2), MAP.find_index(&"baz"));
-        assert_eq!(None, MAP.find_index(&"xyz"));
-        assert_eq!(&"baz", MAP.keys().idx(MAP.find_index(&"baz").unwrap()).unwrap());
+        assert_eq!(Some(0), MAP.get_index(&"foo"));
+        assert_eq!(Some(2), MAP.get_index(&"baz"));
+        assert_eq!(None, MAP.get_index(&"xyz"));
+        assert_eq!(&"baz", MAP.keys().idx(MAP.get_index(&"baz").unwrap()).unwrap());
 
-        assert_eq!(Some(0), MAP.find_index_equiv("foo".to_string()[]));
-        assert_eq!(Some(2), MAP.find_index_equiv("baz".to_string()[]));
-        assert_eq!(None, MAP.find_index_equiv("xyz".to_string()[]));
+        assert_eq!(Some(0), MAP.get_index_equiv("foo".to_string()[]));
+        assert_eq!(Some(2), MAP.get_index_equiv("baz".to_string()[]));
+        assert_eq!(None, MAP.get_index_equiv("xyz".to_string()[]));
     }
 
     #[test]
@@ -349,7 +349,7 @@ mod ordered_map {
         static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
             "a" => 0,
         );
-        assert_eq!(Some(&0), MAP.find_equiv("a".to_string()[]));
+        assert_eq!(Some(&0), MAP.get_equiv("a".to_string()[]));
     }
 }
 
@@ -381,20 +381,20 @@ mod ordered_set {
     }
 
     #[test]
-    fn test_find_index() {
+    fn test_get_index() {
         static SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
             "foo",
             "bar",
             "baz",
         };
-        assert_eq!(Some(0), SET.find_index(&"foo"));
-        assert_eq!(Some(2), SET.find_index(&"baz"));
-        assert_eq!(None, SET.find_index(&"xyz"));
-        assert_eq!(&"baz", SET.iter().idx(SET.find_index(&"baz").unwrap()).unwrap());
+        assert_eq!(Some(0), SET.get_index(&"foo"));
+        assert_eq!(Some(2), SET.get_index(&"baz"));
+        assert_eq!(None, SET.get_index(&"xyz"));
+        assert_eq!(&"baz", SET.iter().idx(SET.get_index(&"baz").unwrap()).unwrap());
 
-        assert_eq!(Some(0), SET.find_index_equiv("foo".to_string()[]));
-        assert_eq!(Some(2), SET.find_index_equiv("baz".to_string()[]));
-        assert_eq!(None, SET.find_index_equiv("xyz".to_string()[]));
+        assert_eq!(Some(0), SET.get_index_equiv("foo".to_string()[]));
+        assert_eq!(Some(2), SET.get_index_equiv("baz".to_string()[]));
+        assert_eq!(None, SET.get_index_equiv("xyz".to_string()[]));
     }
 
     #[test]

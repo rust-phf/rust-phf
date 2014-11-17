@@ -5,9 +5,7 @@ use std::hash::Hash;
 
 use syntax::ast::Expr;
 use syntax::codemap::Span;
-use syntax::ext::base::{ExtCtxt,
-                        MacResult,
-                        MacExpr};
+use syntax::ext::base::{ExtCtxt, MacResult, MacExpr};
 use syntax::ext::build::AstBuilder;
 use syntax::parse::token::InternedString;
 use syntax::ptr::P;
@@ -17,9 +15,9 @@ use shared::PhfHash;
 
 use time;
 
-static DEFAULT_LAMBDA: uint = 5;
+const DEFAULT_LAMBDA: uint = 5;
 
-static FIXED_SEED: [u32, ..4] = [3141592653, 589793238, 462643383, 2795028841];
+const FIXED_SEED: [u32, ..4] = [3141592653, 589793238, 462643383, 2795028841];
 
 #[deriving(PartialEq, Eq, Clone)]
 pub enum Key {

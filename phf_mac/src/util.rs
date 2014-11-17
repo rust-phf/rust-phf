@@ -17,6 +17,9 @@ use shared::PhfHash;
 
 use time;
 
+use self::Key::{KeyStr, KeyBinary, KeyChar, KeyU8, KeyI8, KeyU16};
+use self::Key::{KeyI16, KeyU32, KeyI32, KeyU64, KeyI64, KeyBool};
+
 static DEFAULT_LAMBDA: uint = 5;
 
 static FIXED_SEED: [u32, ..4] = [3141592653, 589793238, 462643383, 2795028841];

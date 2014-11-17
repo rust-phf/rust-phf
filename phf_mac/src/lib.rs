@@ -24,8 +24,9 @@ use syntax::parse::token::{InternedString, Comma, Eof, FatArrow};
 use syntax::print::pprust;
 use rustc::plugin::Registry;
 
-use util::{Entry, Key, KeyStr, KeyBinary, KeyChar, KeyU8, KeyI8, KeyU16};
-use util::{KeyI16, KeyU32, KeyI32, KeyU64, KeyI64, KeyBool};
+use util::Entry;
+use util::Key::{mod, KeyStr, KeyBinary, KeyChar, KeyU8, KeyI8, KeyU16};
+use util::Key::{KeyI16, KeyU32, KeyI32, KeyU64, KeyI64, KeyBool};
 use util::{generate_hash, create_map, create_set, create_ordered_map, create_ordered_set};
 
 #[path="../../shared/mod.rs"]

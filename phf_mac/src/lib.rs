@@ -24,9 +24,7 @@ use syntax::parse::token::{InternedString, Comma, Eof, FatArrow};
 use syntax::print::pprust;
 use rustc::plugin::Registry;
 
-use util::Entry;
-use util::Key::{mod, KeyStr, KeyBinary, KeyChar, KeyU8, KeyI8, KeyU16};
-use util::Key::{KeyI16, KeyU32, KeyI32, KeyU64, KeyI64, KeyBool};
+use util::{Entry, Key};
 use util::{generate_hash, create_map, create_set, create_ordered_map, create_ordered_set};
 
 #[path="../../shared/mod.rs"]
@@ -111,7 +109,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
         let key = cx.expander().fold_expr(parser.parse_expr());
         let key_contents = parse_key(cx, &*key).unwrap_or_else(|| {
             bad = true;
-            KeyStr(InternedString::new(""))
+            Key::Str(InternedString::new(""))
         });
 
         if !parser.eat(&FatArrow) {
@@ -150,7 +148,7 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
         let key = cx.expander().fold_expr(parser.parse_expr());
         let key_contents = parse_key(cx, &*key).unwrap_or_else(|| {
             bad = true;
-            KeyStr(InternedString::new(""))
+            Key::Str(InternedString::new(""))
         });
 
         entries.push(Entry {
@@ -176,23 +174,23 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
     match e.node {
         ExprLit(ref lit) => {
             match lit.node {
-                ast::LitStr(ref s, _) => Some(KeyStr(s.clone())),
-                ast::LitBinary(ref b) => Some(KeyBinary(b.clone())),
-                ast::LitByte(b) => Some(KeyU8(b)),
-                ast::LitChar(c) => Some(KeyChar(c)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI8, ast::Plus)) => Some(KeyI8(i as i8)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI8, ast::Minus)) => Some(KeyI8(-(i as i8))),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI16, ast::Plus)) => Some(KeyI16(i as i16)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI16, ast::Minus)) => Some(KeyI16(-(i as i16))),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI32, ast::Plus)) => Some(KeyI32(i as i32)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI32, ast::Minus)) => Some(KeyI32(-(i as i32))),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI64, ast::Plus)) => Some(KeyI64(i as i64)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI64, ast::Minus)) => Some(KeyI64(-(i as i64))),
-                ast::LitInt(i, ast::UnsignedIntLit(ast::TyU8)) => Some(KeyU8(i as u8)),
-                ast::LitInt(i, ast::UnsignedIntLit(ast::TyU16)) => Some(KeyU16(i as u16)),
-                ast::LitInt(i, ast::UnsignedIntLit(ast::TyU32)) => Some(KeyU32(i as u32)),
-                ast::LitInt(i, ast::UnsignedIntLit(ast::TyU64)) => Some(KeyU64(i as u64)),
-                ast::LitBool(b) => Some(KeyBool(b)),
+                ast::LitStr(ref s, _) => Some(Key::Str(s.clone())),
+                ast::LitBinary(ref b) => Some(Key::Binary(b.clone())),
+                ast::LitByte(b) => Some(Key::U8(b)),
+                ast::LitChar(c) => Some(Key::Char(c)),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI8, ast::Plus)) => Some(Key::I8(i as i8)),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI8, ast::Minus)) => Some(Key::I8(-(i as i8))),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI16, ast::Plus)) => Some(Key::I16(i as i16)),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI16, ast::Minus)) => Some(Key::I16(-(i as i16))),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI32, ast::Plus)) => Some(Key::I32(i as i32)),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI32, ast::Minus)) => Some(Key::I32(-(i as i32))),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI64, ast::Plus)) => Some(Key::I64(i as i64)),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI64, ast::Minus)) => Some(Key::I64(-(i as i64))),
+                ast::LitInt(i, ast::UnsignedIntLit(ast::TyU8)) => Some(Key::U8(i as u8)),
+                ast::LitInt(i, ast::UnsignedIntLit(ast::TyU16)) => Some(Key::U16(i as u16)),
+                ast::LitInt(i, ast::UnsignedIntLit(ast::TyU32)) => Some(Key::U32(i as u32)),
+                ast::LitInt(i, ast::UnsignedIntLit(ast::TyU64)) => Some(Key::U64(i as u64)),
+                ast::LitBool(b) => Some(Key::Bool(b)),
                 _ => {
                     cx.span_err(e.span, "unsupported literal type");
                     None

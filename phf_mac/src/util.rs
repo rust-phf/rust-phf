@@ -17,44 +17,41 @@ use shared::PhfHash;
 
 use time;
 
-use self::Key::{KeyStr, KeyBinary, KeyChar, KeyU8, KeyI8, KeyU16};
-use self::Key::{KeyI16, KeyU32, KeyI32, KeyU64, KeyI64, KeyBool};
-
 static DEFAULT_LAMBDA: uint = 5;
 
 static FIXED_SEED: [u32, ..4] = [3141592653, 589793238, 462643383, 2795028841];
 
 #[deriving(PartialEq, Eq, Clone)]
 pub enum Key {
-    KeyStr(InternedString),
-    KeyBinary(Rc<Vec<u8>>),
-    KeyChar(char),
-    KeyU8(u8),
-    KeyI8(i8),
-    KeyU16(u16),
-    KeyI16(i16),
-    KeyU32(u32),
-    KeyI32(i32),
-    KeyU64(u64),
-    KeyI64(i64),
-    KeyBool(bool),
+    Str(InternedString),
+    Binary(Rc<Vec<u8>>),
+    Char(char),
+    U8(u8),
+    I8(i8),
+    U16(u16),
+    I16(i16),
+    U32(u32),
+    I32(i32),
+    U64(u64),
+    I64(i64),
+    Bool(bool),
 }
 
 impl<S> Hash<S> for Key where S: hash::Writer {
     fn hash(&self, state: &mut S) {
         match *self {
-            KeyStr(ref s) => s.get().hash(state),
-            KeyBinary(ref b) => b.hash(state),
-            KeyChar(c) => c.hash(state),
-            KeyU8(b) => b.hash(state),
-            KeyI8(b) => b.hash(state),
-            KeyU16(b) => b.hash(state),
-            KeyI16(b) => b.hash(state),
-            KeyU32(b) => b.hash(state),
-            KeyI32(b) => b.hash(state),
-            KeyU64(b) => b.hash(state),
-            KeyI64(b) => b.hash(state),
-            KeyBool(b) => b.hash(state),
+            Key::Str(ref s) => s.get().hash(state),
+            Key::Binary(ref b) => b.hash(state),
+            Key::Char(c) => c.hash(state),
+            Key::U8(b) => b.hash(state),
+            Key::I8(b) => b.hash(state),
+            Key::U16(b) => b.hash(state),
+            Key::I16(b) => b.hash(state),
+            Key::U32(b) => b.hash(state),
+            Key::I32(b) => b.hash(state),
+            Key::U64(b) => b.hash(state),
+            Key::I64(b) => b.hash(state),
+            Key::Bool(b) => b.hash(state),
         }
     }
 }
@@ -62,18 +59,18 @@ impl<S> Hash<S> for Key where S: hash::Writer {
 impl PhfHash for Key {
     fn phf_hash(&self, key: u64) -> (u32, u32, u32) {
         match *self {
-            KeyStr(ref s) => s.get().phf_hash(key),
-            KeyBinary(ref b) => (**b)[].phf_hash(key),
-            KeyChar(c) => c.phf_hash(key),
-            KeyU8(b) => b.phf_hash(key),
-            KeyI8(b) => b.phf_hash(key),
-            KeyU16(b) => b.phf_hash(key),
-            KeyI16(b) => b.phf_hash(key),
-            KeyU32(b) => b.phf_hash(key),
-            KeyI32(b) => b.phf_hash(key),
-            KeyU64(b) => b.phf_hash(key),
-            KeyI64(b) => b.phf_hash(key),
-            KeyBool(b) => b.phf_hash(key),
+            Key::Str(ref s) => s.get().phf_hash(key),
+            Key::Binary(ref b) => (**b)[].phf_hash(key),
+            Key::Char(c) => c.phf_hash(key),
+            Key::U8(b) => b.phf_hash(key),
+            Key::I8(b) => b.phf_hash(key),
+            Key::U16(b) => b.phf_hash(key),
+            Key::I16(b) => b.phf_hash(key),
+            Key::U32(b) => b.phf_hash(key),
+            Key::I32(b) => b.phf_hash(key),
+            Key::U64(b) => b.phf_hash(key),
+            Key::I64(b) => b.phf_hash(key),
+            Key::Bool(b) => b.phf_hash(key),
         }
     }
 }

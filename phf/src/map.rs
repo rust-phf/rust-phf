@@ -103,8 +103,8 @@ impl<K, V> Map<K, V> {
     }
 
     /// Like `get`, but returns both the key and the value.
-    pub fn get_kv<Sized? T>(&self, key: &T) -> Option<&(K, V)> where T: PhfHash+Equiv<K> {
-        self.get_entry(key, |k| key.equiv(k))
+    pub fn get_kv<Sized? T>(&self, key: &T) -> Option<(&K, &V)> where T: PhfHash+Equiv<K> {
+        self.get_entry(key, |k| key.equiv(k)).map(|e| (&e.0, &e.1))
     }
 
     /// Like `get`, but can operate on any type that is equivalent to a key.
@@ -120,8 +120,8 @@ impl<K, V> Map<K, V> {
 
     /// Like `get_kv`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn get_kv_equiv<Sized? T>(&self, key: &T) -> Option<&(K, V)> where T: PhfHash+Equiv<K> {
-        self.get_entry(key, |k| key.equiv(k))
+    pub fn get_kv_equiv<Sized? T>(&self, key: &T) -> Option<(&K, &V)> where T: PhfHash+Equiv<K> {
+        self.get_entry(key, |k| key.equiv(k)).map(|e| (&e.0, &e.1))
     }
 
     /// Returns an iterator over the key/value pairs in the map.

@@ -13,3 +13,6 @@ test = false
 
 [dependencies.xxhash]
 git = "https://github.com/Jurily/rust-xxhash"
+
+[dependencies.time]
+git = "https://github.com/rust-lang/time"

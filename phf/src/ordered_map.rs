@@ -67,7 +67,7 @@ impl<K, V> Index<K, V> for OrderedMap<K, V> where K: PhfHash+Eq {
 impl<K, V> OrderedMap<K, V> where K: PhfHash+Eq {
     /// Returns a reference to the value that `key` maps to.
     pub fn get(&self, key: &K) -> Option<&V> {
-        self.get_entry(key, |k| key == k).map(|(_, e)| &e.1)
+        self.get_entry_(key, |k| key == k).map(|(_, e)| &e.1)
     }
 
     /// Determines if `key` is in the `Map`.
@@ -80,13 +80,13 @@ impl<K, V> OrderedMap<K, V> where K: PhfHash+Eq {
     ///
     /// This can be useful for interning schemes.
     pub fn get_key(&self, key: &K) -> Option<&K> {
-        self.get_entry(key, |k| k == key).map(|(_, e)| &e.0)
+        self.get_entry_(key, |k| k == key).map(|(_, e)| &e.0)
     }
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered map.
     pub fn get_index(&self, key: &K) -> Option<uint> {
-        self.get_entry(key, |k| k == key).map(|(i, _)| i)
+        self.get_entry_(key, |k| k == key).map(|(i, _)| i)
     }
 }
 
@@ -101,7 +101,7 @@ impl<K, V> OrderedMap<K, V> {
         self.entries.len()
     }
 
-    fn get_entry<Sized? T>(&self, key: &T, check: |&K| -> bool) -> Option<(uint, &(K, V))>
+    fn get_entry_<Sized? T>(&self, key: &T, check: |&K| -> bool) -> Option<(uint, &(K, V))>
             where T: PhfHash {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
@@ -116,31 +116,31 @@ impl<K, V> OrderedMap<K, V> {
     }
 
     /// Like `get`, but returns both the key and the value.
-    pub fn get_kv<Sized? T>(&self, key: &T) -> Option<(&K, &V)> where T: PhfHash+Equiv<K> {
-        self.get_entry(key, |k| key.equiv(k)).map(|(_, e)| (&e.0, &e.1))
+    pub fn get_entry<Sized? T>(&self, key: &T) -> Option<(&K, &V)> where T: PhfHash+Equiv<K> {
+        self.get_entry_(key, |k| key.equiv(k)).map(|(_, e)| (&e.0, &e.1))
     }
 
     /// Like `get`, but can operate on any type that is equivalent to a key.
     pub fn get_equiv<Sized? T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
-        self.get_entry(key, |k| key.equiv(k)).map(|(_, e)| &e.1)
+        self.get_entry_(key, |k| key.equiv(k)).map(|(_, e)| &e.1)
     }
 
     /// Like `get_key`, but can operate on any type that is equivalent to a
     /// key.
     pub fn get_key_equiv<Sized? T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
-        self.get_entry(key, |k| key.equiv(k)).map(|(_, e)| &e.0)
+        self.get_entry_(key, |k| key.equiv(k)).map(|(_, e)| &e.0)
     }
 
     /// Like `get_index`, but can operate on any type that is equivalent to a
     /// key.
     pub fn get_index_equiv<Sized? T>(&self, key: &T) -> Option<uint> where T: PhfHash+Equiv<K> {
-        self.get_entry(key, |k| key.equiv(k)).map(|(i, _)| i)
+        self.get_entry_(key, |k| key.equiv(k)).map(|(i, _)| i)
     }
 
     /// Like `get_kv`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn get_kv_equiv<Sized? T>(&self, key: &T) -> Option<(&K, &V)> where T: PhfHash+Equiv<K> {
-        self.get_entry(key, |k| key.equiv(k)).map(|(_, e)| (&e.0, &e.1))
+    pub fn get_entry_equiv<Sized? T>(&self, key: &T) -> Option<(&K, &V)> where T: PhfHash+Equiv<K> {
+        self.get_entry_(key, |k| key.equiv(k)).map(|(_, e)| (&e.0, &e.1))
     }
 
     /// Returns an iterator over the key/value pairs in the map.

@@ -62,7 +62,7 @@ impl<K, V> Index<K, V> for Map<K, V> where K: PhfHash+Eq {
 impl<K, V> Map<K, V> where K: PhfHash+Eq {
     /// Returns a reference to the value that `key` maps to.
     pub fn get(&self, key: &K) -> Option<&V> {
-        self.get_entry(key, |k| key == k).map(|e| &e.1)
+        self.get_entry_(key, |k| key == k).map(|e| &e.1)
     }
 
     /// Determines if `key` is in the `Map`.
@@ -75,7 +75,7 @@ impl<K, V> Map<K, V> where K: PhfHash+Eq {
     ///
     /// This can be useful for interning schemes.
     pub fn get_key(&self, key: &K) -> Option<&K> {
-        self.get_entry(key, |k| key == k).map(|e| &e.0)
+        self.get_entry_(key, |k| key == k).map(|e| &e.0)
     }
 }
 
@@ -90,7 +90,7 @@ impl<K, V> Map<K, V> {
         self.entries.len()
     }
 
-    fn get_entry<Sized? T>(&self, key: &T, check: |&K| -> bool) -> Option<&(K, V)> where T: PhfHash {
+    fn get_entry_<Sized? T>(&self, key: &T, check: |&K| -> bool) -> Option<&(K, V)> where T: PhfHash {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
         let entry = &self.entries[(shared::displace(f1, f2, d1, d2) % (self.entries.len() as u32))
@@ -102,15 +102,26 @@ impl<K, V> Map<K, V> {
         }
     }
 
+    /// Like `get`, but returns both the key and the value.
+    pub fn get_entry<Sized? T>(&self, key: &T) -> Option<(&K, &V)> where T: PhfHash+Equiv<K> {
+        self.get_entry_(key, |k| key.equiv(k)).map(|e| (&e.0, &e.1))
+    }
+
     /// Like `get`, but can operate on any type that is equivalent to a key.
     pub fn get_equiv<Sized? T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
-        self.get_entry(key, |k| key.equiv(k)).map(|e| &e.1)
+        self.get_entry_(key, |k| key.equiv(k)).map(|e| &e.1)
     }
 
     /// Like `get_key`, but can operate on any type that is equivalent to a
     /// key.
     pub fn get_key_equiv<Sized? T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
-        self.get_entry(key, |k| key.equiv(k)).map(|e| &e.0)
+        self.get_entry_(key, |k| key.equiv(k)).map(|e| &e.0)
+    }
+
+    /// Like `get_kv`, but can operate on any type that is equivalent to a
+    /// key.
+    pub fn get_kv_equiv<Sized? T>(&self, key: &T) -> Option<(&K, &V)> where T: PhfHash+Equiv<K> {
+        self.get_entry_(key, |k| key.equiv(k)).map(|e| (&e.0, &e.1))
     }
 
     /// Returns an iterator over the key/value pairs in the map.
@@ -203,5 +214,3 @@ impl<'a, K, V> DoubleEndedIterator<&'a V> for Values<'a, K, V> {
 }
 
 impl<'a, K, V> ExactSize<&'a V> for Values<'a, K, V> {}
-
-

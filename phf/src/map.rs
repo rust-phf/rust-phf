@@ -120,7 +120,7 @@ impl<K, V> Map<K, V> {
 
     /// Like `get_kv`, but can operate on any type that is equivalent to a
     /// key.
-    pub fn get_kv_equiv<Sized? T>(&self, key: &T) -> Option<(&K, &V)> where T: PhfHash+Equiv<K> {
+    pub fn get_entry_equiv<Sized? T>(&self, key: &T) -> Option<(&K, &V)> where T: PhfHash+Equiv<K> {
         self.get_entry_(key, |k| key.equiv(k)).map(|e| (&e.0, &e.1))
     }
 

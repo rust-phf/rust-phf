@@ -31,6 +31,6 @@ static KEYWORDS: phf::Map<&'static str, Keyword> = phf_map! {
 };
 
 pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
-    KEYWORDS.find_equiv(keyword).map(|t| t.clone())
+    KEYWORDS.get(keyword).map(|t| t.clone())
 }
 ```

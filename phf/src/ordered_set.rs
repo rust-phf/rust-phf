@@ -1,5 +1,6 @@
 //! An order-preserving immutable set constructed at compile time.
 use core::prelude::*;
+use core::borrow::BorrowFrom;
 use core::fmt;
 use ordered_map;
 use {PhfHash, OrderedMap};
@@ -50,28 +51,46 @@ impl<T> fmt::Show for OrderedSet<T> where T: fmt::Show {
     }
 }
 
-impl<T: PhfHash+Eq> OrderedSet<T> {
+impl<T> OrderedSet<T> {
+    /// Returns the number of elements in the `OrderedSet`.
+    pub fn len(&self) -> uint {
+        self.map.len()
+    }
+
+    /// Returns true if the `OrderedSet` contains no elements.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Returns a reference to the set's internal static instance of the given
     /// key.
     ///
     /// This can be useful for interning schemes.
-    #[inline]
-    pub fn get_key(&self, key: &T) -> Option<&T> {
+    pub fn get_key<Sized? U>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash + BorrowFrom<T> {
         self.map.get_key(key)
     }
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered set.
-    pub fn get_index(&self, key: &T) -> Option<uint> {
+    pub fn get_index<Sized? U>(&self, key: &U) -> Option<uint>
+            where U: Eq + PhfHash + BorrowFrom<T> {
         self.map.get_index(key)
     }
 
     /// Returns true if `value` is in the `Set`.
-    #[inline]
-    pub fn contains(&self, value: &T) -> bool {
+    pub fn contains<Sized? U>(&self, value: &U) -> bool where U: Eq + PhfHash + BorrowFrom<T> {
         self.map.contains_key(value)
     }
 
+    /// Returns an iterator over the values in the set.
+    ///
+    /// Values are returned in the same order in which they were defined.
+    pub fn iter<'a>(&'a self) -> Entries<'a, T> {
+        Entries { iter: self.map.keys() }
+    }
+}
+
+impl<T> OrderedSet<T> where T: Eq + PhfHash {
     /// Returns true if `other` shares no elements with `self`.
     #[inline]
     pub fn is_disjoint(&self, other: &OrderedSet<T>) -> bool {
@@ -88,48 +107,6 @@ impl<T: PhfHash+Eq> OrderedSet<T> {
     #[inline]
     pub fn is_superset(&self, other: &OrderedSet<T>) -> bool {
         other.is_subset(self)
-    }
-}
-
-impl<T> OrderedSet<T> {
-    /// Returns the number of elements in the `Set`.
-    #[inline]
-    pub fn len(&self) -> uint {
-        self.map.len()
-    }
-
-    /// Returns true if the `Set` contains no elements.
-    #[inline]
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    /// Like `contains`, but can operate on any type that is equivalent to a
-    /// value
-    #[inline]
-    pub fn contains_equiv<Sized? U>(&self, key: &U) -> bool where U: PhfHash+Equiv<T> {
-        self.map.get_equiv(key).is_some()
-    }
-
-    /// Like `get_key`, but can operate on any type that is equivalent to a
-    /// value
-    #[inline]
-    pub fn get_key_equiv<Sized? U>(&self, key: &U) -> Option<&T> where U: PhfHash+Equiv<T> {
-        self.map.get_key_equiv(key)
-    }
-
-    /// Like `get_index`, but can operate on any type that is equivalent to a
-    /// key.
-    pub fn get_index_equiv<Sized? U>(&self, key: &U) -> Option<uint> where U: PhfHash+Equiv<T> {
-        self.map.get_index_equiv(key)
-    }
-
-    /// Returns an iterator over the values in the set.
-    ///
-    /// Values are returned in the same order in which they were defined.
-    #[inline]
-    pub fn iter<'a>(&'a self) -> Entries<'a, T> {
-        Entries { iter: self.map.keys() }
     }
 }
 

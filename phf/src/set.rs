@@ -1,9 +1,11 @@
 //! An immutable set constructed at compile time.
 use core::prelude::*;
-use Map;
+use core::borrow::BorrowFrom;
 use core::fmt;
+
 use shared::PhfHash;
 use map;
+use Map;
 
 /// An immutable set constructed at compile time.
 ///
@@ -48,76 +50,52 @@ impl<T> fmt::Show for Set<T> where T: fmt::Show {
     }
 }
 
-impl<T> Set<T> where T: PhfHash+Eq {
-    /// Returns a reference to the set's internal static instance of the given
-    /// key.
-    ///
-    /// This can be useful for interning schemes.
-    #[inline]
-    pub fn get_key(&self, key: &T) -> Option<&T> {
-        self.map.get_key(key)
-    }
-
-    /// Returns true if `value` is in the `Set`.
-    #[inline]
-    pub fn contains(&self, value: &T) -> bool {
-        self.map.contains_key(value)
-    }
-
-    /// Returns true if `other` shares no elements with `self`.
-    #[inline]
-    pub fn is_disjoint(&self, other: &Set<T>) -> bool {
-        !self.iter().any(|value| other.contains(value))
-    }
-
-    /// Returns true if `other` contains all values in `self`.
-    #[inline]
-    pub fn is_subset(&self, other: &Set<T>) -> bool {
-        self.iter().all(|value| other.contains(value))
-    }
-
-    /// Returns true if `self` contains all values in `other`.
-    #[inline]
-    pub fn is_superset(&self, other: &Set<T>) -> bool {
-        other.is_subset(self)
-    }
-}
-
 impl<T> Set<T> {
     /// Returns the number of elements in the `Set`.
-    #[inline]
     pub fn len(&self) -> uint {
         self.map.len()
     }
 
     /// Returns true if the `Set` contains no elements.
-    #[inline]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
-    /// Like `contains`, but can operate on any type that is equivalent to a
-    /// value
-    #[inline]
-    pub fn contains_equiv<Sized? U>(&self, key: &U) -> bool where U: PhfHash+Equiv<T> {
-        self.map.get_equiv(key).is_some()
+    /// Returns a reference to the set's internal static instance of the given
+    /// key.
+    ///
+    /// This can be useful for interning schemes.
+    pub fn get_key<Sized? U>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash + BorrowFrom<T> {
+        self.map.get_key(key)
     }
 
-    /// Like `get_key`, but can operate on any type that is equivalent to a
-    /// value
-    #[inline]
-    pub fn get_key_equiv<Sized? U>(&self, key: &U) -> Option<&T> where U: PhfHash+Equiv<T> {
-        self.map.get_key_equiv(key)
+    /// Returns true if `value` is in the `Set`.
+    pub fn contains<Sized? U>(&self, value: &U) -> bool where U: Eq + PhfHash + BorrowFrom<T> {
+        self.map.contains_key(value)
     }
-}
 
-impl<T> Set<T> {
     /// Returns an iterator over the values in the set.
     ///
     /// Values are returned in an arbitrary but fixed order.
-    #[inline]
     pub fn iter<'a>(&'a self) -> Items<'a, T> {
         Items { iter: self.map.keys() }
+    }
+}
+
+impl<T> Set<T> where T: Eq + PhfHash {
+    /// Returns true if `other` shares no elements with `self`.
+    pub fn is_disjoint(&self, other: &Set<T>) -> bool {
+        !self.iter().any(|value| other.contains(value))
+    }
+
+    /// Returns true if `other` contains all values in `self`.
+    pub fn is_subset(&self, other: &Set<T>) -> bool {
+        self.iter().all(|value| other.contains(value))
+    }
+
+    /// Returns true if `self` contains all values in `other`.
+    pub fn is_superset(&self, other: &Set<T>) -> bool {
+        other.is_subset(self)
     }
 }
 

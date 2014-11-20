@@ -1,5 +1,6 @@
 //! An immutable map constructed at compile time.
 use core::prelude::*;
+use core::borrow::BorrowFrom;
 use core::iter;
 use core::slice;
 use core::fmt;
@@ -53,29 +54,9 @@ impl<K, V> fmt::Show for Map<K, V> where K: fmt::Show, V: fmt::Show {
     }
 }
 
-impl<K, V> Index<K, V> for Map<K, V> where K: PhfHash+Eq {
-    fn index(&self, k: &K) -> &V {
+impl<K, V, Sized? T> Index<T, V> for Map<K, V> where T: Eq + PhfHash + BorrowFrom<K> {
+    fn index(&self, k: &T) -> &V {
         self.get(k).expect("invalid key")
-    }
-}
-
-impl<K, V> Map<K, V> where K: PhfHash+Eq {
-    /// Returns a reference to the value that `key` maps to.
-    pub fn get(&self, key: &K) -> Option<&V> {
-        self.get_entry_(key, |k| key == k).map(|e| &e.1)
-    }
-
-    /// Determines if `key` is in the `Map`.
-    pub fn contains_key(&self, key: &K) -> bool {
-        self.get(key).is_some()
-    }
-
-    /// Returns a reference to the map's internal static instance of the given
-    /// key.
-    ///
-    /// This can be useful for interning schemes.
-    pub fn get_key(&self, key: &K) -> Option<&K> {
-        self.get_entry_(key, |k| key == k).map(|e| &e.0)
     }
 }
 
@@ -90,38 +71,36 @@ impl<K, V> Map<K, V> {
         self.entries.len()
     }
 
-    fn get_entry_<Sized? T>(&self, key: &T, check: |&K| -> bool) -> Option<&(K, V)> where T: PhfHash {
+    /// Determines if `key` is in the `Map`.
+    pub fn contains_key<Sized? T>(&self, key: &T) -> bool where T: Eq + PhfHash + BorrowFrom<K> {
+        self.get(key).is_some()
+    }
+
+    /// Returns a reference to the value that `key` maps to.
+    pub fn get<Sized? T>(&self, key: &T) -> Option<&V> where T: Eq + PhfHash + BorrowFrom<K> {
+        self.get_entry(key).map(|e| e.1)
+    }
+
+    /// Returns a reference to the map's internal static instance of the given
+    /// key.
+    ///
+    /// This can be useful for interning schemes.
+    pub fn get_key<Sized? T>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash + BorrowFrom<K> {
+        self.get_entry(key).map(|e| e.0)
+    }
+
+    /// Like `get`, but returns both the key and the value.
+    pub fn get_entry<Sized? T>(&self, key: &T) -> Option<(&K, &V)>
+            where T: Eq + PhfHash + BorrowFrom<K> {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
         let entry = &self.entries[(shared::displace(f1, f2, d1, d2) % (self.entries.len() as u32))
                                   as uint];
-        if check(&entry.0) {
-            Some(entry)
+        if BorrowFrom::borrow_from(&entry.0) == key {
+            Some((&entry.0, &entry.1))
         } else {
             None
         }
-    }
-
-    /// Like `get`, but returns both the key and the value.
-    pub fn get_entry<Sized? T>(&self, key: &T) -> Option<(&K, &V)> where T: PhfHash+Equiv<K> {
-        self.get_entry_(key, |k| key.equiv(k)).map(|e| (&e.0, &e.1))
-    }
-
-    /// Like `get`, but can operate on any type that is equivalent to a key.
-    pub fn get_equiv<Sized? T>(&self, key: &T) -> Option<&V> where T: PhfHash+Equiv<K> {
-        self.get_entry_(key, |k| key.equiv(k)).map(|e| &e.1)
-    }
-
-    /// Like `get_key`, but can operate on any type that is equivalent to a
-    /// key.
-    pub fn get_key_equiv<Sized? T>(&self, key: &T) -> Option<&K> where T: PhfHash+Equiv<K> {
-        self.get_entry_(key, |k| key.equiv(k)).map(|e| &e.0)
-    }
-
-    /// Like `get_kv`, but can operate on any type that is equivalent to a
-    /// key.
-    pub fn get_entry_equiv<Sized? T>(&self, key: &T) -> Option<(&K, &V)> where T: PhfHash+Equiv<K> {
-        self.get_entry_(key, |k| key.equiv(k)).map(|e| (&e.0, &e.1))
     }
 
     /// Returns an iterator over the key/value pairs in the map.

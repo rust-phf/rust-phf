@@ -10,8 +10,8 @@ name = "phf"
 path = "src/lib.rs"
 test = false
 
-[dependencies.xxhash]
-git = "https://github.com/Jurily/rust-xxhash"
+[dependencies]
+xxhash = "*"
 
 [dev_dependencies.phf_mac]
 path = "../phf_mac"

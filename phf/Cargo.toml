@@ -1,7 +1,9 @@
 [package]
 name = "phf"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.0.0"
+version = "0.0.1"
+license = "MIT"
+description = "Runtime support for perfect hash function data structures"
 
 [lib]
 name = "phf"

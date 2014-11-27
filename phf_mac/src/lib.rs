@@ -10,6 +10,7 @@ extern crate rand;
 extern crate syntax;
 extern crate time;
 extern crate rustc;
+extern crate phf_shared;
 
 use std::collections::HashMap;
 use std::collections::hash_map::{Occupied, Vacant};
@@ -27,8 +28,6 @@ use rustc::plugin::Registry;
 use util::{Entry, Key};
 use util::{generate_hash, create_map, create_set, create_ordered_map, create_ordered_set};
 
-#[path="../../shared/mod.rs"]
-mod shared;
 pub mod util;
 
 #[plugin_registrar]

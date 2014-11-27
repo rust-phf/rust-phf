@@ -3,7 +3,7 @@ use core::prelude::*;
 use core::borrow::BorrowFrom;
 use core::fmt;
 
-use shared::PhfHash;
+use PhfHash;
 use map;
 use Map;
 

@@ -6,7 +6,7 @@ use core::slice;
 use core::iter;
 
 use PhfHash;
-use shared;
+use phf_shared;
 
 /// An order-preserving immutable map constructed at compile time.
 ///
@@ -112,7 +112,7 @@ impl<K, V> OrderedMap<K, V> {
             where T: Eq + PhfHash + BorrowFrom<K> {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
-        let idx = self.idxs[(shared::displace(f1, f2, d1, d2) % (self.idxs.len() as u32)) as uint];
+        let idx = self.idxs[(phf_shared::displace(f1, f2, d1, d2) % (self.idxs.len() as u32)) as uint];
         let entry = &self.entries[idx];
 
         if BorrowFrom::borrow_from(&entry.0) == key {

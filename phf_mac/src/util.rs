@@ -11,7 +11,7 @@ use syntax::parse::token::InternedString;
 use syntax::ptr::P;
 use rand::{Rng, SeedableRng, XorShiftRng};
 
-use shared::PhfHash;
+use phf_shared::{mod, PhfHash};
 
 use time;
 
@@ -165,7 +165,7 @@ pub fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<Has
                 generation += 1;
 
                 for &key in bucket.keys.iter() {
-                    let idx = (::shared::displace(hashes[key].f1, hashes[key].f2, d1, d2)
+                    let idx = (phf_shared::displace(hashes[key].f1, hashes[key].f2, d1, d2)
                                 % (table_len as u32)) as uint;
                     if map[idx].is_some() || try_map[idx] == generation {
                         continue 'disps;

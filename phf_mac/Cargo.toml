@@ -13,6 +13,9 @@ path = "src/lib.rs"
 plugin = true
 test = false
 
+[dependencies.phf_shared]
+path = "../phf_shared"
+version = "0.0.1"
+
 [dependencies]
-xxhash = "*"
 time = "*"

@@ -10,8 +10,10 @@ name = "phf"
 path = "src/lib.rs"
 test = false
 
-[dependencies]
-xxhash = "*"
+[dependencies.phf_shared]
+path = "../phf_shared"
+version = "0.0.1"
 
 [dev_dependencies.phf_mac]
 path = "../phf_mac"
+version = "0.0.1"

@@ -9,8 +9,9 @@
 
 #[phase(plugin, link)]
 extern crate core;
+extern crate phf_shared;
 
-pub use shared::PhfHash;
+pub use phf_shared::PhfHash;
 #[doc(inline)]
 pub use map::Map;
 #[doc(inline)]
@@ -20,8 +21,6 @@ pub use ordered_map::OrderedMap;
 #[doc(inline)]
 pub use ordered_set::OrderedSet;
 
-#[path="../../shared/mod.rs"]
-mod shared;
 pub mod map;
 pub mod set;
 pub mod ordered_map;

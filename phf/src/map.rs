@@ -4,8 +4,8 @@ use core::borrow::BorrowFrom;
 use core::iter;
 use core::slice;
 use core::fmt;
-use shared;
-use shared::PhfHash;
+use PhfHash;
+use phf_shared;
 
 /// An immutable map constructed at compile time.
 ///
@@ -94,7 +94,7 @@ impl<K, V> Map<K, V> {
             where T: Eq + PhfHash + BorrowFrom<K> {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
-        let entry = &self.entries[(shared::displace(f1, f2, d1, d2) % (self.entries.len() as u32))
+        let entry = &self.entries[(phf_shared::displace(f1, f2, d1, d2) % (self.entries.len() as u32))
                                   as uint];
         if BorrowFrom::borrow_from(&entry.0) == key {
             Some((&entry.0, &entry.1))

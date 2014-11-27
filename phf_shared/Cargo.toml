@@ -1,0 +1,14 @@
+[package]
+name = "phf_shared"
+authors = ["Steven Fackler <sfackler@gmail.com>"]
+version = "0.0.1"
+license = "MIT"
+description = "Support code shared by phf and phf_mac"
+
+[lib]
+name = "phf_shared"
+path = "src/lib.rs"
+test = false
+
+[dependencies]
+xxhash = "*"

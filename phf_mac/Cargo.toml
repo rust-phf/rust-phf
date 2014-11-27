@@ -18,4 +18,4 @@ path = "../phf_shared"
 version = "=0.1.0"
 
 [dependencies]
-time = "*"
+time = "0.1"

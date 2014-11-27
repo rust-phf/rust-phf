@@ -2,7 +2,7 @@
 
 name = "phf_mac"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.0.1"
+version = "0.1.0"
 license = "MIT"
 description = "Compiler plugin for perfect hash function data structures"
 
@@ -15,7 +15,7 @@ test = false
 
 [dependencies.phf_shared]
 path = "../phf_shared"
-version = "0.0.1"
+version = "=0.1.0"
 
 [dependencies]
 time = "*"

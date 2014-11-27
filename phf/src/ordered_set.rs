@@ -146,5 +146,5 @@ impl<'a, T> RandomAccessIterator<&'a T> for Entries<'a, T> {
     }
 }
 
-impl<'a, T> ExactSize<&'a T> for Entries<'a, T> {}
+impl<'a, T> ExactSizeIterator<&'a T> for Entries<'a, T> {}
 

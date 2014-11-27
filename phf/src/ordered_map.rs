@@ -175,7 +175,7 @@ impl<'a, K, V> RandomAccessIterator<&'a (K, V)> for Entries<'a, K, V> {
     }
 }
 
-impl<'a, K, V> ExactSize<&'a (K, V)> for Entries<'a, K, V> {}
+impl<'a, K, V> ExactSizeIterator<&'a (K, V)> for Entries<'a, K, V> {}
 
 /// An iterator over the keys in a `OrderedMap`.
 pub struct Keys<'a, K:'a, V:'a> {
@@ -208,7 +208,7 @@ impl<'a, K, V> RandomAccessIterator<&'a K> for Keys<'a, K, V> {
     }
 }
 
-impl<'a, K, V> ExactSize<&'a K> for Keys<'a, K, V> {}
+impl<'a, K, V> ExactSizeIterator<&'a K> for Keys<'a, K, V> {}
 
 /// An iterator over the values in a `OrderedMap`.
 pub struct Values<'a, K:'a, V:'a> {
@@ -241,4 +241,4 @@ impl<'a, K, V> RandomAccessIterator<&'a V> for Values<'a, K, V> {
     }
 }
 
-impl<'a, K, V> ExactSize<&'a V> for Values<'a, K, V> {}
+impl<'a, K, V> ExactSizeIterator<&'a V> for Values<'a, K, V> {}

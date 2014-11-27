@@ -120,6 +120,6 @@ impl<'a, T> DoubleEndedIterator<&'a T> for Items<'a, T> {
     }
 }
 
-impl<'a, T> ExactSize<&'a T> for Items<'a, T> {}
+impl<'a, T> ExactSizeIterator<&'a T> for Items<'a, T> {}
 
 

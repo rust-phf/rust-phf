@@ -146,7 +146,7 @@ impl<'a, K, V> DoubleEndedIterator<&'a (K, V)> for Entries<'a, K, V> {
     }
 }
 
-impl<'a, K, V> ExactSize<&'a (K, V)> for Entries<'a, K, V> {}
+impl<'a, K, V> ExactSizeIterator<&'a (K, V)> for Entries<'a, K, V> {}
 
 /// An iterator over the keys in a `Map`.
 pub struct Keys<'a, K:'a, V:'a> {
@@ -169,7 +169,7 @@ impl<'a, K, V> DoubleEndedIterator<&'a K> for Keys<'a, K, V> {
     }
 }
 
-impl<'a, K, V> ExactSize<&'a K> for Keys<'a, K, V> {}
+impl<'a, K, V> ExactSizeIterator<&'a K> for Keys<'a, K, V> {}
 
 /// An iterator over the values in a `Map`.
 pub struct Values<'a, K:'a, V:'a> {
@@ -192,4 +192,4 @@ impl<'a, K, V> DoubleEndedIterator<&'a V> for Values<'a, K, V> {
     }
 }
 
-impl<'a, K, V> ExactSize<&'a V> for Values<'a, K, V> {}
+impl<'a, K, V> ExactSizeIterator<&'a V> for Values<'a, K, V> {}

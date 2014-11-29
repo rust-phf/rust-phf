@@ -43,7 +43,7 @@ impl<K, V> fmt::Show for Map<K, V> where K: fmt::Show, V: fmt::Show {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));
         let mut first = true;
-        for &(ref k, ref v) in self.entries() {
+        for (k, v) in self.entries() {
             if !first {
                 try!(write!(fmt, ", "));
             }
@@ -107,31 +107,31 @@ impl<K, V> Map<K, V> {
     ///
     /// Entries are retuned in an arbitrary but fixed order.
     pub fn entries<'a>(&'a self) -> Entries<'a, K, V> {
-        Entries { iter: self.entries.iter() }
+        Entries { iter: self.entries.iter().map(|&(ref k, ref v)| (k, v)) }
     }
 
     /// Returns an iterator over the keys in the map.
     ///
     /// Keys are returned in an arbitrary but fixed order.
     pub fn keys<'a>(&'a self) -> Keys<'a, K, V> {
-        Keys { iter: self.entries().map(|e| &e.0) }
+        Keys { iter: self.entries().map(|e| e.0) }
     }
 
     /// Returns an iterator over the values in the map.
     ///
     /// Values are returned in an arbitrary but fixed order.
     pub fn values<'a>(&'a self) -> Values<'a, K, V> {
-        Values { iter: self.entries().map(|e | &e.1) }
+        Values { iter: self.entries().map(|e | e.1) }
     }
 }
 
 /// An iterator over the key/value pairs in a `Map`.
 pub struct Entries<'a, K:'a, V:'a> {
-    iter: slice::Items<'a, (K, V)>,
+    iter: iter::Map<'a, &'a (K, V), (&'a K, &'a V), slice::Items<'a, (K, V)>>,
 }
 
-impl<'a, K, V> Iterator<&'a (K, V)> for Entries<'a, K, V> {
-    fn next(&mut self) -> Option<&'a (K, V)> {
+impl<'a, K, V> Iterator<(&'a K, &'a V)> for Entries<'a, K, V> {
+    fn next(&mut self) -> Option<(&'a K, &'a V)> {
         self.iter.next()
     }
 
@@ -140,17 +140,17 @@ impl<'a, K, V> Iterator<&'a (K, V)> for Entries<'a, K, V> {
     }
 }
 
-impl<'a, K, V> DoubleEndedIterator<&'a (K, V)> for Entries<'a, K, V> {
-    fn next_back(&mut self) -> Option<&'a (K, V)> {
+impl<'a, K, V> DoubleEndedIterator<(&'a K, &'a V)> for Entries<'a, K, V> {
+    fn next_back(&mut self) -> Option<(&'a K, &'a V)> {
         self.iter.next_back()
     }
 }
 
-impl<'a, K, V> ExactSizeIterator<&'a (K, V)> for Entries<'a, K, V> {}
+impl<'a, K, V> ExactSizeIterator<(&'a K, &'a V)> for Entries<'a, K, V> {}
 
 /// An iterator over the keys in a `Map`.
 pub struct Keys<'a, K:'a, V:'a> {
-    iter: iter::Map<'a, &'a (K, V), &'a K, Entries<'a, K, V>>,
+    iter: iter::Map<'a, (&'a K, &'a V), &'a K, Entries<'a, K, V>>,
 }
 
 impl<'a, K, V> Iterator<&'a K> for Keys<'a, K, V> {
@@ -173,7 +173,7 @@ impl<'a, K, V> ExactSizeIterator<&'a K> for Keys<'a, K, V> {}
 
 /// An iterator over the values in a `Map`.
 pub struct Values<'a, K:'a, V:'a> {
-    iter: iter::Map<'a, &'a (K, V), &'a V, Entries<'a, K, V>>,
+    iter: iter::Map<'a, (&'a K, &'a V), &'a V, Entries<'a, K, V>>,
 }
 
 impl<'a, K, V> Iterator<&'a V> for Values<'a, K, V> {

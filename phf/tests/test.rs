@@ -36,7 +36,7 @@ mod map {
             "foo" => 10,
             "bar" => 11,
         );
-        let hash = MAP.entries().map(|&e| e).collect::<HashMap<_, int>>();
+        let hash = MAP.entries().map(|(&k, &v)| (k, v)).collect::<HashMap<_, int>>();
         assert!(Some(&10) == hash.get(&("foo")));
         assert!(Some(&11) == hash.get(&("bar")));
         assert_eq!(2, hash.len());
@@ -301,7 +301,7 @@ mod ordered_map {
             "bar" => 11,
             "baz" => 12,
         );
-        let vec = MAP.entries().map(|&(k, v)| (k, v)).collect::<Vec<_>>();
+        let vec = MAP.entries().map(|(&k, &v)| (k, v)).collect::<Vec<_>>();
         assert_eq!(vec, vec!(("foo", 10i), ("bar", 11), ("baz", 12)));
     }
 

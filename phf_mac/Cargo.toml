@@ -1,5 +1,4 @@
 [package]
-
 name = "phf_mac"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 version = "0.1.0"
@@ -7,7 +6,6 @@ license = "MIT"
 description = "Compiler plugin for perfect hash function data structures"
 
 [lib]
-
 name = "phf_mac"
 path = "src/lib.rs"
 plugin = true

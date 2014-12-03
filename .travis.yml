@@ -1,11 +1,3 @@
 language: rust
-env:
-  global:
-    - secure: ffCiAwT3mkRQ57yTyTKUV4nRsnsdDuTSXbwSFpNg/AXLn6KTt35wpp2kbKTUhU4fUikpoKh30+TMiXp1vhc7XSUo/E06JyjccRIE6oXas07NcYhYd0JRlPPWKZU8q33jvFYFB7U63vY/65tGk+wlrWm7NFyqqXwGMuysd7XT1tE=
 script:
-  - (cd phf && cargo test && cargo doc)
-  - (cd phf_mac && cargo doc)
-after_script:
-  - cp -r phf/target/doc .
-  - cp -r phf_mac/target/doc .
-  - curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh
+  - (cd phf && cargo test)

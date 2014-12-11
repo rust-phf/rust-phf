@@ -13,8 +13,8 @@ extern crate phf_shared;
 
 use std::collections::HashMap;
 use std::collections::hash_map::{Occupied, Vacant};
-use syntax::ast::{mod, TokenTree, LitStr, LitBinary, LitByte, LitChar, Expr, ExprLit};
-use syntax::codemap::Span;
+use syntax::ast::{mod, TokenTree, LitStr, LitBinary, LitByte, LitChar, Expr, ExprLit, ExprVec};
+use syntax::codemap::{Span, Spanned};
 use syntax::ext::base::{DummyResult,
                         ExtCtxt,
                         MacResult};
@@ -193,6 +193,24 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
                     cx.span_err(e.span, "unsupported literal type");
                     None
                 }
+            }
+        }
+        ExprVec(ref v) => {
+            let bytes: Vec<Option<u8>> = v.iter().map(|expr|
+                if let ExprLit(ref p) = expr.node {
+                    match **p {
+                        Spanned {node: ast::LitInt(val, ast::UnsignedIntLit(ast::UintTy::TyU8)), ..} if val < 256 => Some(val as u8),
+                        Spanned {node: ast::LitInt(val, ast::UnsuffixedIntLit(ast::Plus)), ..} if val < 256 => Some(val as u8),
+                        _ => None,
+                    }
+                } else {
+                    None
+            }).collect();
+            if bytes.iter().all(|x| x.is_some()) {
+                Some(Key::Binary(std::rc::Rc::new(bytes.iter().map(|x| x.unwrap()).collect())))
+            } else {
+                cx.span_err(e.span, "not all elements of an expected u8 array literal were u8 literals");
+                None
             }
         }
         _ => {

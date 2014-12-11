@@ -76,3 +76,47 @@ sip_impl!(u64)
 sip_impl!(i64)
 sip_impl!(char)
 sip_impl!(bool)
+
+macro_rules! array_impl(
+    ($t:ty, $n:expr) => (
+        impl PhfHash for [$t, ..$n] {
+            #[inline]
+            fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
+                split(xxhash::oneshot(self, seed))
+            }
+        }
+    )
+)
+
+array_impl!(u8, 1)
+array_impl!(u8, 2)
+array_impl!(u8, 3)
+array_impl!(u8, 4)
+array_impl!(u8, 5)
+array_impl!(u8, 6)
+array_impl!(u8, 7)
+array_impl!(u8, 8)
+array_impl!(u8, 9)
+array_impl!(u8, 10)
+array_impl!(u8, 11)
+array_impl!(u8, 12)
+array_impl!(u8, 13)
+array_impl!(u8, 14)
+array_impl!(u8, 15)
+array_impl!(u8, 16)
+array_impl!(u8, 17)
+array_impl!(u8, 18)
+array_impl!(u8, 19)
+array_impl!(u8, 20)
+array_impl!(u8, 21)
+array_impl!(u8, 22)
+array_impl!(u8, 23)
+array_impl!(u8, 24)
+array_impl!(u8, 25)
+array_impl!(u8, 26)
+array_impl!(u8, 27)
+array_impl!(u8, 28)
+array_impl!(u8, 29)
+array_impl!(u8, 30)
+array_impl!(u8, 31)
+array_impl!(u8, 32)

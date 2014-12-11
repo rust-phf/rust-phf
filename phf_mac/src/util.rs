@@ -58,7 +58,7 @@ impl PhfHash for Key {
     fn phf_hash(&self, key: u64) -> (u32, u32, u32) {
         match *self {
             Key::Str(ref s) => s.get().phf_hash(key),
-            Key::Binary(ref b) => (**b)[].phf_hash(key),
+            Key::Binary(ref b) => b.phf_hash(key),
             Key::Char(c) => c.phf_hash(key),
             Key::U8(b) => b.phf_hash(key),
             Key::I8(b) => b.phf_hash(key),
@@ -100,7 +100,7 @@ pub fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState
     }
     let time = time::precise_time_s() - start;
     if os::getenv("PHF_STATS").is_some() {
-        cx.span_note(sp, format!("PHF generation took {} seconds", time)[]);
+        cx.span_note(sp, &*format!("PHF generation took {} seconds", time));
     }
 
     state

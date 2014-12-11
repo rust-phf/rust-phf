@@ -3,7 +3,6 @@
 //! See the documentation for the `phf` crate for more details.
 #![doc(html_root_url="http://sfackler.github.io/doc")]
 #![feature(plugin_registrar, quote, default_type_params, macro_rules)]
-#![feature(slicing_syntax)]
 #![allow(unknown_features)]
 
 extern crate rand;
@@ -45,11 +44,11 @@ fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResul
         None => return DummyResult::expr(sp)
     };
 
-    if has_duplicates(cx, sp, entries[]) {
+    if has_duplicates(cx, sp, &*entries) {
         return DummyResult::expr(sp);
     }
 
-    let state = generate_hash(cx, sp, entries[]);
+    let state = generate_hash(cx, sp, &*entries);
 
     create_map(cx, sp, entries, state)
 }
@@ -60,11 +59,11 @@ fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResul
         None => return DummyResult::expr(sp)
     };
 
-    if has_duplicates(cx, sp, entries[]) {
+    if has_duplicates(cx, sp, &*entries) {
         return DummyResult::expr(sp);
     }
 
-    let state = generate_hash(cx, sp, entries[]);
+    let state = generate_hash(cx, sp, &*entries);
 
     create_set(cx, sp, entries, state)
 }
@@ -75,11 +74,11 @@ fn expand_phf_ordered_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<
         None => return DummyResult::expr(sp),
     };
 
-    if has_duplicates(cx, sp, entries[]) {
+    if has_duplicates(cx, sp, &*entries) {
         return DummyResult::expr(sp);
     }
 
-    let state = generate_hash(cx, sp, entries[]);
+    let state = generate_hash(cx, sp, &*entries);
 
     create_ordered_map(cx, sp, entries, state)
 }
@@ -90,11 +89,11 @@ fn expand_phf_ordered_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<
         None => return DummyResult::expr(sp)
     };
 
-    if has_duplicates(cx, sp, entries[]) {
+    if has_duplicates(cx, sp, &*entries) {
         return DummyResult::expr(sp);
     }
 
-    let state = generate_hash(cx, sp, entries[]);
+    let state = generate_hash(cx, sp, &*entries);
 
     create_ordered_set(cx, sp, entries, state)
 }
@@ -220,7 +219,7 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
         }
 
         dups = true;
-        cx.span_err(sp, format!("duplicate key {}", pprust::expr_to_string(&**key))[]);
+        cx.span_err(sp, &*format!("duplicate key {}", pprust::expr_to_string(&**key)));
         for span in spans.iter() {
             cx.span_note(*span, "one occurrence here");
         }

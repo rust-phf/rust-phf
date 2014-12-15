@@ -77,8 +77,8 @@ impl<T> Set<T> {
     /// Returns an iterator over the values in the set.
     ///
     /// Values are returned in an arbitrary but fixed order.
-    pub fn iter<'a>(&'a self) -> Items<'a, T> {
-        Items { iter: self.map.keys() }
+    pub fn iter<'a>(&'a self) -> Iter<'a, T> {
+        Iter { iter: self.map.keys() }
     }
 }
 
@@ -100,11 +100,11 @@ impl<T> Set<T> where T: Eq + PhfHash {
 }
 
 /// An iterator over the values in a `Set`.
-pub struct Items<'a, T:'static> {
+pub struct Iter<'a, T:'static> {
     iter: map::Keys<'a, T, ()>,
 }
 
-impl<'a, T> Iterator<&'a T> for Items<'a, T> {
+impl<'a, T> Iterator<&'a T> for Iter<'a, T> {
     fn next(&mut self) -> Option<&'a T> {
         self.iter.next()
     }
@@ -114,12 +114,10 @@ impl<'a, T> Iterator<&'a T> for Items<'a, T> {
     }
 }
 
-impl<'a, T> DoubleEndedIterator<&'a T> for Items<'a, T> {
+impl<'a, T> DoubleEndedIterator<&'a T> for Iter<'a, T> {
     fn next_back(&mut self) -> Option<&'a T> {
         self.iter.next_back()
     }
 }
 
-impl<'a, T> ExactSizeIterator<&'a T> for Items<'a, T> {}
-
-
+impl<'a, T> ExactSizeIterator<&'a T> for Iter<'a, T> {}

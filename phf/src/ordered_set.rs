@@ -85,8 +85,8 @@ impl<T> OrderedSet<T> {
     /// Returns an iterator over the values in the set.
     ///
     /// Values are returned in the same order in which they were defined.
-    pub fn iter<'a>(&'a self) -> Entries<'a, T> {
-        Entries { iter: self.map.keys() }
+    pub fn iter<'a>(&'a self) -> Iter<'a, T> {
+        Iter { iter: self.map.keys() }
     }
 }
 
@@ -111,11 +111,11 @@ impl<T> OrderedSet<T> where T: Eq + PhfHash {
 }
 
 /// An iterator over the values in a `OrderedSet`.
-pub struct Entries<'a, T:'a> {
+pub struct Iter<'a, T:'a> {
     iter: ordered_map::Keys<'a, T, ()>,
 }
 
-impl<'a, T> Iterator<&'a T> for Entries<'a, T> {
+impl<'a, T> Iterator<&'a T> for Iter<'a, T> {
     #[inline]
     fn next(&mut self) -> Option<&'a T> {
         self.iter.next()
@@ -127,14 +127,14 @@ impl<'a, T> Iterator<&'a T> for Entries<'a, T> {
     }
 }
 
-impl<'a, T> DoubleEndedIterator<&'a T> for Entries<'a, T> {
+impl<'a, T> DoubleEndedIterator<&'a T> for Iter<'a, T> {
     #[inline]
     fn next_back(&mut self) -> Option<&'a T> {
         self.iter.next_back()
     }
 }
 
-impl<'a, T> RandomAccessIterator<&'a T> for Entries<'a, T> {
+impl<'a, T> RandomAccessIterator<&'a T> for Iter<'a, T> {
     #[inline]
     fn indexable(&self) -> uint {
         self.iter.indexable()
@@ -146,5 +146,5 @@ impl<'a, T> RandomAccessIterator<&'a T> for Entries<'a, T> {
     }
 }
 
-impl<'a, T> ExactSizeIterator<&'a T> for Entries<'a, T> {}
+impl<'a, T> ExactSizeIterator<&'a T> for Iter<'a, T> {}
 

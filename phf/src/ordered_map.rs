@@ -3,7 +3,6 @@ use core::prelude::*;
 use core::borrow::BorrowFrom;
 use core::fmt;
 use core::slice;
-use core::iter;
 
 use PhfHash;
 use phf_shared;
@@ -126,32 +125,32 @@ impl<K, V> OrderedMap<K, V> {
     ///
     /// Entries are returned in the same order in which they were defined.
     pub fn entries<'a>(&'a self) -> Entries<'a, K, V> {
-        Entries { iter: self.entries.iter().map(|&(ref k, ref v)| (k, v)) }
+        Entries { iter: self.entries.iter() }
     }
 
     /// Returns an iterator over the keys in the map.
     ///
     /// Keys are returned in the same order in which they were defined.
     pub fn keys<'a>(&'a self) -> Keys<'a, K, V> {
-        Keys { iter: self.entries().map(|e| e.0) }
+        Keys { iter: self.entries() }
     }
 
     /// Returns an iterator over the values in the map.
     ///
     /// Values are returned in the same order in which they were defined.
     pub fn values<'a>(&'a self) -> Values<'a, K, V> {
-        Values { iter: self.entries().map(|e| e.1) }
+        Values { iter: self.entries() }
     }
 }
 
 /// An iterator over the entries in a `OrderedMap`.
 pub struct Entries<'a, K:'a, V:'a> {
-    iter: iter::Map<'a, &'a (K, V), (&'a K, &'a V), slice::Items<'a, (K, V)>>,
+    iter: slice::Items<'a, (K, V)>,
 }
 
 impl<'a, K, V> Iterator<(&'a K, &'a V)> for Entries<'a, K, V> {
     fn next(&mut self) -> Option<(&'a K, &'a V)> {
-        self.iter.next()
+        self.iter.next().map(|e| (&e.0, &e.1))
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {
@@ -161,7 +160,7 @@ impl<'a, K, V> Iterator<(&'a K, &'a V)> for Entries<'a, K, V> {
 
 impl<'a, K, V> DoubleEndedIterator<(&'a K, &'a V)> for Entries<'a, K, V> {
     fn next_back(&mut self) -> Option<(&'a K, &'a V)> {
-        self.iter.next_back()
+        self.iter.next_back().map(|e| (&e.0, &e.1))
     }
 }
 
@@ -171,7 +170,7 @@ impl<'a, K, V> RandomAccessIterator<(&'a K, &'a V)> for Entries<'a, K, V> {
     }
 
     fn idx(&mut self, index: uint) -> Option<(&'a K, &'a V)> {
-        self.iter.idx(index)
+        self.iter.idx(index).map(|e| (&e.0, &e.1))
     }
 }
 
@@ -179,12 +178,12 @@ impl<'a, K, V> ExactSizeIterator<(&'a K, &'a V)> for Entries<'a, K, V> {}
 
 /// An iterator over the keys in a `OrderedMap`.
 pub struct Keys<'a, K:'a, V:'a> {
-    iter: iter::Map<'a, (&'a K, &'a V), &'a K, Entries<'a, K, V>>,
+    iter: Entries<'a, K, V>,
 }
 
 impl<'a, K, V> Iterator<&'a K> for Keys<'a, K, V> {
     fn next(&mut self) -> Option<&'a K> {
-        self.iter.next()
+        self.iter.next().map(|e| e.0)
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {
@@ -194,7 +193,7 @@ impl<'a, K, V> Iterator<&'a K> for Keys<'a, K, V> {
 
 impl<'a, K, V> DoubleEndedIterator<&'a K> for Keys<'a, K, V> {
     fn next_back(&mut self) -> Option<&'a K> {
-        self.iter.next_back()
+        self.iter.next_back().map(|e| e.0)
     }
 }
 
@@ -204,7 +203,7 @@ impl<'a, K, V> RandomAccessIterator<&'a K> for Keys<'a, K, V> {
     }
 
     fn idx(&mut self, index: uint) -> Option<&'a K> {
-        self.iter.idx(index)
+        self.iter.idx(index).map(|e| e.0)
     }
 }
 
@@ -212,12 +211,12 @@ impl<'a, K, V> ExactSizeIterator<&'a K> for Keys<'a, K, V> {}
 
 /// An iterator over the values in a `OrderedMap`.
 pub struct Values<'a, K:'a, V:'a> {
-    iter: iter::Map<'a, (&'a K, &'a V), &'a V, Entries<'a, K, V>>,
+    iter: Entries<'a, K, V>,
 }
 
 impl<'a, K, V> Iterator<&'a V> for Values<'a, K, V> {
     fn next(&mut self) -> Option<&'a V> {
-        self.iter.next()
+        self.iter.next().map(|e| e.1)
     }
 
     fn size_hint(&self) -> (uint, Option<uint>) {
@@ -227,7 +226,7 @@ impl<'a, K, V> Iterator<&'a V> for Values<'a, K, V> {
 
 impl<'a, K, V> DoubleEndedIterator<&'a V> for Values<'a, K, V> {
     fn next_back(&mut self) -> Option<&'a V> {
-        self.iter.next_back()
+        self.iter.next_back().map(|e| e.1)
     }
 }
 
@@ -237,7 +236,7 @@ impl<'a, K, V> RandomAccessIterator<&'a V> for Values<'a, K, V> {
     }
 
     fn idx(&mut self, index: uint) -> Option<&'a V> {
-        self.iter.idx(index)
+        self.iter.idx(index).map(|e| e.1)
     }
 }
 

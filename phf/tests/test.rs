@@ -141,7 +141,7 @@ mod map {
                 assert_eq!(Some(&$v), MAP.get(&$k));
             )+
         })
-    )
+    );
 
     #[test]
     fn test_array_vals() {

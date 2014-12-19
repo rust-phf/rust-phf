@@ -52,7 +52,7 @@ impl<K, V> fmt::Show for OrderedMap<K, V> where K: fmt::Show, V: fmt::Show {
             if !first {
                 try!(write!(fmt, ", "));
             }
-            try!(write!(fmt, "{}: {}", k, v))
+            try!(write!(fmt, "{}: {}", k, v));
             first = false;
         }
         write!(fmt, "}}")

@@ -1,9 +1,8 @@
 #![feature(macro_rules)]
-
-extern crate xxhash;
 extern crate core;
 
-use self::core::kinds::Sized;
+use core::hash::sip;
+use core::kinds::Sized;
 
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
@@ -29,28 +28,28 @@ pub trait PhfHash for Sized? {
 impl<'a> PhfHash for &'a str {
     #[inline]
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        split(xxhash::hash_with_seed(seed, self))
+        split(sip::hash_with_keys(seed, 0, self))
     }
 }
 
 impl<'a> PhfHash for &'a [u8] {
     #[inline]
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        split(xxhash::oneshot(*self, seed))
+        split(sip::hash_with_keys(seed, 0, self))
     }
 }
 
 impl PhfHash for str {
     #[inline]
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        split(xxhash::hash_with_seed(seed, &self))
+        split(sip::hash_with_keys(seed, 0, &self))
     }
 }
 
 impl PhfHash for [u8] {
     #[inline]
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        split(xxhash::oneshot(self, seed))
+        split(sip::hash_with_keys(seed, 0, &self))
     }
 }
 
@@ -60,63 +59,63 @@ macro_rules! sip_impl(
         impl PhfHash for $t {
             #[inline]
             fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-                split(xxhash::hash_with_seed(seed, self))
+                split(sip::hash_with_keys(seed, 0, self))
             }
         }
     )
-)
+);
 
-sip_impl!(u8)
-sip_impl!(i8)
-sip_impl!(u16)
-sip_impl!(i16)
-sip_impl!(u32)
-sip_impl!(i32)
-sip_impl!(u64)
-sip_impl!(i64)
-sip_impl!(char)
-sip_impl!(bool)
+sip_impl!(u8);
+sip_impl!(i8);
+sip_impl!(u16);
+sip_impl!(i16);
+sip_impl!(u32);
+sip_impl!(i32);
+sip_impl!(u64);
+sip_impl!(i64);
+sip_impl!(char);
+sip_impl!(bool);
 
 macro_rules! array_impl(
     ($t:ty, $n:expr) => (
         impl PhfHash for [$t, ..$n] {
             #[inline]
             fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-                split(xxhash::oneshot(self, seed))
+                split(sip::hash_with_keys(seed, 0, self.as_slice()))
             }
         }
     )
-)
+);
 
-array_impl!(u8, 1)
-array_impl!(u8, 2)
-array_impl!(u8, 3)
-array_impl!(u8, 4)
-array_impl!(u8, 5)
-array_impl!(u8, 6)
-array_impl!(u8, 7)
-array_impl!(u8, 8)
-array_impl!(u8, 9)
-array_impl!(u8, 10)
-array_impl!(u8, 11)
-array_impl!(u8, 12)
-array_impl!(u8, 13)
-array_impl!(u8, 14)
-array_impl!(u8, 15)
-array_impl!(u8, 16)
-array_impl!(u8, 17)
-array_impl!(u8, 18)
-array_impl!(u8, 19)
-array_impl!(u8, 20)
-array_impl!(u8, 21)
-array_impl!(u8, 22)
-array_impl!(u8, 23)
-array_impl!(u8, 24)
-array_impl!(u8, 25)
-array_impl!(u8, 26)
-array_impl!(u8, 27)
-array_impl!(u8, 28)
-array_impl!(u8, 29)
-array_impl!(u8, 30)
-array_impl!(u8, 31)
-array_impl!(u8, 32)
+array_impl!(u8, 1);
+array_impl!(u8, 2);
+array_impl!(u8, 3);
+array_impl!(u8, 4);
+array_impl!(u8, 5);
+array_impl!(u8, 6);
+array_impl!(u8, 7);
+array_impl!(u8, 8);
+array_impl!(u8, 9);
+array_impl!(u8, 10);
+array_impl!(u8, 11);
+array_impl!(u8, 12);
+array_impl!(u8, 13);
+array_impl!(u8, 14);
+array_impl!(u8, 15);
+array_impl!(u8, 16);
+array_impl!(u8, 17);
+array_impl!(u8, 18);
+array_impl!(u8, 19);
+array_impl!(u8, 20);
+array_impl!(u8, 21);
+array_impl!(u8, 22);
+array_impl!(u8, 23);
+array_impl!(u8, 24);
+array_impl!(u8, 25);
+array_impl!(u8, 26);
+array_impl!(u8, 27);
+array_impl!(u8, 28);
+array_impl!(u8, 29);
+array_impl!(u8, 30);
+array_impl!(u8, 31);
+array_impl!(u8, 32);

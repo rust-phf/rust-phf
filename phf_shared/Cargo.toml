@@ -9,6 +9,3 @@ description = "Support code shared by phf and phf_mac"
 name = "phf_shared"
 path = "src/lib.rs"
 test = false
-
-[dependencies]
-xxhash = "*"

@@ -1,7 +1,8 @@
 #![feature(macro_rules)]
 extern crate core;
 
-use core::hash::sip;
+use core::hash::Writer;
+use core::hash::sip::{mod, SipState};
 use core::kinds::Sized;
 
 #[inline]
@@ -28,28 +29,30 @@ pub trait PhfHash for Sized? {
 impl<'a> PhfHash for &'a str {
     #[inline]
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        split(sip::hash_with_keys(seed, 0, self))
+        self.as_bytes().phf_hash(seed)
     }
 }
 
 impl<'a> PhfHash for &'a [u8] {
     #[inline]
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        split(sip::hash_with_keys(seed, 0, self))
+        (*self).phf_hash(seed)
     }
 }
 
 impl PhfHash for str {
     #[inline]
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        split(sip::hash_with_keys(seed, 0, &self))
+        self.as_bytes().phf_hash(seed)
     }
 }
 
 impl PhfHash for [u8] {
     #[inline]
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        split(sip::hash_with_keys(seed, 0, &self))
+        let mut state = SipState::new_with_keys(seed, 0);
+        state.write(self);
+        split(state.result())
     }
 }
 

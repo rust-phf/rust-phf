@@ -1,6 +1,9 @@
 #![feature(macro_rules)]
+#![no_std]
 extern crate core;
 
+use core::slice::AsSlice;
+use core::str::StrPrelude;
 use core::hash::Writer;
 use core::hash::sip::{mod, SipState};
 use core::kinds::Sized;

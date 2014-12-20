@@ -1,9 +1,8 @@
 #![feature(macro_rules)]
-extern crate core;
 
-use core::hash::Writer;
-use core::hash::sip::{mod, SipState};
-use core::kinds::Sized;
+use std::hash::Writer;
+use std::hash::sip::{mod, SipState};
+use std::kinds::Sized;
 
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
@@ -57,7 +56,7 @@ impl PhfHash for [u8] {
 }
 
 
-macro_rules! sip_impl(
+macro_rules! sip_impl {
     ($t:ty) => (
         impl PhfHash for $t {
             #[inline]
@@ -66,20 +65,20 @@ macro_rules! sip_impl(
             }
         }
     )
-);
+}
 
-sip_impl!(u8);
-sip_impl!(i8);
-sip_impl!(u16);
-sip_impl!(i16);
-sip_impl!(u32);
-sip_impl!(i32);
-sip_impl!(u64);
-sip_impl!(i64);
-sip_impl!(char);
-sip_impl!(bool);
+sip_impl! { u8 }
+sip_impl! { i8 }
+sip_impl! { u16 }
+sip_impl! { i16 }
+sip_impl! { u32 }
+sip_impl! { i32 }
+sip_impl! { u64 }
+sip_impl! { i64 }
+sip_impl! { char }
+sip_impl! { bool }
 
-macro_rules! array_impl(
+macro_rules! array_impl {
     ($t:ty, $n:expr) => (
         impl PhfHash for [$t, ..$n] {
             #[inline]
@@ -88,37 +87,37 @@ macro_rules! array_impl(
             }
         }
     )
-);
+}
 
-array_impl!(u8, 1);
-array_impl!(u8, 2);
-array_impl!(u8, 3);
-array_impl!(u8, 4);
-array_impl!(u8, 5);
-array_impl!(u8, 6);
-array_impl!(u8, 7);
-array_impl!(u8, 8);
-array_impl!(u8, 9);
-array_impl!(u8, 10);
-array_impl!(u8, 11);
-array_impl!(u8, 12);
-array_impl!(u8, 13);
-array_impl!(u8, 14);
-array_impl!(u8, 15);
-array_impl!(u8, 16);
-array_impl!(u8, 17);
-array_impl!(u8, 18);
-array_impl!(u8, 19);
-array_impl!(u8, 20);
-array_impl!(u8, 21);
-array_impl!(u8, 22);
-array_impl!(u8, 23);
-array_impl!(u8, 24);
-array_impl!(u8, 25);
-array_impl!(u8, 26);
-array_impl!(u8, 27);
-array_impl!(u8, 28);
-array_impl!(u8, 29);
-array_impl!(u8, 30);
-array_impl!(u8, 31);
-array_impl!(u8, 32);
+array_impl! { u8, 1 }
+array_impl! { u8, 2 }
+array_impl! { u8, 3 }
+array_impl! { u8, 4 }
+array_impl! { u8, 5 }
+array_impl! { u8, 6 }
+array_impl! { u8, 7 }
+array_impl! { u8, 8 }
+array_impl! { u8, 9 }
+array_impl! { u8, 10 }
+array_impl! { u8, 11 }
+array_impl! { u8, 12 }
+array_impl! { u8, 13 }
+array_impl! { u8, 14 }
+array_impl! { u8, 15 }
+array_impl! { u8, 16 }
+array_impl! { u8, 17 }
+array_impl! { u8, 18 }
+array_impl! { u8, 19 }
+array_impl! { u8, 20 }
+array_impl! { u8, 21 }
+array_impl! { u8, 22 }
+array_impl! { u8, 23 }
+array_impl! { u8, 24 }
+array_impl! { u8, 25 }
+array_impl! { u8, 26 }
+array_impl! { u8, 27 }
+array_impl! { u8, 28 }
+array_impl! { u8, 29 }
+array_impl! { u8, 30 }
+array_impl! { u8, 31 }
+array_impl! { u8, 32 }

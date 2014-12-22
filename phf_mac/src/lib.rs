@@ -12,7 +12,7 @@ extern crate rustc;
 extern crate phf_shared;
 
 use std::collections::HashMap;
-use std::collections::hash_map::{Occupied, Vacant};
+use std::collections::hash_map::Entry::{Occupied, Vacant};
 use syntax::ast::{mod, TokenTree, LitStr, LitBinary, LitByte, LitChar, Expr, ExprLit, ExprVec};
 use syntax::codemap::{Span, Spanned};
 use syntax::ext::base::{DummyResult,

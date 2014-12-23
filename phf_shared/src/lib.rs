@@ -3,7 +3,7 @@
 extern crate core;
 
 use core::slice::AsSlice;
-use core::str::StrPrelude;
+use core::str::StrExt;
 use core::hash::Writer;
 use core::hash::sip::{mod, SipState};
 use core::kinds::Sized;

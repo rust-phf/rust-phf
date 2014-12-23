@@ -126,7 +126,7 @@ impl<K, V> Map<K, V> {
 
 /// An iterator over the key/value pairs in a `Map`.
 pub struct Entries<'a, K:'a, V:'a> {
-    iter: slice::Items<'a, (K, V)>,
+    iter: slice::Iter<'a, (K, V)>,
 }
 
 impl<'a, K, V> Iterator<(&'a K, &'a V)> for Entries<'a, K, V> {

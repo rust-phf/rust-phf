@@ -114,7 +114,8 @@ impl<K, V> OrderedMap<K, V> {
         let idx = self.idxs[(phf_shared::displace(f1, f2, d1, d2) % (self.idxs.len() as u32)) as uint];
         let entry = &self.entries[idx];
 
-        if BorrowFrom::borrow_from(&entry.0) == key {
+        let b: &T = BorrowFrom::borrow_from(&entry.0);
+        if b == key {
             Some((idx, (&entry.0, &entry.1)))
         } else {
             None

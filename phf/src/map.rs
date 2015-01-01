@@ -95,7 +95,8 @@ impl<K, V> Map<K, V> {
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
         let entry = &self.entries[(phf_shared::displace(f1, f2, d1, d2) % (self.entries.len() as u32))
                                   as uint];
-        if BorrowFrom::borrow_from(&entry.0) == key {
+        let b: &T = BorrowFrom::borrow_from(&entry.0);
+        if b == key {
             Some((&entry.0, &entry.1))
         } else {
             None

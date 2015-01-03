@@ -1,6 +1,7 @@
 //! An order-preserving immutable set constructed at compile time.
 use core::prelude::*;
 use core::borrow::BorrowFrom;
+use core::iter::RandomAccessIterator;
 use core::fmt;
 use ordered_map;
 use {PhfHash, OrderedMap};

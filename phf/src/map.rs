@@ -1,6 +1,7 @@
 //! An immutable map constructed at compile time.
 use core::prelude::*;
 use core::borrow::BorrowFrom;
+use core::ops::Index;
 use core::slice;
 use core::fmt;
 use PhfHash;

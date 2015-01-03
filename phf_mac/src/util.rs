@@ -1,7 +1,7 @@
 use std::os;
 use std::rc::Rc;
-use std::hash;
-use std::hash::Hash;
+use std::hash::{self, Hash};
+use std::iter::repeat;
 
 use syntax::ast::Expr;
 use syntax::codemap::Span;
@@ -11,15 +11,15 @@ use syntax::parse::token::InternedString;
 use syntax::ptr::P;
 use rand::{Rng, SeedableRng, XorShiftRng};
 
-use phf_shared::{mod, PhfHash};
+use phf_shared::{self, PhfHash};
 
 use time;
 
 const DEFAULT_LAMBDA: uint = 5;
 
-const FIXED_SEED: [u32, ..4] = [3141592653, 589793238, 462643383, 2795028841];
+const FIXED_SEED: [u32; 4] = [3141592653, 589793238, 462643383, 2795028841];
 
-#[deriving(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub enum Key {
     Str(InternedString),
     Binary(Rc<Vec<u8>>),
@@ -130,7 +130,9 @@ pub fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<Has
     }).collect();
 
     let buckets_len = (entries.len() + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA;
-    let mut buckets = Vec::from_fn(buckets_len, |i| Bucket { idx: i, keys: vec![] });
+    let mut buckets = range(0, buckets_len)
+        .map(|i| Bucket { idx: i, keys: vec![] })
+        .collect::<Vec<_>>();
 
     for (i, hash) in hashes.iter().enumerate() {
         buckets[(hash.g % (buckets_len as u32)) as uint].keys.push(i);
@@ -140,8 +142,8 @@ pub fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<Has
     buckets.sort_by(|a, b| a.keys.len().cmp(&b.keys.len()).reverse());
 
     let table_len = entries.len();
-    let mut map = Vec::from_elem(table_len, None);
-    let mut disps = Vec::from_elem(buckets_len, (0u32, 0u32));
+    let mut map = repeat(None).take(table_len).collect::<Vec<_>>();
+    let mut disps = repeat((0u32, 0u32)).take(buckets_len).collect::<Vec<_>>();
 
     // store whether an element from the bucket being placed is
     // located at a certain position, to allow for efficient overlap
@@ -150,7 +152,7 @@ pub fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<Has
     // if this is legitimately full by checking that the generations
     // are equal. (A u64 is far too large to overflow in a reasonable
     // time for current hardware.)
-    let mut try_map = Vec::from_elem(table_len, 0u64);
+    let mut try_map = repeat(0u64).take(table_len).collect::<Vec<_>>();
     let mut generation = 0u64;
 
     // the actual values corresponding to the markers above, as

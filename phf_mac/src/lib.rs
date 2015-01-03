@@ -2,7 +2,7 @@
 //!
 //! See the documentation for the `phf` crate for more details.
 #![doc(html_root_url="http://sfackler.github.io/doc")]
-#![feature(plugin_registrar, quote, default_type_params, macro_rules)]
+#![feature(plugin_registrar, quote, default_type_params, macro_rules, old_orphan_check)]
 #![allow(unknown_features)]
 
 extern crate rand;
@@ -13,7 +13,7 @@ extern crate phf_shared;
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
-use syntax::ast::{mod, TokenTree, LitStr, LitBinary, LitByte, LitChar, Expr, ExprLit, ExprVec};
+use syntax::ast::{self, TokenTree, LitStr, LitBinary, LitByte, LitChar, Expr, ExprLit, ExprVec};
 use syntax::codemap::{Span, Spanned};
 use syntax::ext::base::{DummyResult,
                         ExtCtxt,

@@ -145,7 +145,7 @@ mod map {
 
     #[test]
     fn test_array_vals() {
-        static MAP: phf::Map<&'static str, [u8, ..3]> = phf_map!(
+        static MAP: phf::Map<&'static str, [u8; 3]> = phf_map!(
             "a" => [0u8, 1, 2],
         );
         assert_eq!(Some(&[0u8, 1, 2]), MAP.get(&("a")));
@@ -153,7 +153,7 @@ mod map {
 
     #[test]
     fn test_array_keys() {
-        static MAP: phf::Map<[u8, ..2], int> = phf_map!(
+        static MAP: phf::Map<[u8; 2], int> = phf_map!(
             [0u8, 1] => 0,
             [2, 3u8] => 1,
             [4, 5] => 2,
@@ -271,6 +271,8 @@ mod set {
 }
 
 mod ordered_map {
+    use std::iter::RandomAccessIterator;
+
     use phf;
 
     #[allow(dead_code)]
@@ -372,6 +374,7 @@ mod ordered_map {
 }
 
 mod ordered_set {
+    use std::iter::RandomAccessIterator;
     use phf;
 
     #[allow(dead_code)]

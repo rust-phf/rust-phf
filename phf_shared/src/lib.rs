@@ -5,7 +5,7 @@ extern crate core;
 use core::slice::AsSlice;
 use core::str::StrExt;
 use core::hash::Writer;
-use core::hash::sip::{mod, SipState};
+use core::hash::sip::{self, SipState};
 use core::kinds::Sized;
 
 #[inline]
@@ -84,7 +84,7 @@ sip_impl!(bool);
 
 macro_rules! array_impl(
     ($t:ty, $n:expr) => (
-        impl PhfHash for [$t, ..$n] {
+        impl PhfHash for [$t; $n] {
             #[inline]
             fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
                 split(sip::hash_with_keys(seed, 0, self.as_slice()))

@@ -4,7 +4,7 @@
 //! literals, or any of the fixed-size integral types.
 #![doc(html_root_url="https://sfackler.github.io/doc")]
 #![warn(missing_docs)]
-#![feature(macro_rules, phase, globs, old_orphan_check)]
+#![feature(macro_rules, phase, globs, old_orphan_check, associated_types)]
 #![no_std]
 
 #[phase(plugin, link)]

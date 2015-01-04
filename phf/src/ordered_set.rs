@@ -116,7 +116,9 @@ pub struct Iter<'a, T:'a> {
     iter: ordered_map::Keys<'a, T, ()>,
 }
 
-impl<'a, T> Iterator<&'a T> for Iter<'a, T> {
+impl<'a, T> Iterator for Iter<'a, T> {
+    type Item = &'a T;
+
     #[inline]
     fn next(&mut self) -> Option<&'a T> {
         self.iter.next()
@@ -128,14 +130,14 @@ impl<'a, T> Iterator<&'a T> for Iter<'a, T> {
     }
 }
 
-impl<'a, T> DoubleEndedIterator<&'a T> for Iter<'a, T> {
+impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
     #[inline]
     fn next_back(&mut self) -> Option<&'a T> {
         self.iter.next_back()
     }
 }
 
-impl<'a, T> RandomAccessIterator<&'a T> for Iter<'a, T> {
+impl<'a, T> RandomAccessIterator for Iter<'a, T> {
     #[inline]
     fn indexable(&self) -> uint {
         self.iter.indexable()
@@ -147,5 +149,4 @@ impl<'a, T> RandomAccessIterator<&'a T> for Iter<'a, T> {
     }
 }
 
-impl<'a, T> ExactSizeIterator<&'a T> for Iter<'a, T> {}
-
+impl<'a, T> ExactSizeIterator for Iter<'a, T> {}

@@ -61,7 +61,9 @@ impl<K, V> fmt::Show for OrderedMap<K, V> where K: fmt::Show, V: fmt::Show {
     }
 }
 
-impl<K, V, Sized? T> Index<T, V> for OrderedMap<K, V> where T: Eq + PhfHash + BorrowFrom<K> {
+impl<K, V, Sized? T> Index<T> for OrderedMap<K, V> where T: Eq + PhfHash + BorrowFrom<K> {
+    type Output = V;
+
     fn index(&self, k: &T) -> &V {
         self.get(k).expect("invalid key")
     }
@@ -151,7 +153,9 @@ pub struct Entries<'a, K:'a, V:'a> {
     iter: slice::Iter<'a, (K, V)>,
 }
 
-impl<'a, K, V> Iterator<(&'a K, &'a V)> for Entries<'a, K, V> {
+impl<'a, K, V> Iterator for Entries<'a, K, V> {
+    type Item = (&'a K, &'a V);
+
     fn next(&mut self) -> Option<(&'a K, &'a V)> {
         self.iter.next().map(|e| (&e.0, &e.1))
     }
@@ -161,13 +165,13 @@ impl<'a, K, V> Iterator<(&'a K, &'a V)> for Entries<'a, K, V> {
     }
 }
 
-impl<'a, K, V> DoubleEndedIterator<(&'a K, &'a V)> for Entries<'a, K, V> {
+impl<'a, K, V> DoubleEndedIterator for Entries<'a, K, V> {
     fn next_back(&mut self) -> Option<(&'a K, &'a V)> {
         self.iter.next_back().map(|e| (&e.0, &e.1))
     }
 }
 
-impl<'a, K, V> RandomAccessIterator<(&'a K, &'a V)> for Entries<'a, K, V> {
+impl<'a, K, V> RandomAccessIterator for Entries<'a, K, V> {
     fn indexable(&self) -> uint {
         self.iter.indexable()
     }
@@ -177,14 +181,16 @@ impl<'a, K, V> RandomAccessIterator<(&'a K, &'a V)> for Entries<'a, K, V> {
     }
 }
 
-impl<'a, K, V> ExactSizeIterator<(&'a K, &'a V)> for Entries<'a, K, V> {}
+impl<'a, K, V> ExactSizeIterator for Entries<'a, K, V> {}
 
 /// An iterator over the keys in a `OrderedMap`.
 pub struct Keys<'a, K:'a, V:'a> {
     iter: Entries<'a, K, V>,
 }
 
-impl<'a, K, V> Iterator<&'a K> for Keys<'a, K, V> {
+impl<'a, K, V> Iterator for Keys<'a, K, V> {
+    type Item = &'a K;
+
     fn next(&mut self) -> Option<&'a K> {
         self.iter.next().map(|e| e.0)
     }
@@ -194,13 +200,13 @@ impl<'a, K, V> Iterator<&'a K> for Keys<'a, K, V> {
     }
 }
 
-impl<'a, K, V> DoubleEndedIterator<&'a K> for Keys<'a, K, V> {
+impl<'a, K, V> DoubleEndedIterator for Keys<'a, K, V> {
     fn next_back(&mut self) -> Option<&'a K> {
         self.iter.next_back().map(|e| e.0)
     }
 }
 
-impl<'a, K, V> RandomAccessIterator<&'a K> for Keys<'a, K, V> {
+impl<'a, K, V> RandomAccessIterator for Keys<'a, K, V> {
     fn indexable(&self) -> uint {
         self.iter.indexable()
     }
@@ -210,14 +216,16 @@ impl<'a, K, V> RandomAccessIterator<&'a K> for Keys<'a, K, V> {
     }
 }
 
-impl<'a, K, V> ExactSizeIterator<&'a K> for Keys<'a, K, V> {}
+impl<'a, K, V> ExactSizeIterator for Keys<'a, K, V> {}
 
 /// An iterator over the values in a `OrderedMap`.
 pub struct Values<'a, K:'a, V:'a> {
     iter: Entries<'a, K, V>,
 }
 
-impl<'a, K, V> Iterator<&'a V> for Values<'a, K, V> {
+impl<'a, K, V> Iterator for Values<'a, K, V> {
+    type Item = &'a V;
+
     fn next(&mut self) -> Option<&'a V> {
         self.iter.next().map(|e| e.1)
     }
@@ -227,13 +235,13 @@ impl<'a, K, V> Iterator<&'a V> for Values<'a, K, V> {
     }
 }
 
-impl<'a, K, V> DoubleEndedIterator<&'a V> for Values<'a, K, V> {
+impl<'a, K, V> DoubleEndedIterator for Values<'a, K, V> {
     fn next_back(&mut self) -> Option<&'a V> {
         self.iter.next_back().map(|e| e.1)
     }
 }
 
-impl<'a, K, V> RandomAccessIterator<&'a V> for Values<'a, K, V> {
+impl<'a, K, V> RandomAccessIterator for Values<'a, K, V> {
     fn indexable(&self) -> uint {
         self.iter.indexable()
     }
@@ -243,4 +251,4 @@ impl<'a, K, V> RandomAccessIterator<&'a V> for Values<'a, K, V> {
     }
 }
 
-impl<'a, K, V> ExactSizeIterator<&'a V> for Values<'a, K, V> {}
+impl<'a, K, V> ExactSizeIterator for Values<'a, K, V> {}

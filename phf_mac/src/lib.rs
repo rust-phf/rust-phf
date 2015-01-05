@@ -226,7 +226,7 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
     for entry in entries.iter() {
         let &(ref mut spans, _) = match strings.entry(&entry.key_contents) {
             Occupied(e) => e.into_mut(),
-            Vacant(e) => e.set((vec![], &entry.key)),
+            Vacant(e) => e.insert((vec![], &entry.key)),
         };
         spans.push(entry.key.span);
     }

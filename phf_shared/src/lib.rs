@@ -1,4 +1,3 @@
-#![feature(macro_rules)]
 #![no_std]
 extern crate core;
 
@@ -6,7 +5,6 @@ use core::slice::AsSlice;
 use core::str::StrExt;
 use core::hash::Writer;
 use core::hash::sip::{self, SipState};
-use core::kinds::Sized;
 
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
@@ -24,7 +22,7 @@ fn split(hash: u64) -> (u32, u32, u32) {
 }
 
 /// A trait implemented by types which can be used in PHF data structures
-pub trait PhfHash for Sized? {
+pub trait PhfHash {
     /// Hashes the value of `self`, factoring in a seed
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32);
 }

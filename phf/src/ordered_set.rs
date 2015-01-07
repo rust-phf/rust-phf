@@ -14,9 +14,9 @@ use {PhfHash, OrderedMap};
 /// `OrderedSet`s may be created with the `phf_ordered_set` macro:
 ///
 /// ```rust
-/// # #![feature(phase)]
+/// #![feature(plugin)]
 /// extern crate phf;
-/// #[phase(plugin)]
+/// #[plugin] #[no_link]
 /// extern crate phf_mac;
 ///
 /// static MY_SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
@@ -67,19 +67,19 @@ impl<T> OrderedSet<T> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<Sized? U>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash + BorrowFrom<T> {
+    pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash + BorrowFrom<T> {
         self.map.get_key(key)
     }
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered set.
-    pub fn get_index<Sized? U>(&self, key: &U) -> Option<uint>
+    pub fn get_index<U: ?Sized>(&self, key: &U) -> Option<uint>
             where U: Eq + PhfHash + BorrowFrom<T> {
         self.map.get_index(key)
     }
 
     /// Returns true if `value` is in the `Set`.
-    pub fn contains<Sized? U>(&self, value: &U) -> bool where U: Eq + PhfHash + BorrowFrom<T> {
+    pub fn contains<U: ?Sized>(&self, value: &U) -> bool where U: Eq + PhfHash + BorrowFrom<T> {
         self.map.contains_key(value)
     }
 

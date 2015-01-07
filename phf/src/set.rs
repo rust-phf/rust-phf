@@ -12,9 +12,9 @@ use Map;
 /// `Set`s may be created with the `phf_set` macro:
 ///
 /// ```rust
-/// # #![feature(phase)]
+/// #![feature(plugin)]
 /// extern crate phf;
-/// #[phase(plugin)]
+/// #[plugin] #[no_link]
 /// extern crate phf_mac;
 ///
 /// static MY_SET: phf::Set<&'static str> = phf_set! {
@@ -65,12 +65,12 @@ impl<T> Set<T> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<Sized? U>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash + BorrowFrom<T> {
+    pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash + BorrowFrom<T> {
         self.map.get_key(key)
     }
 
     /// Returns true if `value` is in the `Set`.
-    pub fn contains<Sized? U>(&self, value: &U) -> bool where U: Eq + PhfHash + BorrowFrom<T> {
+    pub fn contains<U: ?Sized>(&self, value: &U) -> bool where U: Eq + PhfHash + BorrowFrom<T> {
         self.map.contains_key(value)
     }
 

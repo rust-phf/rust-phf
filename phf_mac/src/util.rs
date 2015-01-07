@@ -13,8 +13,6 @@ use rand::{Rng, SeedableRng, XorShiftRng};
 
 use phf_shared::{self, PhfHash};
 
-use time;
-
 const DEFAULT_LAMBDA: uint = 5;
 
 const FIXED_SEED: [u32; 4] = [3141592653, 589793238, 462643383, 2795028841];
@@ -86,8 +84,13 @@ pub struct HashState {
 }
 
 pub fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
+    #[cfg(feature = "stats")]
+    use time::precise_time_s;
+    #[cfg(not(feature = "stats"))]
+    fn precise_time_s() -> f64 { 0.0 }
+
     let mut rng: XorShiftRng = SeedableRng::from_seed(FIXED_SEED);
-    let start = time::precise_time_s();
+    let start = precise_time_s();
     let state;
     loop {
         match try_generate_hash(entries, &mut rng) {
@@ -98,8 +101,8 @@ pub fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState
             None => {}
         }
     }
-    let time = time::precise_time_s() - start;
-    if os::getenv("PHF_STATS").is_some() {
+    let time = precise_time_s() - start;
+    if cfg!(feature = "stats") && os::getenv("PHF_STATS").is_some() {
         cx.span_note(sp, &*format!("PHF generation took {} seconds", time));
     }
 

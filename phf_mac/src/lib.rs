@@ -7,6 +7,7 @@
 
 extern crate rand;
 extern crate syntax;
+#[cfg(feature = "stats")]
 extern crate time;
 extern crate rustc;
 extern crate phf_shared;

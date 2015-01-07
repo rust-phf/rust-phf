@@ -46,7 +46,7 @@ pub struct OrderedMap<K:'static, V:'static> {
     pub entries: &'static [(K, V)],
 }
 
-impl<K, V> fmt::Show for OrderedMap<K, V> where K: fmt::Show, V: fmt::Show {
+impl<K, V> fmt::String for OrderedMap<K, V> where K: fmt::String, V: fmt::String {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));
         let mut first = true;
@@ -55,6 +55,21 @@ impl<K, V> fmt::Show for OrderedMap<K, V> where K: fmt::Show, V: fmt::Show {
                 try!(write!(fmt, ", "));
             }
             try!(write!(fmt, "{}: {}", k, v));
+            first = false;
+        }
+        write!(fmt, "}}")
+    }
+}
+
+impl<K, V> fmt::Show for OrderedMap<K, V> where K: fmt::Show, V: fmt::Show {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(fmt, "{{"));
+        let mut first = true;
+        for (k, v) in self.entries() {
+            if !first {
+                try!(write!(fmt, ", "));
+            }
+            try!(write!(fmt, "{:?}: {:?}", k, v));
             first = false;
         }
         write!(fmt, "}}")

@@ -112,7 +112,7 @@ mod map {
         static MAP: phf::Map<&'static str, int> = phf_map!(
             "a" => 0,
         );
-        assert_eq!(Some(&0), MAP.get("a".to_string()[]));
+        assert_eq!(Some(&0), MAP.get(&"a".to_string()[]));
     }
 
     #[test]
@@ -266,7 +266,7 @@ mod set {
             "hello",
             "world",
         };
-        assert!(SET.contains("hello".to_string()[]));
+        assert!(SET.contains(&"hello".to_string()[]));
     }
 }
 
@@ -309,9 +309,9 @@ mod ordered_map {
         assert_eq!(None, MAP.get_index(&"xyz"));
         assert_eq!(&"baz", MAP.keys().idx(MAP.get_index(&"baz").unwrap()).unwrap());
 
-        assert_eq!(Some(0), MAP.get_index("foo".to_string()[]));
-        assert_eq!(Some(2), MAP.get_index("baz".to_string()[]));
-        assert_eq!(None, MAP.get_index("xyz".to_string()[]));
+        assert_eq!(Some(0), MAP.get_index(&"foo".to_string()[]));
+        assert_eq!(Some(2), MAP.get_index(&"baz".to_string()[]));
+        assert_eq!(None, MAP.get_index(&"xyz".to_string()[]));
     }
 
     #[test]
@@ -369,7 +369,7 @@ mod ordered_map {
         static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
             "a" => 0,
         );
-        assert_eq!(Some(&0), MAP.get("a".to_string()[]));
+        assert_eq!(Some(&0), MAP.get(&"a".to_string()[]));
     }
 }
 
@@ -413,9 +413,9 @@ mod ordered_set {
         assert_eq!(None, SET.get_index(&"xyz"));
         assert_eq!(&"baz", SET.iter().idx(SET.get_index(&"baz").unwrap()).unwrap());
 
-        assert_eq!(Some(0), SET.get_index("foo".to_string()[]));
-        assert_eq!(Some(2), SET.get_index("baz".to_string()[]));
-        assert_eq!(None, SET.get_index("xyz".to_string()[]));
+        assert_eq!(Some(0), SET.get_index(&"foo".to_string()[]));
+        assert_eq!(Some(2), SET.get_index(&"baz".to_string()[]));
+        assert_eq!(None, SET.get_index(&"xyz".to_string()[]));
     }
 
     #[test]
@@ -435,6 +435,6 @@ mod ordered_set {
             "hello",
             "world",
         };
-        assert!(SET.contains("hello".to_string()[]));
+        assert!(SET.contains(&"hello".to_string()[]));
     }
 }

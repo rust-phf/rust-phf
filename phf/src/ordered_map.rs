@@ -17,9 +17,9 @@ use phf_shared;
 /// `OrderedMap`s may be created with the `phf_ordered_map` macro:
 ///
 /// ```rust
-/// # #![feature(phase)]
+/// #![feature(plugin)]
 /// extern crate phf;
-/// #[phase(plugin)]
+/// #[plugin] #[no_link]
 /// extern crate phf_mac;
 ///
 /// static MY_MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map! {
@@ -61,7 +61,7 @@ impl<K, V> fmt::Show for OrderedMap<K, V> where K: fmt::Show, V: fmt::Show {
     }
 }
 
-impl<K, V, Sized? T> Index<T> for OrderedMap<K, V> where T: Eq + PhfHash + BorrowFrom<K> {
+impl<K, V, T: ?Sized> Index<T> for OrderedMap<K, V> where T: Eq + PhfHash + BorrowFrom<K> {
     type Output = V;
 
     fn index(&self, k: &T) -> &V {
@@ -81,7 +81,7 @@ impl<K, V> OrderedMap<K, V> {
     }
 
     /// Returns a reference to the value that `key` maps to.
-    pub fn get<Sized? T>(&self, key: &T) -> Option<&V> where T: Eq + PhfHash + BorrowFrom<K> {
+    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V> where T: Eq + PhfHash + BorrowFrom<K> {
         self.get_entry(key).map(|e| e.1)
     }
 
@@ -89,29 +89,29 @@ impl<K, V> OrderedMap<K, V> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<Sized? T>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash + BorrowFrom<K> {
+    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash + BorrowFrom<K> {
         self.get_entry(key).map(|e| e.0)
     }
 
     /// Determines if `key` is in the `Map`.
-    pub fn contains_key<Sized? T>(&self, key: &T) -> bool where T: Eq + PhfHash + BorrowFrom<K> {
+    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool where T: Eq + PhfHash + BorrowFrom<K> {
         self.get(key).is_some()
     }
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered map.
-    pub fn get_index<Sized? T>(&self, key: &T) -> Option<uint>
+    pub fn get_index<T: ?Sized>(&self, key: &T) -> Option<uint>
             where T: Eq + PhfHash + BorrowFrom<K> {
         self.get_internal(key).map(|(i, _)| i)
     }
 
     /// Like `get`, but returns both the key and the value.
-    pub fn get_entry<Sized? T>(&self, key: &T) -> Option<(&K, &V)>
+    pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
             where T: Eq + PhfHash + BorrowFrom<K> {
         self.get_internal(key).map(|(_, e)| e)
     }
 
-    fn get_internal<Sized? T>(&self, key: &T) -> Option<(uint, (&K, &V))>
+    fn get_internal<T: ?Sized>(&self, key: &T) -> Option<(uint, (&K, &V))>
             where T: Eq + PhfHash + BorrowFrom<K> {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];

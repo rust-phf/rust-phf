@@ -16,9 +16,9 @@ Example
 =======
 
 ```rust
-#![feature(phase)]
+#![feature(plugin)]
 
-#[phase(plugin)]
+#[plugin] #[no_link]
 extern crate phf_mac;
 extern crate phf;
 

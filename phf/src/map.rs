@@ -12,9 +12,9 @@ use phf_shared;
 /// `Map`s may be created with the `phf_map` macro:
 ///
 /// ```rust
-/// # #![feature(phase)]
+/// #![feature(plugin)]
 /// extern crate phf;
-/// #[phase(plugin)]
+/// #[plugin] #[no_link]
 /// extern crate phf_mac;
 ///
 /// static MY_MAP: phf::Map<&'static str, int> = phf_map! {
@@ -54,7 +54,7 @@ impl<K, V> fmt::Show for Map<K, V> where K: fmt::Show, V: fmt::Show {
     }
 }
 
-impl<K, V, Sized? T> Index<T> for Map<K, V> where T: Eq + PhfHash + BorrowFrom<K> {
+impl<K, V, T: ?Sized> Index<T> for Map<K, V> where T: Eq + PhfHash + BorrowFrom<K> {
     type Output = V;
 
     fn index(&self, k: &T) -> &V {
@@ -74,12 +74,12 @@ impl<K, V> Map<K, V> {
     }
 
     /// Determines if `key` is in the `Map`.
-    pub fn contains_key<Sized? T>(&self, key: &T) -> bool where T: Eq + PhfHash + BorrowFrom<K> {
+    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool where T: Eq + PhfHash + BorrowFrom<K> {
         self.get(key).is_some()
     }
 
     /// Returns a reference to the value that `key` maps to.
-    pub fn get<Sized? T>(&self, key: &T) -> Option<&V> where T: Eq + PhfHash + BorrowFrom<K> {
+    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V> where T: Eq + PhfHash + BorrowFrom<K> {
         self.get_entry(key).map(|e| e.1)
     }
 
@@ -87,12 +87,12 @@ impl<K, V> Map<K, V> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<Sized? T>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash + BorrowFrom<K> {
+    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash + BorrowFrom<K> {
         self.get_entry(key).map(|e| e.0)
     }
 
     /// Like `get`, but returns both the key and the value.
-    pub fn get_entry<Sized? T>(&self, key: &T) -> Option<(&K, &V)>
+    pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
             where T: Eq + PhfHash + BorrowFrom<K> {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];

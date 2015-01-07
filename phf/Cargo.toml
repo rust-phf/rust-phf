@@ -1,7 +1,7 @@
 [package]
 name = "phf"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.4.6"
+version = "0.4.7"
 license = "MIT"
 description = "Runtime support for perfect hash function data structures"
 repository = "https://github.com/sfackler/rust-phf"
@@ -14,8 +14,8 @@ test = false
 
 [dependencies.phf_shared]
 path = "../phf_shared"
-version = "=0.4.6"
+version = "=0.4.7"
 
 [dev_dependencies.phf_mac]
 path = "../phf_mac"
-version = "=0.4.6"
+version = "=0.4.7"

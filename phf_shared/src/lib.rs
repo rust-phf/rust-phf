@@ -1,10 +1,10 @@
+#![allow(unstable)]
 #![no_std]
 extern crate core;
 
 use core::slice::AsSlice;
 use core::str::StrExt;
-use core::hash::Writer;
-use core::hash::sip::{self, SipState};
+use core::hash::{Writer, Hasher, Hash, SipHasher};
 
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
@@ -13,7 +13,7 @@ pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 
 #[inline]
 fn split(hash: u64) -> (u32, u32, u32) {
-    const BITS: uint = 21;
+    const BITS: u32 = 21;
     const MASK: u64 = (1 << BITS) - 1;
 
     ((hash & MASK) as u32,
@@ -51,7 +51,7 @@ impl PhfHash for str {
 impl PhfHash for [u8] {
     #[inline]
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        let mut state = SipState::new_with_keys(seed, 0);
+        let mut state = SipHasher::new_with_keys(seed, 0);
         state.write(self);
         split(state.result())
     }
@@ -63,7 +63,9 @@ macro_rules! sip_impl(
         impl PhfHash for $t {
             #[inline]
             fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-                split(sip::hash_with_keys(seed, 0, self))
+                let mut hasher = SipHasher::new_with_keys(seed, 0);
+                self.hash(&mut hasher);
+                split(hasher.finish())
             }
         }
     )
@@ -85,7 +87,9 @@ macro_rules! array_impl(
         impl PhfHash for [$t; $n] {
             #[inline]
             fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-                split(sip::hash_with_keys(seed, 0, self.as_slice()))
+                let mut hasher = SipHasher::new_with_keys(seed, 0);
+                hasher.write(self.as_slice());
+                split(hasher.finish())
             }
         }
     )

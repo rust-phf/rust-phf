@@ -3,7 +3,7 @@
 //! See the documentation for the `phf` crate for more details.
 #![doc(html_root_url="http://sfackler.github.io/doc")]
 #![feature(plugin_registrar, quote, old_orphan_check)]
-#![allow(unknown_features)]
+#![allow(unknown_features, unstable)]
 
 extern crate rand;
 extern crate syntax;
@@ -225,7 +225,7 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
     let mut dups = false;
     let mut strings = HashMap::new();
     for entry in entries.iter() {
-        let &(ref mut spans, _) = match strings.entry(&entry.key_contents) {
+        let &mut (ref mut spans, _) = match strings.entry(&entry.key_contents) {
             Occupied(e) => e.into_mut(),
             Vacant(e) => e.insert((vec![], &entry.key)),
         };

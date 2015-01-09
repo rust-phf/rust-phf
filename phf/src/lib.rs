@@ -1,9 +1,10 @@
 //! Compile time optimized maps and sets.
 //!
 //! Keys can be string literals, byte string literals, byte literals, char
-//! literals, or any of the fixed-size integral types.
+//! literals, or any of the fixed-size isizeegral types.
 #![doc(html_root_url="https://sfackler.github.io/doc")]
 #![warn(missing_docs)]
+#![allow(unstable)]
 #![feature(old_orphan_check)]
 #![no_std]
 

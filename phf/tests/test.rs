@@ -1,3 +1,4 @@
+#![allow(unstable)]
 #![feature(plugin)]
 
 #[plugin] #[no_link]
@@ -9,18 +10,18 @@ mod map {
     use phf;
 
     #[allow(dead_code)]
-    static TRAILING_COMMA: phf::Map<&'static str, int> = phf_map!(
+    static TRAILING_COMMA: phf::Map<&'static str, isize> = phf_map!(
         "foo" => 10,
     );
 
     #[allow(dead_code)]
-    static NO_TRAILING_COMMA: phf::Map<&'static str, int> = phf_map!(
+    static NO_TRAILING_COMMA: phf::Map<&'static str, isize> = phf_map!(
         "foo" => 10
     );
 
     #[test]
     fn test_two() {
-        static MAP: phf::Map<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, isize> = phf_map!(
             "foo" => 10,
             "bar" => 11,
         );
@@ -32,11 +33,11 @@ mod map {
 
     #[test]
     fn test_entries() {
-        static MAP: phf::Map<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, isize> = phf_map!(
             "foo" => 10,
             "bar" => 11,
         );
-        let hash = MAP.entries().map(|(&k, &v)| (k, v)).collect::<HashMap<_, int>>();
+        let hash = MAP.entries().map(|(&k, &v)| (k, v)).collect::<HashMap<_, isize>>();
         assert!(Some(&10) == hash.get(&("foo")));
         assert!(Some(&11) == hash.get(&("bar")));
         assert_eq!(2, hash.len());
@@ -44,7 +45,7 @@ mod map {
 
     #[test]
     fn test_keys() {
-        static MAP: phf::Map<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, isize> = phf_map!(
             "foo" => 10,
             "bar" => 11,
         );
@@ -56,11 +57,11 @@ mod map {
 
     #[test]
     fn test_values() {
-        static MAP: phf::Map<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, isize> = phf_map!(
             "foo" => 10,
             "bar" => 11,
         );
-        let hash = MAP.values().map(|&e| e).collect::<HashSet<int>>();
+        let hash = MAP.values().map(|&e| e).collect::<HashSet<isize>>();
         assert!(hash.contains(&10));
         assert!(hash.contains(&11));
         assert_eq!(2, hash.len());
@@ -68,7 +69,7 @@ mod map {
 
     #[test]
     fn test_large() {
-        static MAP: phf::Map<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, isize> = phf_map!(
             "a" => 0,
             "b" => 1,
             "c" => 2,
@@ -101,7 +102,7 @@ mod map {
 
     #[test]
     fn test_macro_key() {
-        static MAP: phf::Map<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, isize> = phf_map!(
             concat!("foo", "bar") => 1
         );
         assert!(Some(&1) == MAP.get(&("foobar")));
@@ -109,15 +110,15 @@ mod map {
 
     #[test]
     fn test_non_static_str_key() {
-        static MAP: phf::Map<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, isize> = phf_map!(
             "a" => 0,
         );
-        assert_eq!(Some(&0), MAP.get("a".to_string()[]));
+        assert_eq!(Some(&0), MAP.get(&*"a".to_string()));
     }
 
     #[test]
     fn test_index_ok() {
-        static MAP: phf::Map<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, isize> = phf_map!(
             "a" => 0,
         );
         assert_eq!(0, MAP["a"]);
@@ -126,7 +127,7 @@ mod map {
     #[test]
     #[should_fail]
     fn test_index_fail() {
-        static MAP: phf::Map<&'static str, int> = phf_map!(
+        static MAP: phf::Map<&'static str, isize> = phf_map!(
             "a" => 0,
         );
         MAP["b"];
@@ -134,7 +135,7 @@ mod map {
 
     macro_rules! test_key_type(
         ($t:ty, $($k:expr => $v:expr),+) => ({
-            static MAP: phf::Map<$t, int> = phf_map! {
+            static MAP: phf::Map<$t, isize> = phf_map! {
                 $($k => $v),+
             };
             $(
@@ -153,7 +154,7 @@ mod map {
 
     #[test]
     fn test_array_keys() {
-        static MAP: phf::Map<[u8; 2], int> = phf_map!(
+        static MAP: phf::Map<[u8; 2], isize> = phf_map!(
             [0u8, 1] => 0,
             [2, 3u8] => 1,
             [4, 5] => 2,
@@ -266,7 +267,7 @@ mod set {
             "hello",
             "world",
         };
-        assert!(SET.contains("hello".to_string()[]));
+        assert!(SET.contains(&*"hello".to_string()));
     }
 }
 
@@ -276,18 +277,18 @@ mod ordered_map {
     use phf;
 
     #[allow(dead_code)]
-    static TRAILING_COMMA: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
+    static TRAILING_COMMA: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
         "foo" => 10,
     );
 
     #[allow(dead_code)]
-    static NO_TRAILING_COMMA: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
+    static NO_TRAILING_COMMA: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
         "foo" => 10
     );
 
     #[test]
     fn test_two() {
-        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
         );
@@ -299,7 +300,7 @@ mod ordered_map {
 
     #[test]
     fn test_get_index() {
-        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
             "foo" => 5,
             "bar" => 5,
             "baz" => 5,
@@ -309,25 +310,25 @@ mod ordered_map {
         assert_eq!(None, MAP.get_index(&"xyz"));
         assert_eq!(&"baz", MAP.keys().idx(MAP.get_index(&"baz").unwrap()).unwrap());
 
-        assert_eq!(Some(0), MAP.get_index("foo".to_string()[]));
-        assert_eq!(Some(2), MAP.get_index("baz".to_string()[]));
-        assert_eq!(None, MAP.get_index("xyz".to_string()[]));
+        assert_eq!(Some(0), MAP.get_index(&*"foo".to_string()));
+        assert_eq!(Some(2), MAP.get_index(&*"baz".to_string()));
+        assert_eq!(None, MAP.get_index(&*"xyz".to_string()));
     }
 
     #[test]
     fn test_entries() {
-        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
             "baz" => 12,
         );
         let vec = MAP.entries().map(|(&k, &v)| (k, v)).collect::<Vec<_>>();
-        assert_eq!(vec, vec!(("foo", 10i), ("bar", 11), ("baz", 12)));
+        assert_eq!(vec, vec!(("foo", 10is), ("bar", 11), ("baz", 12)));
     }
 
     #[test]
     fn test_keys() {
-        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
             "baz" => 12,
@@ -338,18 +339,18 @@ mod ordered_map {
 
     #[test]
     fn test_values() {
-        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
             "baz" => 12,
         );
         let vec = MAP.values().map(|&v| v).collect::<Vec<_>>();
-        assert_eq!(vec, vec!(10i, 11, 12));
+        assert_eq!(vec, vec!(10is, 11, 12));
     }
 
     #[test]
     fn test_index_ok() {
-        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
             "a" => 0,
         );
         assert_eq!(0, MAP["a"]);
@@ -358,7 +359,7 @@ mod ordered_map {
     #[test]
     #[should_fail]
     fn test_index_fail() {
-        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
             "a" => 0,
         );
         MAP["b"];
@@ -366,10 +367,10 @@ mod ordered_map {
 
     #[test]
     fn test_non_static_str_key() {
-        static MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
             "a" => 0,
         );
-        assert_eq!(Some(&0), MAP.get("a".to_string()[]));
+        assert_eq!(Some(&0), MAP.get(&*"a".to_string()));
     }
 }
 
@@ -413,9 +414,9 @@ mod ordered_set {
         assert_eq!(None, SET.get_index(&"xyz"));
         assert_eq!(&"baz", SET.iter().idx(SET.get_index(&"baz").unwrap()).unwrap());
 
-        assert_eq!(Some(0), SET.get_index("foo".to_string()[]));
-        assert_eq!(Some(2), SET.get_index("baz".to_string()[]));
-        assert_eq!(None, SET.get_index("xyz".to_string()[]));
+        assert_eq!(Some(0), SET.get_index(&*"foo".to_string()));
+        assert_eq!(Some(2), SET.get_index(&*"baz".to_string()));
+        assert_eq!(None, SET.get_index(&*"xyz".to_string()));
     }
 
     #[test]
@@ -435,6 +436,6 @@ mod ordered_set {
             "hello",
             "world",
         };
-        assert!(SET.contains("hello".to_string()[]));
+        assert!(SET.contains(&*"hello".to_string()));
     }
 }

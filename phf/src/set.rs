@@ -35,7 +35,7 @@ pub struct Set<T:'static> {
     pub map: Map<T, ()>
 }
 
-impl<T> fmt::Show for Set<T> where T: fmt::Show {
+impl<T> fmt::String for Set<T> where T: fmt::String {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));
         let mut first = true;
@@ -50,9 +50,24 @@ impl<T> fmt::Show for Set<T> where T: fmt::Show {
     }
 }
 
+impl<T> fmt::Show for Set<T> where T: fmt::Show {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(fmt, "{{"));
+        let mut first = true;
+        for entry in self.iter() {
+            if !first {
+                try!(write!(fmt, ", "));
+            }
+            try!(write!(fmt, "{:?}", entry));
+            first = false;
+        }
+        write!(fmt, "}}")
+    }
+}
+
 impl<T> Set<T> {
     /// Returns the number of elements in the `Set`.
-    pub fn len(&self) -> uint {
+    pub fn len(&self) -> usize {
         self.map.len()
     }
 
@@ -61,10 +76,10 @@ impl<T> Set<T> {
         self.len() == 0
     }
 
-    /// Returns a reference to the set's internal static instance of the given
+    /// Returns a reference to the set's isizeernal static instance of the given
     /// key.
     ///
-    /// This can be useful for interning schemes.
+    /// This can be useful for isizeerning schemes.
     pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash + BorrowFrom<T> {
         self.map.get_key(key)
     }
@@ -84,7 +99,7 @@ impl<T> Set<T> {
 
 impl<T> Set<T> where T: Eq + PhfHash {
     /// Returns true if `other` shares no elements with `self`.
-    pub fn is_disjoint(&self, other: &Set<T>) -> bool {
+    pub fn is_disjoisize(&self, other: &Set<T>) -> bool {
         !self.iter().any(|value| other.contains(value))
     }
 
@@ -111,7 +126,7 @@ impl<'a, T> Iterator for Iter<'a, T> {
         self.iter.next()
     }
 
-    fn size_hint(&self) -> (uint, Option<uint>) {
+    fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
     }
 }

@@ -22,7 +22,7 @@ use phf_shared;
 /// #[plugin] #[no_link]
 /// extern crate phf_mac;
 ///
-/// static MY_MAP: phf::OrderedMap<&'static str, int> = phf_ordered_map! {
+/// static MY_MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map! {
 ///    "hello" => 10,
 ///    "world" => 11,
 /// };
@@ -41,12 +41,27 @@ pub struct OrderedMap<K:'static, V:'static> {
     #[doc(hidden)]
     pub disps: &'static [(u32, u32)],
     #[doc(hidden)]
-    pub idxs: &'static [uint],
+    pub idxs: &'static [usize],
     #[doc(hidden)]
     pub entries: &'static [(K, V)],
 }
 
 impl<K, V> fmt::Show for OrderedMap<K, V> where K: fmt::Show, V: fmt::Show {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(fmt, "{{"));
+        let mut first = true;
+        for (k, v) in self.entries() {
+            if !first {
+                try!(write!(fmt, ", "));
+            }
+            try!(write!(fmt, "{:?}: {:?}", k, v));
+            first = false;
+        }
+        write!(fmt, "}}")
+    }
+}
+
+impl<K, V> fmt::String for OrderedMap<K, V> where K: fmt::String, V: fmt::String {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));
         let mut first = true;
@@ -71,7 +86,7 @@ impl<K, V, T: ?Sized> Index<T> for OrderedMap<K, V> where T: Eq + PhfHash + Borr
 
 impl<K, V> OrderedMap<K, V> {
     /// Returns the number of entries in the `Map`.
-    pub fn len(&self) -> uint {
+    pub fn len(&self) -> usize {
         self.entries.len()
     }
 
@@ -85,10 +100,10 @@ impl<K, V> OrderedMap<K, V> {
         self.get_entry(key).map(|e| e.1)
     }
 
-    /// Returns a reference to the map's internal static instance of the given
+    /// Returns a reference to the map's isizeernal static instance of the given
     /// key.
     ///
-    /// This can be useful for interning schemes.
+    /// This can be useful for isizeerning schemes.
     pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash + BorrowFrom<K> {
         self.get_entry(key).map(|e| e.0)
     }
@@ -100,22 +115,22 @@ impl<K, V> OrderedMap<K, V> {
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered map.
-    pub fn get_index<T: ?Sized>(&self, key: &T) -> Option<uint>
+    pub fn get_index<T: ?Sized>(&self, key: &T) -> Option<usize>
             where T: Eq + PhfHash + BorrowFrom<K> {
-        self.get_internal(key).map(|(i, _)| i)
+        self.get_isizeernal(key).map(|(i, _)| i)
     }
 
     /// Like `get`, but returns both the key and the value.
     pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
             where T: Eq + PhfHash + BorrowFrom<K> {
-        self.get_internal(key).map(|(_, e)| e)
+        self.get_isizeernal(key).map(|(_, e)| e)
     }
 
-    fn get_internal<T: ?Sized>(&self, key: &T) -> Option<(uint, (&K, &V))>
+    fn get_isizeernal<T: ?Sized>(&self, key: &T) -> Option<(usize, (&K, &V))>
             where T: Eq + PhfHash + BorrowFrom<K> {
         let (g, f1, f2) = key.phf_hash(self.key);
-        let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
-        let idx = self.idxs[(phf_shared::displace(f1, f2, d1, d2) % (self.idxs.len() as u32)) as uint];
+        let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as usize];
+        let idx = self.idxs[(phf_shared::displace(f1, f2, d1, d2) % (self.idxs.len() as u32)) as usize];
         let entry = &self.entries[idx];
 
         let b: &T = BorrowFrom::borrow_from(&entry.0);
@@ -160,7 +175,7 @@ impl<'a, K, V> Iterator for Entries<'a, K, V> {
         self.iter.next().map(|e| (&e.0, &e.1))
     }
 
-    fn size_hint(&self) -> (uint, Option<uint>) {
+    fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
     }
 }
@@ -172,11 +187,11 @@ impl<'a, K, V> DoubleEndedIterator for Entries<'a, K, V> {
 }
 
 impl<'a, K, V> RandomAccessIterator for Entries<'a, K, V> {
-    fn indexable(&self) -> uint {
+    fn indexable(&self) -> usize {
         self.iter.indexable()
     }
 
-    fn idx(&mut self, index: uint) -> Option<(&'a K, &'a V)> {
+    fn idx(&mut self, index: usize) -> Option<(&'a K, &'a V)> {
         self.iter.idx(index).map(|e| (&e.0, &e.1))
     }
 }
@@ -195,7 +210,7 @@ impl<'a, K, V> Iterator for Keys<'a, K, V> {
         self.iter.next().map(|e| e.0)
     }
 
-    fn size_hint(&self) -> (uint, Option<uint>) {
+    fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
     }
 }
@@ -207,11 +222,11 @@ impl<'a, K, V> DoubleEndedIterator for Keys<'a, K, V> {
 }
 
 impl<'a, K, V> RandomAccessIterator for Keys<'a, K, V> {
-    fn indexable(&self) -> uint {
+    fn indexable(&self) -> usize {
         self.iter.indexable()
     }
 
-    fn idx(&mut self, index: uint) -> Option<&'a K> {
+    fn idx(&mut self, index: usize) -> Option<&'a K> {
         self.iter.idx(index).map(|e| e.0)
     }
 }
@@ -230,7 +245,7 @@ impl<'a, K, V> Iterator for Values<'a, K, V> {
         self.iter.next().map(|e| e.1)
     }
 
-    fn size_hint(&self) -> (uint, Option<uint>) {
+    fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
     }
 }
@@ -242,11 +257,11 @@ impl<'a, K, V> DoubleEndedIterator for Values<'a, K, V> {
 }
 
 impl<'a, K, V> RandomAccessIterator for Values<'a, K, V> {
-    fn indexable(&self) -> uint {
+    fn indexable(&self) -> usize {
         self.iter.indexable()
     }
 
-    fn idx(&mut self, index: uint) -> Option<&'a V> {
+    fn idx(&mut self, index: usize) -> Option<&'a V> {
         self.iter.idx(index).map(|e| e.1)
     }
 }

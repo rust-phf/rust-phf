@@ -37,7 +37,7 @@ pub struct OrderedSet<T:'static> {
     pub map: OrderedMap<T, ()>,
 }
 
-impl<T> fmt::Show for OrderedSet<T> where T: fmt::Show {
+impl<T> fmt::String for OrderedSet<T> where T: fmt::String {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));
         let mut first = true;
@@ -52,9 +52,24 @@ impl<T> fmt::Show for OrderedSet<T> where T: fmt::Show {
     }
 }
 
+impl<T> fmt::Show for OrderedSet<T> where T: fmt::Show {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(fmt, "{{"));
+        let mut first = true;
+        for entry in self.iter() {
+            if !first {
+                try!(write!(fmt, ", "));
+            }
+            try!(write!(fmt, "{:?}", entry));
+            first = false;
+        }
+        write!(fmt, "}}")
+    }
+}
+
 impl<T> OrderedSet<T> {
     /// Returns the number of elements in the `OrderedSet`.
-    pub fn len(&self) -> uint {
+    pub fn len(&self) -> usize {
         self.map.len()
     }
 
@@ -63,17 +78,17 @@ impl<T> OrderedSet<T> {
         self.len() == 0
     }
 
-    /// Returns a reference to the set's internal static instance of the given
+    /// Returns a reference to the set's isizeernal static instance of the given
     /// key.
     ///
-    /// This can be useful for interning schemes.
+    /// This can be useful for isizeerning schemes.
     pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash + BorrowFrom<T> {
         self.map.get_key(key)
     }
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered set.
-    pub fn get_index<U: ?Sized>(&self, key: &U) -> Option<uint>
+    pub fn get_index<U: ?Sized>(&self, key: &U) -> Option<usize>
             where U: Eq + PhfHash + BorrowFrom<T> {
         self.map.get_index(key)
     }
@@ -94,7 +109,7 @@ impl<T> OrderedSet<T> {
 impl<T> OrderedSet<T> where T: Eq + PhfHash {
     /// Returns true if `other` shares no elements with `self`.
     #[inline]
-    pub fn is_disjoint(&self, other: &OrderedSet<T>) -> bool {
+    pub fn is_disjoisize(&self, other: &OrderedSet<T>) -> bool {
         !self.iter().any(|value| other.contains(value))
     }
 
@@ -125,7 +140,7 @@ impl<'a, T> Iterator for Iter<'a, T> {
     }
 
     #[inline]
-    fn size_hint(&self) -> (uint, Option<uint>) {
+    fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
     }
 }
@@ -139,12 +154,12 @@ impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
 
 impl<'a, T> RandomAccessIterator for Iter<'a, T> {
     #[inline]
-    fn indexable(&self) -> uint {
+    fn indexable(&self) -> usize {
         self.iter.indexable()
     }
 
     #[inline]
-    fn idx(&mut self, index: uint) -> Option<&'a T> {
+    fn idx(&mut self, index: usize) -> Option<&'a T> {
         self.iter.idx(index)
     }
 }

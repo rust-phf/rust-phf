@@ -17,7 +17,7 @@ use phf_shared;
 /// #[plugin] #[no_link]
 /// extern crate phf_mac;
 ///
-/// static MY_MAP: phf::Map<&'static str, int> = phf_map! {
+/// static MY_MAP: phf::Map<&'static str, isize> = phf_map! {
 ///    "hello" => 10,
 ///    "world" => 11,
 /// };
@@ -39,7 +39,7 @@ pub struct Map<K:'static, V:'static> {
     pub entries: &'static [(K, V)],
 }
 
-impl<K, V> fmt::Show for Map<K, V> where K: fmt::Show, V: fmt::Show {
+impl<K, V> fmt::String for Map<K, V> where K: fmt::String, V: fmt::String {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));
         let mut first = true;
@@ -48,6 +48,21 @@ impl<K, V> fmt::Show for Map<K, V> where K: fmt::Show, V: fmt::Show {
                 try!(write!(fmt, ", "));
             }
             try!(write!(fmt, "{}: {}", k, v));
+            first = false;
+        }
+        write!(fmt, "}}")
+    }
+}
+
+impl<K, V> fmt::Show for Map<K, V> where K: fmt::Show, V: fmt::Show {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(fmt, "{{"));
+        let mut first = true;
+        for (k, v) in self.entries() {
+            if !first {
+                try!(write!(fmt, ", "));
+            }
+            try!(write!(fmt, "{:?}: {:?}", k, v));
             first = false;
         }
         write!(fmt, "}}")
@@ -69,7 +84,7 @@ impl<K, V> Map<K, V> {
     }
 
     /// Returns the number of entries in the `Map`.
-    pub fn len(&self) -> uint {
+    pub fn len(&self) -> usize {
         self.entries.len()
     }
 
@@ -83,10 +98,10 @@ impl<K, V> Map<K, V> {
         self.get_entry(key).map(|e| e.1)
     }
 
-    /// Returns a reference to the map's internal static instance of the given
+    /// Returns a reference to the map's isizeernal static instance of the given
     /// key.
     ///
-    /// This can be useful for interning schemes.
+    /// This can be useful for isizeerning schemes.
     pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash + BorrowFrom<K> {
         self.get_entry(key).map(|e| e.0)
     }
@@ -95,9 +110,9 @@ impl<K, V> Map<K, V> {
     pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
             where T: Eq + PhfHash + BorrowFrom<K> {
         let (g, f1, f2) = key.phf_hash(self.key);
-        let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as uint];
+        let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as usize];
         let entry = &self.entries[(phf_shared::displace(f1, f2, d1, d2) % (self.entries.len() as u32))
-                                  as uint];
+                                  as usize];
         let b: &T = BorrowFrom::borrow_from(&entry.0);
         if b == key {
             Some((&entry.0, &entry.1))
@@ -140,7 +155,7 @@ impl<'a, K, V> Iterator for Entries<'a, K, V> {
         self.iter.next().map(|&(ref k, ref v)| (k, v))
     }
 
-    fn size_hint(&self) -> (uint, Option<uint>) {
+    fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
     }
 }
@@ -165,7 +180,7 @@ impl<'a, K, V> Iterator for Keys<'a, K, V> {
         self.iter.next().map(|e| e.0)
     }
 
-    fn size_hint(&self) -> (uint, Option<uint>) {
+    fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
     }
 }
@@ -190,7 +205,7 @@ impl<'a, K, V> Iterator for Values<'a, K, V> {
         self.iter.next().map(|e| e.1)
     }
 
-    fn size_hint(&self) -> (uint, Option<uint>) {
+    fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
     }
 }

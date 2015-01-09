@@ -1,6 +1,6 @@
 use std::os;
 use std::rc::Rc;
-use std::hash::{self, Hash};
+use std::hash::{self, Hash, Hasher};
 use std::iter::repeat;
 
 use syntax::ast::Expr;
@@ -13,7 +13,7 @@ use rand::{Rng, SeedableRng, XorShiftRng};
 
 use phf_shared::{self, PhfHash};
 
-const DEFAULT_LAMBDA: uint = 5;
+const DEFAULT_LAMBDA: usize = 5;
 
 const FIXED_SEED: [u32; 4] = [3141592653, 589793238, 462643383, 2795028841];
 
@@ -33,7 +33,7 @@ pub enum Key {
     Bool(bool),
 }
 
-impl<S> Hash<S> for Key where S: hash::Writer {
+impl<S> Hash<S> for Key where S: Hasher + hash::Writer {
     fn hash(&self, state: &mut S) {
         match *self {
             Key::Str(ref s) => s.get().hash(state),
@@ -80,7 +80,7 @@ pub struct Entry {
 pub struct HashState {
     key: u64,
     disps: Vec<(u32, u32)>,
-    map: Vec<uint>,
+    map: Vec<usize>,
 }
 
 pub fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
@@ -111,8 +111,8 @@ pub fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState
 
 pub fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<HashState> {
     struct Bucket {
-        idx: uint,
-        keys: Vec<uint>,
+        idx: usize,
+        keys: Vec<usize>,
     }
 
     struct Hashes {
@@ -138,7 +138,7 @@ pub fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<Has
         .collect::<Vec<_>>();
 
     for (i, hash) in hashes.iter().enumerate() {
-        buckets[(hash.g % (buckets_len as u32)) as uint].keys.push(i);
+        buckets[(hash.g % (buckets_len as u32)) as usize].keys.push(i);
     }
 
     // Sort descending
@@ -171,7 +171,7 @@ pub fn try_generate_hash(entries: &[Entry], rng: &mut XorShiftRng) -> Option<Has
 
                 for &key in bucket.keys.iter() {
                     let idx = (phf_shared::displace(hashes[key].f1, hashes[key].f2, d1, d2)
-                                % (table_len as u32)) as uint;
+                                % (table_len as u32)) as usize;
                     if map[idx].is_some() || try_map[idx] == generation {
                         continue 'disps;
                     }

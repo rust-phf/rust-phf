@@ -1,7 +1,7 @@
 [package]
 name = "phf_shared"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.4.8"
+version = "0.4.9"
 license = "MIT"
 description = "Support code shared by phf and phf_mac"
 repository = "https://github.com/sfackler/rust-phf"

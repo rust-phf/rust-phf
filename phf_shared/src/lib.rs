@@ -53,7 +53,7 @@ impl PhfHash for [u8] {
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
         let mut state = SipHasher::new_with_keys(seed, 0);
         state.write(self);
-        split(state.result())
+        split(state.finish())
     }
 }
 

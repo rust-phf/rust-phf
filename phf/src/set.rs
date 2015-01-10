@@ -35,21 +35,6 @@ pub struct Set<T:'static> {
     pub map: Map<T, ()>
 }
 
-impl<T> fmt::String for Set<T> where T: fmt::String {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(fmt, "{{"));
-        let mut first = true;
-        for entry in self.iter() {
-            if !first {
-                try!(write!(fmt, ", "));
-            }
-            try!(write!(fmt, "{}", entry));
-            first = false;
-        }
-        write!(fmt, "}}")
-    }
-}
-
 impl<T> fmt::Show for Set<T> where T: fmt::Show {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "{{"));

@@ -5,7 +5,6 @@
 #![doc(html_root_url="https://sfackler.github.io/doc")]
 #![warn(missing_docs)]
 #![allow(unstable)]
-#![feature(old_orphan_check)]
 #![no_std]
 
 #[macro_use]

@@ -2,7 +2,7 @@
 //!
 //! See the documentation for the `phf` crate for more details.
 #![doc(html_root_url="http://sfackler.github.io/doc")]
-#![feature(plugin_registrar, quote, old_orphan_check)]
+#![feature(plugin_registrar, quote)]
 #![allow(unknown_features, unstable)]
 
 extern crate rand;

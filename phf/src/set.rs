@@ -37,7 +37,7 @@ pub struct Set<T:'static> {
 
 impl<T> fmt::Show for Set<T> where T: fmt::Show {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(fmt, "{{"));
+        try!(write!(fmt, "Set {{"));
         let mut first = true;
         for entry in self.iter() {
             if !first {

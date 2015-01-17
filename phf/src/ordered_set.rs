@@ -39,7 +39,7 @@ pub struct OrderedSet<T:'static> {
 
 impl<T> fmt::Show for OrderedSet<T> where T: fmt::Show {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(fmt, "{{"));
+        try!(write!(fmt, "OrderedSet {{"));
         let mut first = true;
         for entry in self.iter() {
             if !first {

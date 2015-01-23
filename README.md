@@ -26,12 +26,21 @@ Example
 extern crate phf_mac;
 extern crate phf;
 
+#[derive(Clone)]
+pub enum Keyword {
+    Loop,
+    Continue,
+    Break,
+    Fn,
+    Extern,
+}
+
 static KEYWORDS: phf::Map<&'static str, Keyword> = phf_map! {
-    "loop" => LOOP,
-    "continue" => CONTINUE,
-    "break" => BREAK,
-    "fn" => FN,
-    "extern" => EXTERN,
+    "loop" => Keyword::Loop,
+    "continue" => Keyword::Continue,
+    "break" => Keyword::Break,
+    "fn" => Keyword::Fn,
+    "extern" => Keyword::Extern,
 };
 
 pub fn parse_keyword(keyword: &str) -> Option<Keyword> {

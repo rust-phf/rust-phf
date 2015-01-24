@@ -35,7 +35,7 @@ pub struct Set<T:'static> {
     pub map: Map<T, ()>
 }
 
-impl<T> fmt::Show for Set<T> where T: fmt::Show {
+impl<T> fmt::Debug for Set<T> where T: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "Set {{"));
         let mut first = true;

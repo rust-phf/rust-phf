@@ -46,7 +46,7 @@ pub struct OrderedMap<K:'static, V:'static> {
     pub entries: &'static [(K, V)],
 }
 
-impl<K, V> fmt::Show for OrderedMap<K, V> where K: fmt::Show, V: fmt::Show {
+impl<K, V> fmt::Debug for OrderedMap<K, V> where K: fmt::Debug, V: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "OrderedMap {{"));
         let mut first = true;

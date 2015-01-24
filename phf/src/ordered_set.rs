@@ -37,7 +37,7 @@ pub struct OrderedSet<T:'static> {
     pub map: OrderedMap<T, ()>,
 }
 
-impl<T> fmt::Show for OrderedSet<T> where T: fmt::Show {
+impl<T> fmt::Debug for OrderedSet<T> where T: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "OrderedSet {{"));
         let mut first = true;

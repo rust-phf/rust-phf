@@ -66,7 +66,7 @@ impl<T> OrderedSet<T> {
     /// Returns a reference to the set's isizeernal static instance of the given
     /// key.
     ///
-    /// This can be useful for isizeerning schemes.
+    /// This can be useful for interning schemes.
     pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash + BorrowFrom<T> {
         self.map.get_key(key)
     }

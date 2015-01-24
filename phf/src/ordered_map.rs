@@ -88,7 +88,7 @@ impl<K, V> OrderedMap<K, V> {
     /// Returns a reference to the map's isizeernal static instance of the given
     /// key.
     ///
-    /// This can be useful for isizeerning schemes.
+    /// This can be useful for interning schemes.
     pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash + BorrowFrom<K> {
         self.get_entry(key).map(|e| e.0)
     }

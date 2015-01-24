@@ -84,7 +84,7 @@ impl<T> Set<T> {
 
 impl<T> Set<T> where T: Eq + PhfHash {
     /// Returns true if `other` shares no elements with `self`.
-    pub fn is_disjoisize(&self, other: &Set<T>) -> bool {
+    pub fn is_disjoint(&self, other: &Set<T>) -> bool {
         !self.iter().any(|value| other.contains(value))
     }
 

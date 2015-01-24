@@ -94,7 +94,7 @@ impl<T> OrderedSet<T> {
 impl<T> OrderedSet<T> where T: Eq + PhfHash {
     /// Returns true if `other` shares no elements with `self`.
     #[inline]
-    pub fn is_disjoisize(&self, other: &OrderedSet<T>) -> bool {
+    pub fn is_disjoint(&self, other: &OrderedSet<T>) -> bool {
         !self.iter().any(|value| other.contains(value))
     }
 

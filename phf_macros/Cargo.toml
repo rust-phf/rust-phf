@@ -1,5 +1,5 @@
 [package]
-name = "phf_mac"
+name = "phf_macros"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 version = "0.5.0"
 license = "MIT"
@@ -7,7 +7,7 @@ description = "Compiler plugin for perfect hash function data structures"
 repository = "https://github.com/sfackler/rust-phf"
 
 [lib]
-name = "phf_mac"
+name = "phf_macros"
 path = "src/lib.rs"
 plugin = true
 test = false

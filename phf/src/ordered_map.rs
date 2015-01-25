@@ -20,7 +20,7 @@ use phf_shared;
 /// #![feature(plugin)]
 /// extern crate phf;
 /// #[plugin] #[no_link]
-/// extern crate phf_mac;
+/// extern crate phf_macros;
 ///
 /// static MY_MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map! {
 ///    "hello" => 10,

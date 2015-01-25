@@ -17,7 +17,7 @@ use {PhfHash, OrderedMap};
 /// #![feature(plugin)]
 /// extern crate phf;
 /// #[plugin] #[no_link]
-/// extern crate phf_mac;
+/// extern crate phf_macros;
 ///
 /// static MY_SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
 ///    "hello",

@@ -15,7 +15,7 @@ use Map;
 /// #![feature(plugin)]
 /// extern crate phf;
 /// #[plugin] #[no_link]
-/// extern crate phf_mac;
+/// extern crate phf_macros;
 ///
 /// static MY_SET: phf::Set<&'static str> = phf_set! {
 ///    "hello",

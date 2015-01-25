@@ -16,6 +16,6 @@ test = false
 path = "../phf_shared"
 version = "=0.5.0"
 
-[dev_dependencies.phf_mac]
-path = "../phf_mac"
+[dev_dependencies.phf_macros]
+path = "../phf_macros"
 version = "=0.5.0"

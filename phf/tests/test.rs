@@ -2,7 +2,7 @@
 #![feature(plugin)]
 
 #[plugin] #[no_link]
-extern crate phf_mac;
+extern crate phf_macros;
 extern crate phf;
 
 mod map {

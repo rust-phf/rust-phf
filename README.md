@@ -10,9 +10,9 @@ It currently uses the
 [CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) and can generate
 a 100,000 entry map in roughly .4 seconds. By default statistics are not
 produced, but if you use the `phf_mac` crate with the `stats` feature enabled
-(writing `phf_mac/stats` in the `[dependencies]` section of your `Cargo.toml`
-instead of `phf_mac`) and set the environment variable `PHF_STATS` it will
-issue a compiler note about how long it took.
+(writing `phf_macros/stats` in the `[dependencies]` section of your
+`Cargo.toml` instead of `phf_macros`) and set the environment variable
+`PHF_STATS` it will issue a compiler note about how long it took.
 
 Documentation is available at https://sfackler.github.io/doc/phf
 

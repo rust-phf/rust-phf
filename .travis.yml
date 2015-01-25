@@ -1,4 +1,4 @@
 language: rust
 script:
   - (cd phf && cargo test)
-  - (cd phf_mac && cargo test --features stats)
+  - (cd phf_macros && cargo test --features stats)

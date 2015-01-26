@@ -83,7 +83,7 @@ impl<K, V> Map<K, V> {
         self.get_entry(key).map(|e| e.1)
     }
 
-    /// Returns a reference to the map's isizeernal static instance of the given
+    /// Returns a reference to the map's internal static instance of the given
     /// key.
     ///
     /// This can be useful for interning schemes.

@@ -63,7 +63,7 @@ impl<T> OrderedSet<T> {
         self.len() == 0
     }
 
-    /// Returns a reference to the set's isizeernal static instance of the given
+    /// Returns a reference to the set's internal static instance of the given
     /// key.
     ///
     /// This can be useful for interning schemes.

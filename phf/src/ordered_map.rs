@@ -85,7 +85,7 @@ impl<K, V> OrderedMap<K, V> {
         self.get_entry(key).map(|e| e.1)
     }
 
-    /// Returns a reference to the map's isizeernal static instance of the given
+    /// Returns a reference to the map's internal static instance of the given
     /// key.
     ///
     /// This can be useful for interning schemes.
@@ -102,16 +102,16 @@ impl<K, V> OrderedMap<K, V> {
     /// the ordered map.
     pub fn get_index<T: ?Sized>(&self, key: &T) -> Option<usize>
             where T: Eq + PhfHash + BorrowFrom<K> {
-        self.get_isizeernal(key).map(|(i, _)| i)
+        self.get_internal(key).map(|(i, _)| i)
     }
 
     /// Like `get`, but returns both the key and the value.
     pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
             where T: Eq + PhfHash + BorrowFrom<K> {
-        self.get_isizeernal(key).map(|(_, e)| e)
+        self.get_internal(key).map(|(_, e)| e)
     }
 
-    fn get_isizeernal<T: ?Sized>(&self, key: &T) -> Option<(usize, (&K, &V))>
+    fn get_internal<T: ?Sized>(&self, key: &T) -> Option<(usize, (&K, &V))>
             where T: Eq + PhfHash + BorrowFrom<K> {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as usize];

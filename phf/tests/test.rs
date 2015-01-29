@@ -1,5 +1,4 @@
-#![allow(unstable)]
-#![feature(plugin)]
+#![feature(plugin, collections, core)]
 
 #[plugin] #[no_link]
 extern crate phf_macros;

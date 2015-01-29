@@ -3,8 +3,8 @@
 //! Keys can be string literals, byte string literals, byte literals, char
 //! literals, or any of the fixed-size isizeegral types.
 #![doc(html_root_url="https://sfackler.github.io/doc")]
+#![feature(core)]
 #![warn(missing_docs)]
-#![allow(unstable)]
 #![no_std]
 
 #[macro_use]

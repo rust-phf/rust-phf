@@ -1,4 +1,4 @@
-#![allow(unstable)]
+#![feature(core, hash)]
 #![no_std]
 extern crate core;
 

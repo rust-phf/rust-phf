@@ -1,7 +1,7 @@
 //! An immutable set constructed at compile time.
-use core::prelude::*;
-use core::borrow::BorrowFrom;
-use core::fmt;
+use std::prelude::v1::*;
+use std::borrow::BorrowFrom;
+use std::fmt;
 
 use PhfHash;
 use map;

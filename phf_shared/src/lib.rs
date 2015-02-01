@@ -1,10 +1,20 @@
-#![feature(core, hash)]
+#![feature(hash)]
+#![cfg_attr(feature = "core", feature(core))]
 #![no_std]
-extern crate core;
 
-use core::slice::AsSlice;
-use core::str::StrExt;
-use core::hash::{Writer, Hasher, Hash, SipHasher};
+#[cfg(feature = "core")]
+extern crate core;
+#[cfg(not(feature = "core"))]
+extern crate std;
+
+use std::slice::AsSlice;
+use std::str::StrExt;
+use std::hash::{Writer, Hasher, Hash, SipHasher};
+
+#[cfg(feature = "core")]
+mod std {
+    pub use core::{slice, str, hash};
+}
 
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {

@@ -8,7 +8,11 @@
 #![no_std]
 
 #[macro_use]
+#[cfg(feature = "core")]
 extern crate core;
+#[macro_use]
+#[cfg(not(feature = "core"))]
+extern crate std;
 extern crate phf_shared;
 
 pub use phf_shared::PhfHash;
@@ -26,9 +30,11 @@ pub mod set;
 pub mod ordered_map;
 pub mod ordered_set;
 
+#[cfg(feature = "core")]
 mod std {
-    pub use core::fmt;
-    pub use core::iter;
-    pub use core::option;
+    pub use core::{borrow, fmt, iter, option, ops, slice};
+    pub mod prelude {
+        pub use core::prelude as v1;
+    }
 }
 

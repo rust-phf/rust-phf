@@ -10,3 +10,7 @@ repository = "https://github.com/sfackler/rust-phf"
 name = "phf_shared"
 path = "src/lib.rs"
 test = false
+
+[features]
+
+core = []

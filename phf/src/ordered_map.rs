@@ -1,10 +1,10 @@
 //! An order-preserving immutable map constructed at compile time.
-use core::prelude::*;
-use core::borrow::BorrowFrom;
-use core::iter::RandomAccessIterator;
-use core::ops::Index;
-use core::fmt;
-use core::slice;
+use std::prelude::v1::*;
+use std::borrow::BorrowFrom;
+use std::iter::RandomAccessIterator;
+use std::ops::Index;
+use std::fmt;
+use std::slice;
 
 use PhfHash;
 use phf_shared;

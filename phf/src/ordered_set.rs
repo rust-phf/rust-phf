@@ -1,8 +1,8 @@
 //! An order-preserving immutable set constructed at compile time.
-use core::prelude::*;
-use core::borrow::BorrowFrom;
-use core::iter::RandomAccessIterator;
-use core::fmt;
+use std::prelude::v1::*;
+use std::borrow::BorrowFrom;
+use std::iter::RandomAccessIterator;
+use std::fmt;
 use ordered_map;
 use {PhfHash, OrderedMap};
 

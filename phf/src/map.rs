@@ -1,9 +1,9 @@
 //! An immutable map constructed at compile time.
-use core::prelude::*;
-use core::borrow::BorrowFrom;
-use core::ops::Index;
-use core::slice;
-use core::fmt;
+use std::prelude::v1::*;
+use std::borrow::BorrowFrom;
+use std::ops::Index;
+use std::slice;
+use std::fmt;
 use PhfHash;
 use phf_shared;
 

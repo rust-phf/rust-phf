@@ -28,5 +28,7 @@ pub mod ordered_set;
 
 mod std {
     pub use core::fmt;
+    pub use core::iter;
+    pub use core::option;
 }
 

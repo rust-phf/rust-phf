@@ -16,6 +16,10 @@ produced, but if you use the `phf_mac` crate with the `stats` feature enabled
 
 Documentation is available at https://sfackler.github.io/doc/phf
 
+The `phf/core` feature will compile the `phf` crate with a dependency on
+libcore instead of libstd, enabling use in environments where libstd will not
+work.
+
 Example
 =======
 

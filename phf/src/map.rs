@@ -4,6 +4,7 @@ use std::borrow::BorrowFrom;
 use std::ops::Index;
 use std::slice;
 use std::fmt;
+use std::iter::IntoIterator;
 use PhfHash;
 use phf_shared;
 
@@ -125,6 +126,14 @@ impl<K, V> Map<K, V> {
     /// Values are returned in an arbitrary but fixed order.
     pub fn values<'a>(&'a self) -> Values<'a, K, V> {
         Values { iter: self.entries() }
+    }
+}
+
+impl<'a, K, V> IntoIterator for &'a Map<K, V> {
+    type Iter = Entries<'a, K, V>;
+
+    fn into_iter(self) -> Entries<'a, K, V> {
+        self.entries()
     }
 }
 

@@ -220,6 +220,18 @@ mod map {
     fn test_bool_keys() {
         test_key_type!(bool, false => 0, true => 1);
     }
+
+    #[test]
+    fn test_into_iterator() {
+        static MAP: phf::Map<&'static str, isize> = phf_map!(
+            "foo" => 10,
+        );
+
+        for (k, v) in &MAP {
+            assert_eq!(&"foo", k);
+            assert_eq!(&10, v)
+        }
+    }
 }
 
 mod set {
@@ -267,6 +279,17 @@ mod set {
             "world",
         };
         assert!(SET.contains(&*"hello".to_string()));
+    }
+
+    #[test]
+    fn test_into_iterator() {
+        static SET: phf::Set<&'static str> = phf_set! {
+            "hello",
+        };
+
+        for e in &SET {
+            assert_eq!(&"hello", e);
+        }
     }
 }
 
@@ -371,6 +394,18 @@ mod ordered_map {
         );
         assert_eq!(Some(&0), MAP.get(&*"a".to_string()));
     }
+
+    #[test]
+    fn test_into_iterator() {
+        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
+            "foo" => 10,
+        );
+
+        for (k, v) in &MAP {
+            assert_eq!(&"foo", k);
+            assert_eq!(&10, v)
+        }
+    }
 }
 
 mod ordered_set {
@@ -436,5 +471,16 @@ mod ordered_set {
             "world",
         };
         assert!(SET.contains(&*"hello".to_string()));
+    }
+
+    #[test]
+    fn test_into_iterator() {
+        static SET: phf::OrderedSet<&'static str> = phf_ordered_set!(
+            "foo",
+        );
+
+        for e in &SET {
+            assert_eq!(&"foo", e);
+        }
     }
 }

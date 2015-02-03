@@ -1,6 +1,7 @@
 //! An immutable set constructed at compile time.
 use std::prelude::v1::*;
 use std::borrow::BorrowFrom;
+use std::iter::IntoIterator;
 use std::fmt;
 
 use PhfHash;
@@ -96,6 +97,14 @@ impl<T> Set<T> where T: Eq + PhfHash {
     /// Returns true if `self` contains all values in `other`.
     pub fn is_superset(&self, other: &Set<T>) -> bool {
         other.is_subset(self)
+    }
+}
+
+impl<'a, T> IntoIterator for &'a Set<T> {
+    type Iter = Iter<'a, T>;
+
+    fn into_iter(self) -> Iter<'a, T> {
+        self.iter()
     }
 }
 

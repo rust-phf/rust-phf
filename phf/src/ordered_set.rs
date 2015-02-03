@@ -1,7 +1,7 @@
 //! An order-preserving immutable set constructed at compile time.
 use std::prelude::v1::*;
 use std::borrow::BorrowFrom;
-use std::iter::RandomAccessIterator;
+use std::iter::{IntoIterator, RandomAccessIterator};
 use std::fmt;
 use ordered_map;
 use {PhfHash, OrderedMap};
@@ -108,6 +108,14 @@ impl<T> OrderedSet<T> where T: Eq + PhfHash {
     #[inline]
     pub fn is_superset(&self, other: &OrderedSet<T>) -> bool {
         other.is_subset(self)
+    }
+}
+
+impl<'a, T> IntoIterator for &'a OrderedSet<T> {
+    type Iter = Iter<'a, T>;
+
+    fn into_iter(self) -> Iter<'a, T> {
+        self.iter()
     }
 }
 

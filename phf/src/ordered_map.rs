@@ -1,7 +1,7 @@
 //! An order-preserving immutable map constructed at compile time.
 use std::prelude::v1::*;
 use std::borrow::BorrowFrom;
-use std::iter::RandomAccessIterator;
+use std::iter::{IntoIterator, RandomAccessIterator};
 use std::ops::Index;
 use std::fmt;
 use std::slice;
@@ -145,6 +145,14 @@ impl<K, V> OrderedMap<K, V> {
     /// Values are returned in the same order in which they were defined.
     pub fn values<'a>(&'a self) -> Values<'a, K, V> {
         Values { iter: self.entries() }
+    }
+}
+
+impl<'a, K, V> IntoIterator for &'a OrderedMap<K, V> {
+    type Iter = Entries<'a, K, V>;
+
+    fn into_iter(self) -> Entries<'a, K, V> {
+        self.entries()
     }
 }
 

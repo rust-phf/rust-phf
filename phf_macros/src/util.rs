@@ -36,7 +36,7 @@ pub enum Key {
 impl<S> Hash<S> for Key where S: Hasher + hash::Writer {
     fn hash(&self, state: &mut S) {
         match *self {
-            Key::Str(ref s) => s.get().hash(state),
+            Key::Str(ref s) => s.hash(state),
             Key::Binary(ref b) => b.hash(state),
             Key::Char(c) => c.hash(state),
             Key::U8(b) => b.hash(state),
@@ -55,7 +55,7 @@ impl<S> Hash<S> for Key where S: Hasher + hash::Writer {
 impl PhfHash for Key {
     fn phf_hash(&self, key: u64) -> (u32, u32, u32) {
         match *self {
-            Key::Str(ref s) => s.get().phf_hash(key),
+            Key::Str(ref s) => s.phf_hash(key),
             Key::Binary(ref b) => b.phf_hash(key),
             Key::Char(c) => c.phf_hash(key),
             Key::U8(b) => b.phf_hash(key),

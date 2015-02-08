@@ -80,13 +80,17 @@
 <span id="38">38</span>
 <span id="39">39</span>
 <span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Compile time optimized maps and sets.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! Keys can be string literals, byte string literals, byte literals, char</span>
 <span class='doccomment'>//! literals, or any of the fixed-size isizeegral types.</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>doc</span>(<span class='ident'>html_root_url</span><span class='op'>=</span><span class='string'>&quot;https://sfackler.github.io/rust-phf/doc&quot;</span>)]</span>
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>core</span>)]</span>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>core</span>, <span class='ident'>no_std</span>)]</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>warn</span>(<span class='ident'>missing_docs</span>)]</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>no_std</span>]</span>
 
@@ -121,6 +125,10 @@
     }
 }
 
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;core&quot;</span>))]</span>
+<span class='kw'>mod</span> <span class='ident'>core</span> {
+    <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>std</span>::{<span class='ident'>fmt</span>, <span class='ident'>option</span>, <span class='ident'>iter</span>};
+}
 </pre>
 </section>
     <section id='search' class="content hidden"></section>

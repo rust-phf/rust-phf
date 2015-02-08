@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Map` struct in crate `phf`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Map">
+
+    <title>phf::Map - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'><a href='index.html'>phf</a></p><div class='block mod'><h2>Modules</h2><a class='mod ' href='map/index.html' title='An immutable map constructed at compile time.'>map</a><a class='mod ' href='ordered_map/index.html' title='An order-preserving immutable map constructed at compile time.'>ordered_map</a><a class='mod ' href='ordered_set/index.html' title='An order-preserving immutable set constructed at compile time.'>ordered_set</a><a class='mod ' href='set/index.html' title='An immutable set constructed at compile time.'>set</a></div><div class='block struct'><h2>Structs</h2><a class='struct current' href='struct.Map.html' title='An immutable map constructed at compile time.'>Map</a><a class='struct ' href='struct.OrderedMap.html' title='An order-preserving immutable map constructed at compile time.'>OrderedMap</a><a class='struct ' href='struct.OrderedSet.html' title='An order-preserving immutable set constructed at compile time.'>OrderedSet</a><a class='struct ' href='struct.Set.html' title='An immutable set constructed at compile time.'>Set</a></div><div class='block trait'><h2>Traits</h2><a class='trait ' href='trait.PhfHash.html' title='A trait implemented by types which can be used in PHF data structures'>PhfHash</a></div>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>phf</a>::<wbr><a class='struct' href=''>Map</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+            <a id="collapse-all" href="#">[-]
+            </a>&nbsp;<a id="expand-all" href="#">[+]</a>
+        </span><a id='src-18' href='../src/phf/map.rs.html#34-41'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Map&lt;K: 'static, V: 'static&gt; {
+    // some fields omitted
+}</pre><div class='docblock'><p>An immutable map constructed at compile time.</p>
+
+<p><code>Map</code>s may be created with the <code>phf_map</code> macro:</p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>plugin</span>)]</span>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>phf</span>;
+<span class='attribute'>#[<span class='ident'>plugin</span>]</span> <span class='attribute'>#[<span class='ident'>no_link</span>]</span>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>phf_macros</span>;
+
+<span class='kw'>static</span> <span class='ident'>MY_MAP</span>: <span class='ident'>phf</span>::<span class='ident'>Map</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='ident'>isize</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='macro'>phf_map</span><span class='macro'>!</span> {
+   <span class='string'>&quot;hello&quot;</span> <span class='op'>=&gt;</span> <span class='number'>10</span>,
+   <span class='string'>&quot;world&quot;</span> <span class='op'>=&gt;</span> <span class='number'>11</span>,
+};
+</pre>
+
+<h2 id="note" class='section-header'><a
+                           href="#note">Note</a></h2>
+<p>The fields of this struct are public so that they may be initialized by the
+<code>phf_map</code> macro. They are subject to change at any time and should never
+be accessed directly.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><a class='stability Unmarked' title='No stability level'></a><code>impl&lt;K, V&gt; <a class='struct' href='../phf/map/struct.Map.html' title='phf::map::Map'>Map</a>&lt;K, V&gt;</code></h3><div class='impl-items'><h4 id='method.is_empty' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.is_empty' class='fnname'>is_empty</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Returns true if the <code>Map</code> is empty.</p>
+</div><h4 id='method.len' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.len' class='fnname'>len</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>Returns the number of entries in the <code>Map</code>.</p>
+</div><h4 id='method.contains_key' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.contains_key' class='fnname'>contains_key</a>&lt;T: ?<a class='trait' href='http://doc.rust-lang.org/nightly/core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt;(&amp;self, key: &amp;T) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a> <span class='where'>where T: <a class='trait' href='http://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='../phf/trait.PhfHash.html' title='phf::PhfHash'>PhfHash</a> + <a class='trait' href='http://doc.rust-lang.org/nightly/core/borrow/trait.BorrowFrom.html' title='core::borrow::BorrowFrom'>BorrowFrom</a>&lt;K&gt;</span></code></h4>
+<div class='docblock'><p>Determines if <code>key</code> is in the <code>Map</code>.</p>
+</div><h4 id='method.get' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.get' class='fnname'>get</a>&lt;T: ?<a class='trait' href='http://doc.rust-lang.org/nightly/core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt;(&amp;self, key: &amp;T) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;V&gt; <span class='where'>where T: <a class='trait' href='http://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='../phf/trait.PhfHash.html' title='phf::PhfHash'>PhfHash</a> + <a class='trait' href='http://doc.rust-lang.org/nightly/core/borrow/trait.BorrowFrom.html' title='core::borrow::BorrowFrom'>BorrowFrom</a>&lt;K&gt;</span></code></h4>
+<div class='docblock'><p>Returns a reference to the value that <code>key</code> maps to.</p>
+</div><h4 id='method.get_key' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.get_key' class='fnname'>get_key</a>&lt;T: ?<a class='trait' href='http://doc.rust-lang.org/nightly/core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt;(&amp;self, key: &amp;T) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;K&gt; <span class='where'>where T: <a class='trait' href='http://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='../phf/trait.PhfHash.html' title='phf::PhfHash'>PhfHash</a> + <a class='trait' href='http://doc.rust-lang.org/nightly/core/borrow/trait.BorrowFrom.html' title='core::borrow::BorrowFrom'>BorrowFrom</a>&lt;K&gt;</span></code></h4>
+<div class='docblock'><p>Returns a reference to the map&#39;s internal static instance of the given
+key.</p>
+
+<p>This can be useful for interning schemes.</p>
+</div><h4 id='method.get_entry' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.get_entry' class='fnname'>get_entry</a>&lt;T: ?<a class='trait' href='http://doc.rust-lang.org/nightly/core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt;(&amp;self, key: &amp;T) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a href='http://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(&amp;K, &amp;V)</a>&gt; <span class='where'>where T: <a class='trait' href='http://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='../phf/trait.PhfHash.html' title='phf::PhfHash'>PhfHash</a> + <a class='trait' href='http://doc.rust-lang.org/nightly/core/borrow/trait.BorrowFrom.html' title='core::borrow::BorrowFrom'>BorrowFrom</a>&lt;K&gt;</span></code></h4>
+<div class='docblock'><p>Like <code>get</code>, but returns both the key and the value.</p>
+</div><h4 id='method.entries' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.entries' class='fnname'>entries</a>&lt;'a&gt;(&amp;'a self) -&gt; <a class='struct' href='../phf/map/struct.Entries.html' title='phf::map::Entries'>Entries</a>&lt;'a, K, V&gt;</code></h4>
+<div class='docblock'><p>Returns an iterator over the key/value pairs in the map.</p>
+
+<p>Entries are retuned in an arbitrary but fixed order.</p>
+</div><h4 id='method.keys' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.keys' class='fnname'>keys</a>&lt;'a&gt;(&amp;'a self) -&gt; <a class='struct' href='../phf/map/struct.Keys.html' title='phf::map::Keys'>Keys</a>&lt;'a, K, V&gt;</code></h4>
+<div class='docblock'><p>Returns an iterator over the keys in the map.</p>
+
+<p>Keys are returned in an arbitrary but fixed order.</p>
+</div><h4 id='method.values' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.values' class='fnname'>values</a>&lt;'a&gt;(&amp;'a self) -&gt; <a class='struct' href='../phf/map/struct.Values.html' title='phf::map::Values'>Values</a>&lt;'a, K, V&gt;</code></h4>
+<div class='docblock'><p>Returns an iterator over the values in the map.</p>
+
+<p>Values are returned in an arbitrary but fixed order.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl&lt;K, V&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../phf/map/struct.Map.html' title='phf::map::Map'>Map</a>&lt;K, V&gt; <span class='where'>where K: <a class='trait' href='http://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, V: <a class='trait' href='http://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a></span></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='#method.fmt' class='fnname'>fmt</a>(&amp;self, fmt: &amp;mut <a class='struct' href='http://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='http://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl&lt;K, V, T: ?<a class='trait' href='http://doc.rust-lang.org/nightly/core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Index.html' title='core::ops::Index'>Index</a>&lt;T&gt; for <a class='struct' href='../phf/map/struct.Map.html' title='phf::map::Map'>Map</a>&lt;K, V&gt; <span class='where'>where T: <a class='trait' href='http://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='../phf/trait.PhfHash.html' title='phf::PhfHash'>PhfHash</a> + <a class='trait' href='http://doc.rust-lang.org/nightly/core/borrow/trait.BorrowFrom.html' title='core::borrow::BorrowFrom'>BorrowFrom</a>&lt;K&gt;</span></code></h3><div class='impl-items'><h4 id='assoc_type.Output' class='type'><a class='stability Unmarked' title='No stability level'></a><code>type Output = V</code></h4>
+<h4 id='method.index' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='#method.index' class='fnname'>index</a>(&amp;self, k: &amp;T) -&gt; &amp;V</code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&larrb;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&rarrb;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code>, <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "phf";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script async src="../search-index.js"></script>
+</body>
+</html>

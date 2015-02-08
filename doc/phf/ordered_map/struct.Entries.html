@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Entries` struct in crate `phf`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Entries">
+
+    <title>phf::ordered_map::Entries - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'><a href='../index.html'>phf</a>::<wbr><a href='index.html'>ordered_map</a></p><div class='block struct'><h2>Structs</h2><a class='struct current' href='struct.Entries.html' title='An iterator over the entries in a `OrderedMap`.'>Entries</a><a class='struct ' href='struct.Keys.html' title='An iterator over the keys in a `OrderedMap`.'>Keys</a><a class='struct ' href='struct.OrderedMap.html' title='An order-preserving immutable map constructed at compile time.'>OrderedMap</a><a class='struct ' href='struct.Values.html' title='An iterator over the values in a `OrderedMap`.'>Values</a></div>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>phf</a>::<wbr><a href='index.html'>ordered_map</a>::<wbr><a class='struct' href=''>Entries</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+            <a id="collapse-all" href="#">[-]
+            </a>&nbsp;<a id="expand-all" href="#">[+]</a>
+        </span><a id='src-2334' href='../../src/phf/ordered_map.rs.html#160-162'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Entries&lt;'a, K: 'a, V: 'a&gt; {
+    // some fields omitted
+}</pre><div class='docblock'><p>An iterator over the entries in a <code>OrderedMap</code>.</p>
+</div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl&lt;'a, K, V&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/iter/trait.Iterator.html' title='core::iter::Iterator'>Iterator</a> for <a class='struct' href='../../phf/ordered_map/struct.Entries.html' title='phf::ordered_map::Entries'>Entries</a>&lt;'a, K, V&gt;</code></h3><div class='impl-items'><h4 id='assoc_type.Item' class='type'><a class='stability Unmarked' title='No stability level'></a><code>type Item = <a href='http://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(&amp;'a K, &amp;'a V)</a></code></h4>
+<h4 id='method.next' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='#method.next' class='fnname'>next</a>(&amp;mut self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a href='http://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(&amp;'a K, &amp;'a V)</a>&gt;</code></h4>
+<h4 id='method.size_hint' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='#method.size_hint' class='fnname'>size_hint</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(<a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>&gt;)</a></code></h4>
+</div><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl&lt;'a, K, V&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/iter/trait.DoubleEndedIterator.html' title='core::iter::DoubleEndedIterator'>DoubleEndedIterator</a> for <a class='struct' href='../../phf/ordered_map/struct.Entries.html' title='phf::ordered_map::Entries'>Entries</a>&lt;'a, K, V&gt;</code></h3><div class='impl-items'><h4 id='method.next_back' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='#method.next_back' class='fnname'>next_back</a>(&amp;mut self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a href='http://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(&amp;'a K, &amp;'a V)</a>&gt;</code></h4>
+</div><h3 class='impl'><a class='stability Unstable' title='Unstable: not widely used, may be better decomposed into Index and ExactSizeIterator'></a><code>impl&lt;'a, K, V&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/iter/trait.RandomAccessIterator.html' title='core::iter::RandomAccessIterator'>RandomAccessIterator</a> for <a class='struct' href='../../phf/ordered_map/struct.Entries.html' title='phf::ordered_map::Entries'>Entries</a>&lt;'a, K, V&gt;</code></h3><div class='impl-items'><h4 id='method.indexable' class='method'><a class='stability Unstable' title='Unstable: not widely used, may be better decomposed into Index and ExactSizeIterator'></a><code>fn <a href='#method.indexable' class='fnname'>indexable</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<h4 id='method.idx' class='method'><a class='stability Unstable' title='Unstable: not widely used, may be better decomposed into Index and ExactSizeIterator'></a><code>fn <a href='#method.idx' class='fnname'>idx</a>(&amp;mut self, index: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a href='http://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(&amp;'a K, &amp;'a V)</a>&gt;</code></h4>
+</div><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl&lt;'a, K, V&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/iter/trait.ExactSizeIterator.html' title='core::iter::ExactSizeIterator'>ExactSizeIterator</a> for <a class='struct' href='../../phf/ordered_map/struct.Entries.html' title='phf::ordered_map::Entries'>Entries</a>&lt;'a, K, V&gt;</code></h3><div class='impl-items'><h4 id='method.len' class='tymethod'><a class='stability Unstable' title='Unstable'></a><code>fn <a href='#tymethod.len' class='fnname'>len</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&larrb;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&rarrb;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code>, <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "phf";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

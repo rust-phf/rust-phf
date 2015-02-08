@@ -3,7 +3,7 @@
 //! Keys can be string literals, byte string literals, byte literals, char
 //! literals, or any of the fixed-size isizeegral types.
 #![doc(html_root_url="https://sfackler.github.io/rust-phf/doc")]
-#![feature(core)]
+#![feature(core, no_std)]
 #![warn(missing_docs)]
 #![no_std]
 
@@ -38,3 +38,7 @@ mod std {
     }
 }
 
+#[cfg(not(feature = "core"))]
+mod core {
+    pub use std::{fmt, option, iter};
+}

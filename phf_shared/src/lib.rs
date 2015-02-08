@@ -1,4 +1,4 @@
-#![feature(hash)]
+#![feature(hash, no_std)]
 #![cfg_attr(feature = "core", feature(core))]
 #![no_std]
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]

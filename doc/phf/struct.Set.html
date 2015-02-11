@@ -52,9 +52,9 @@
 <p><code>Set</code>s may be created with the <code>phf_set</code> macro:</p>
 <pre id='rust-example-rendered' class='rust '>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>plugin</span>)]</span>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>plugin</span>(<span class='ident'>phf_macros</span>)]</span>
+
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>phf</span>;
-<span class='attribute'>#[<span class='ident'>plugin</span>]</span> <span class='attribute'>#[<span class='ident'>no_link</span>]</span>
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>phf_macros</span>;
 
 <span class='kw'>static</span> <span class='ident'>MY_SET</span>: <span class='ident'>phf</span>::<span class='ident'>Set</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='macro'>phf_set</span><span class='macro'>!</span> {
    <span class='string'>&quot;hello&quot;</span>,

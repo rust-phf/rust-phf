@@ -270,9 +270,9 @@
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// ```rust</span>
 <span class='doccomment'>/// #![feature(plugin)]</span>
+<span class='doccomment'>/// #![plugin(phf_macros)]</span>
+<span class='doccomment'>///</span>
 <span class='doccomment'>/// extern crate phf;</span>
-<span class='doccomment'>/// #[plugin] #[no_link]</span>
-<span class='doccomment'>/// extern crate phf_macros;</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// static MY_MAP: phf::Map&lt;&amp;&#39;static str, isize&gt; = phf_map! {</span>
 <span class='doccomment'>///    &quot;hello&quot; =&gt; 10,</span>
@@ -386,7 +386,7 @@
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>K</span>, <span class='ident'>V</span><span class='op'>&gt;</span> <span class='ident'>IntoIterator</span> <span class='kw'>for</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>Map</span><span class='op'>&lt;</span><span class='ident'>K</span>, <span class='ident'>V</span><span class='op'>&gt;</span> {
-    <span class='kw'>type</span> <span class='ident'>Iter</span> <span class='op'>=</span> <span class='ident'>Entries</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>K</span>, <span class='ident'>V</span><span class='op'>&gt;</span>;
+    <span class='kw'>type</span> <span class='ident'>IntoIter</span> <span class='op'>=</span> <span class='ident'>Entries</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>K</span>, <span class='ident'>V</span><span class='op'>&gt;</span>;
 
     <span class='kw'>fn</span> <span class='ident'>into_iter</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Entries</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>K</span>, <span class='ident'>V</span><span class='op'>&gt;</span> {
         <span class='self'>self</span>.<span class='ident'>entries</span>()

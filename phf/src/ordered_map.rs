@@ -18,9 +18,9 @@ use phf_shared;
 ///
 /// ```rust
 /// #![feature(plugin)]
+/// #![plugin(phf_macros)]
+///
 /// extern crate phf;
-/// #[plugin] #[no_link]
-/// extern crate phf_macros;
 ///
 /// static MY_MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map! {
 ///    "hello" => 10,
@@ -149,7 +149,7 @@ impl<K, V> OrderedMap<K, V> {
 }
 
 impl<'a, K, V> IntoIterator for &'a OrderedMap<K, V> {
-    type Iter = Entries<'a, K, V>;
+    type IntoIter = Entries<'a, K, V>;
 
     fn into_iter(self) -> Entries<'a, K, V> {
         self.entries()

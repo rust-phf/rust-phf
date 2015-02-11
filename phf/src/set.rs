@@ -14,9 +14,9 @@ use Map;
 ///
 /// ```rust
 /// #![feature(plugin)]
+/// #![plugin(phf_macros)]
+///
 /// extern crate phf;
-/// #[plugin] #[no_link]
-/// extern crate phf_macros;
 ///
 /// static MY_SET: phf::Set<&'static str> = phf_set! {
 ///    "hello",
@@ -101,7 +101,7 @@ impl<T> Set<T> where T: Eq + PhfHash {
 }
 
 impl<'a, T> IntoIterator for &'a Set<T> {
-    type Iter = Iter<'a, T>;
+    type IntoIter = Iter<'a, T>;
 
     fn into_iter(self) -> Iter<'a, T> {
         self.iter()

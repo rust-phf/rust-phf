@@ -25,9 +25,8 @@ Example
 
 ```rust
 #![feature(plugin)]
+#![plugin(phf_macros)]
 
-#[plugin] #[no_link]
-extern crate phf_macros;
 extern crate phf;
 
 #[derive(Clone)]

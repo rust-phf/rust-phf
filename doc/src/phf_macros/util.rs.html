@@ -402,7 +402,7 @@
         }
     }
     <span class='kw'>let</span> <span class='ident'>time</span> <span class='op'>=</span> <span class='ident'>precise_time_s</span>() <span class='op'>-</span> <span class='ident'>start</span>;
-    <span class='kw'>if</span> <span class='macro'>cfg</span><span class='macro'>!</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;stats&quot;</span>) <span class='op'>&amp;&amp;</span> <span class='ident'>env</span>::<span class='ident'>var</span>(<span class='string'>&quot;PHF_STATS&quot;</span>).<span class='ident'>is_ok</span>() {
+    <span class='kw'>if</span> <span class='macro'>cfg</span><span class='macro'>!</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;stats&quot;</span>) <span class='op'>&amp;&amp;</span> <span class='ident'>env</span>::<span class='ident'>var_os</span>(<span class='string'>&quot;PHF_STATS&quot;</span>).<span class='ident'>is_some</span>() {
         <span class='ident'>cx</span>.<span class='ident'>span_note</span>(<span class='ident'>sp</span>, <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;PHF generation took {} seconds&quot;</span>, <span class='ident'>time</span>));
     }
 

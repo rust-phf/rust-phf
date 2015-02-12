@@ -1,12 +1,10 @@
-#![feature(hash, no_std)]
-#![cfg_attr(feature = "core", feature(core))]
-#![no_std]
+#![feature(hash, core)]
+#![cfg_attr(feature = "core", feature(no_std))]
+#![cfg_attr(feature = "core", no_std)]
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
 
 #[cfg(feature = "core")]
 extern crate core;
-#[cfg(not(feature = "core"))]
-extern crate std;
 
 use std::slice::AsSlice;
 use std::str::StrExt;

@@ -102,7 +102,7 @@ pub fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState
         }
     }
     let time = precise_time_s() - start;
-    if cfg!(feature = "stats") && env::var("PHF_STATS").is_some() {
+    if cfg!(feature = "stats") && env::var("PHF_STATS").is_ok() {
         cx.span_note(sp, &*format!("PHF generation took {} seconds", time));
     }
 

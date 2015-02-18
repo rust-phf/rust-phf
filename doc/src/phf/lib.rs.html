@@ -84,11 +84,73 @@
 <span id="42">42</span>
 <span id="43">43</span>
 <span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Compile time optimized maps and sets.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! Keys can be string literals, byte string literals, byte literals, char</span>
 <span class='doccomment'>//! literals, or any of the fixed-size isizeegral types.</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! # Examples</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! ```rust</span>
+<span class='doccomment'>//! #![feature(plugin)]</span>
+<span class='doccomment'>//! #![plugin(phf_macros)]</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! extern crate phf;</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! #[derive(Clone)]</span>
+<span class='doccomment'>//! pub enum Keyword {</span>
+<span class='doccomment'>//!     Loop,</span>
+<span class='doccomment'>//!     Continue,</span>
+<span class='doccomment'>//!     Break,</span>
+<span class='doccomment'>//!     Fn,</span>
+<span class='doccomment'>//!     Extern,</span>
+<span class='doccomment'>//! }</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! static KEYWORDS: phf::Map&lt;&amp;&#39;static str, Keyword&gt; = phf_map! {</span>
+<span class='doccomment'>//!     &quot;loop&quot; =&gt; Keyword::Loop,</span>
+<span class='doccomment'>//!     &quot;continue&quot; =&gt; Keyword::Continue,</span>
+<span class='doccomment'>//!     &quot;break&quot; =&gt; Keyword::Break,</span>
+<span class='doccomment'>//!     &quot;fn&quot; =&gt; Keyword::Fn,</span>
+<span class='doccomment'>//!     &quot;extern&quot; =&gt; Keyword::Extern,</span>
+<span class='doccomment'>//! };</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! pub fn parse_keyword(keyword: &amp;str) -&gt; Option&lt;Keyword&gt; {</span>
+<span class='doccomment'>//!     KEYWORDS.get(keyword).map(|t| t.clone())</span>
+<span class='doccomment'>//! }</span>
+<span class='doccomment'>//! # fn main() {}</span>
+<span class='doccomment'>//! ```</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>doc</span>(<span class='ident'>html_root_url</span><span class='op'>=</span><span class='string'>&quot;https://sfackler.github.io/rust-phf/doc&quot;</span>)]</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>core</span>, <span class='ident'>no_std</span>)]</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>warn</span>(<span class='ident'>missing_docs</span>)]</span>

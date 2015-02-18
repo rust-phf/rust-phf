@@ -44,11 +44,40 @@
 <h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>phf</a><wbr></span><span class='out-of-band'><a href='stability.html'>[stability]</a> <span id='render-detail'>
             <a id="collapse-all" href="#">[-]
             </a>&nbsp;<a id="expand-all" href="#">[+]</a>
-        </span><a id='src-0' href='../src/phf/lib.rs.html#1-44'>[src]</a></span></h1>
+        </span><a id='src-0' href='../src/phf/lib.rs.html#1-75'>[src]</a></span></h1>
 <div class='docblock'><p>Compile time optimized maps and sets.</p>
 
 <p>Keys can be string literals, byte string literals, byte literals, char
 literals, or any of the fixed-size isizeegral types.</p>
+
+<h1 id="examples" class='section-header'><a
+                           href="#examples">Examples</a></h1><pre id='rust-example-rendered' class='rust '>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>plugin</span>)]</span>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>plugin</span>(<span class='ident'>phf_macros</span>)]</span>
+
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>phf</span>;
+
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>)]</span>
+<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>Keyword</span> {
+    <span class='ident'>Loop</span>,
+    <span class='ident'>Continue</span>,
+    <span class='ident'>Break</span>,
+    <span class='ident'>Fn</span>,
+    <span class='ident'>Extern</span>,
+}
+
+<span class='kw'>static</span> <span class='ident'>KEYWORDS</span>: <span class='ident'>phf</span>::<span class='ident'>Map</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='ident'>Keyword</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='macro'>phf_map</span><span class='macro'>!</span> {
+    <span class='string'>&quot;loop&quot;</span> <span class='op'>=&gt;</span> <span class='ident'>Keyword</span>::<span class='ident'>Loop</span>,
+    <span class='string'>&quot;continue&quot;</span> <span class='op'>=&gt;</span> <span class='ident'>Keyword</span>::<span class='ident'>Continue</span>,
+    <span class='string'>&quot;break&quot;</span> <span class='op'>=&gt;</span> <span class='ident'>Keyword</span>::<span class='ident'>Break</span>,
+    <span class='string'>&quot;fn&quot;</span> <span class='op'>=&gt;</span> <span class='ident'>Keyword</span>::<span class='ident'>Fn</span>,
+    <span class='string'>&quot;extern&quot;</span> <span class='op'>=&gt;</span> <span class='ident'>Keyword</span>::<span class='ident'>Extern</span>,
+};
+
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>parse_keyword</span>(<span class='ident'>keyword</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Keyword</span><span class='op'>&gt;</span> {
+    <span class='ident'>KEYWORDS</span>.<span class='ident'>get</span>(<span class='ident'>keyword</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='ident'>t</span>.<span class='ident'>clone</span>())
+}
+</pre>
 </div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
 <table>
                     <tr>

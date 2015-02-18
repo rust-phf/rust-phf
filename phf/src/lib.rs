@@ -29,7 +29,7 @@
 //! };
 //!
 //! pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
-//!     KEYWORDS.get(keyword).map(|t| t.clone())
+//!     KEYWORDS.get(keyword).cloned()
 //! }
 //! # fn main() {}
 //! ```

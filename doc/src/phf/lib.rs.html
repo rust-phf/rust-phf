@@ -147,7 +147,7 @@
 <span class='doccomment'>//! };</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! pub fn parse_keyword(keyword: &amp;str) -&gt; Option&lt;Keyword&gt; {</span>
-<span class='doccomment'>//!     KEYWORDS.get(keyword).map(|t| t.clone())</span>
+<span class='doccomment'>//!     KEYWORDS.get(keyword).cloned()</span>
 <span class='doccomment'>//! }</span>
 <span class='doccomment'>//! # fn main() {}</span>
 <span class='doccomment'>//! ```</span>

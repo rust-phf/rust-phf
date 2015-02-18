@@ -75,7 +75,7 @@ literals, or any of the fixed-size isizeegral types.</p>
 };
 
 <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>parse_keyword</span>(<span class='ident'>keyword</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Keyword</span><span class='op'>&gt;</span> {
-    <span class='ident'>KEYWORDS</span>.<span class='ident'>get</span>(<span class='ident'>keyword</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='ident'>t</span>.<span class='ident'>clone</span>())
+    <span class='ident'>KEYWORDS</span>.<span class='ident'>get</span>(<span class='ident'>keyword</span>).<span class='ident'>cloned</span>()
 }
 </pre>
 </div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>

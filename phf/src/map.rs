@@ -130,6 +130,7 @@ impl<K, V> Map<K, V> {
 }
 
 impl<'a, K, V> IntoIterator for &'a Map<K, V> {
+    type Item = (&'a K, &'a V);
     type IntoIter = Entries<'a, K, V>;
 
     fn into_iter(self) -> Entries<'a, K, V> {

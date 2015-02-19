@@ -149,6 +149,7 @@ impl<K, V> OrderedMap<K, V> {
 }
 
 impl<'a, K, V> IntoIterator for &'a OrderedMap<K, V> {
+    type Item = (&'a K, &'a V);
     type IntoIter = Entries<'a, K, V>;
 
     fn into_iter(self) -> Entries<'a, K, V> {

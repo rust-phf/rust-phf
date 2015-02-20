@@ -1,6 +1,6 @@
 use std::env;
 use std::rc::Rc;
-use std::hash::{self, Hash, Hasher};
+use std::hash::{Hash, Hasher};
 use std::iter::repeat;
 
 use syntax::ast::Expr;
@@ -33,8 +33,8 @@ pub enum Key {
     Bool(bool),
 }
 
-impl<S> Hash<S> for Key where S: Hasher + hash::Writer {
-    fn hash(&self, state: &mut S) {
+impl Hash for Key {
+    fn hash<S: Hasher>(&self, state: &mut S) {
         match *self {
             Key::Str(ref s) => s.hash(state),
             Key::Binary(ref b) => b.hash(state),

@@ -8,7 +8,7 @@ extern crate core;
 
 use std::slice::AsSlice;
 use std::str::StrExt;
-use std::hash::{Writer, Hasher, Hash, SipHasher};
+use std::hash::{Hasher, Hash, SipHasher};
 
 #[cfg(feature = "core")]
 mod std {
@@ -61,7 +61,7 @@ impl PhfHash for [u8] {
     #[inline]
     fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
         let mut state = SipHasher::new_with_keys(seed, 0);
-        state.write(self);
+        Hasher::write(&mut state, self);
         split(state.finish())
     }
 }
@@ -97,7 +97,7 @@ macro_rules! array_impl(
             #[inline]
             fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
                 let mut hasher = SipHasher::new_with_keys(seed, 0);
-                hasher.write(self.as_slice());
+                Hasher::write(&mut hasher, self);
                 split(hasher.finish())
             }
         }

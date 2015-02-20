@@ -1,6 +1,6 @@
 //! An immutable set constructed at compile time.
 use std::prelude::v1::*;
-use std::borrow::BorrowFrom;
+use std::borrow::Borrow;
 use std::iter::IntoIterator;
 use std::fmt;
 
@@ -66,12 +66,12 @@ impl<T> Set<T> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash + BorrowFrom<T> {
+    pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash, T: Borrow<U> {
         self.map.get_key(key)
     }
 
     /// Returns true if `value` is in the `Set`.
-    pub fn contains<U: ?Sized>(&self, value: &U) -> bool where U: Eq + PhfHash + BorrowFrom<T> {
+    pub fn contains<U: ?Sized>(&self, value: &U) -> bool where U: Eq + PhfHash, T: Borrow<U> {
         self.map.contains_key(value)
     }
 

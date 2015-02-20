@@ -1,6 +1,6 @@
 //! An order-preserving immutable map constructed at compile time.
 use std::prelude::v1::*;
-use std::borrow::BorrowFrom;
+use std::borrow::Borrow;
 use std::iter::{IntoIterator, RandomAccessIterator};
 use std::ops::Index;
 use std::fmt;
@@ -61,7 +61,7 @@ impl<K, V> fmt::Debug for OrderedMap<K, V> where K: fmt::Debug, V: fmt::Debug {
     }
 }
 
-impl<K, V, T: ?Sized> Index<T> for OrderedMap<K, V> where T: Eq + PhfHash + BorrowFrom<K> {
+impl<K, V, T: ?Sized> Index<T> for OrderedMap<K, V> where T: Eq + PhfHash, K: Borrow<T> {
     type Output = V;
 
     fn index(&self, k: &T) -> &V {
@@ -81,7 +81,7 @@ impl<K, V> OrderedMap<K, V> {
     }
 
     /// Returns a reference to the value that `key` maps to.
-    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V> where T: Eq + PhfHash + BorrowFrom<K> {
+    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V> where T: Eq + PhfHash, K: Borrow<T> {
         self.get_entry(key).map(|e| e.1)
     }
 
@@ -89,36 +89,36 @@ impl<K, V> OrderedMap<K, V> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash + BorrowFrom<K> {
+    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash, K: Borrow<T> {
         self.get_entry(key).map(|e| e.0)
     }
 
     /// Determines if `key` is in the `Map`.
-    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool where T: Eq + PhfHash + BorrowFrom<K> {
+    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool where T: Eq + PhfHash, K: Borrow<T> {
         self.get(key).is_some()
     }
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered map.
     pub fn get_index<T: ?Sized>(&self, key: &T) -> Option<usize>
-            where T: Eq + PhfHash + BorrowFrom<K> {
+            where T: Eq + PhfHash, K: Borrow<T> {
         self.get_internal(key).map(|(i, _)| i)
     }
 
     /// Like `get`, but returns both the key and the value.
     pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
-            where T: Eq + PhfHash + BorrowFrom<K> {
+            where T: Eq + PhfHash, K: Borrow<T> {
         self.get_internal(key).map(|(_, e)| e)
     }
 
     fn get_internal<T: ?Sized>(&self, key: &T) -> Option<(usize, (&K, &V))>
-            where T: Eq + PhfHash + BorrowFrom<K> {
+            where T: Eq + PhfHash, K: Borrow<T> {
         let (g, f1, f2) = key.phf_hash(self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as usize];
         let idx = self.idxs[(phf_shared::displace(f1, f2, d1, d2) % (self.idxs.len() as u32)) as usize];
         let entry = &self.entries[idx];
 
-        let b: &T = BorrowFrom::borrow_from(&entry.0);
+        let b: &T = entry.0.borrow();
         if b == key {
             Some((idx, (&entry.0, &entry.1)))
         } else {

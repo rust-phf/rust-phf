@@ -1,3 +1,4 @@
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
 extern crate phf_shared;
 extern crate rand;
 

@@ -3,8 +3,9 @@ name = "phf_shared"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 version = "0.6.9"
 license = "MIT"
-description = "Support code shared by phf and phf_mac"
+description = "Support code shared by PHF libraries"
 repository = "https://github.com/sfackler/rust-phf"
+documentation = "https://sfackler.github.io/rust-phf/doc/phf_shared"
 
 [lib]
 name = "phf_shared"

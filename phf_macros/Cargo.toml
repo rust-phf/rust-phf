@@ -5,6 +5,7 @@ version = "0.6.9"
 license = "MIT"
 description = "Compiler plugin for perfect hash function data structures"
 repository = "https://github.com/sfackler/rust-phf"
+documentation = "https://sfackler.github.io/rust-phf/doc/phf_macros"
 
 [lib]
 name = "phf_macros"

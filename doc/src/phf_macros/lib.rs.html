@@ -306,10 +306,69 @@
 <span id="264">264</span>
 <span id="265">265</span>
 <span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
 </pre><pre class='rust '>
-<span class='doccomment'>//! Compiler plugin for Rust-PHF</span>
+<span class='doccomment'>//! Compiler plugin defining macros that create PHF data structures.</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! See the documentation for the `phf` crate for more details.</span>
+<span class='doccomment'>//! # Example</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! ```rust</span>
+<span class='doccomment'>//! #![feature(plugin)]</span>
+<span class='doccomment'>//! #![plugin(phf_macros)]</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! extern crate phf;</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! #[derive(Clone)]</span>
+<span class='doccomment'>//! pub enum Keyword {</span>
+<span class='doccomment'>//!     Loop,</span>
+<span class='doccomment'>//!     Continue,</span>
+<span class='doccomment'>//!     Break,</span>
+<span class='doccomment'>//!     Fn,</span>
+<span class='doccomment'>//!     Extern,</span>
+<span class='doccomment'>//! }</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! static KEYWORDS: phf::Map&lt;&amp;&#39;static str, Keyword&gt; = phf_map! {</span>
+<span class='doccomment'>//!     &quot;loop&quot; =&gt; Keyword::Loop,</span>
+<span class='doccomment'>//!     &quot;continue&quot; =&gt; Keyword::Continue,</span>
+<span class='doccomment'>//!     &quot;break&quot; =&gt; Keyword::Break,</span>
+<span class='doccomment'>//!     &quot;fn&quot; =&gt; Keyword::Fn,</span>
+<span class='doccomment'>//!     &quot;extern&quot; =&gt; Keyword::Extern,</span>
+<span class='doccomment'>//! };</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! pub fn parse_keyword(keyword: &amp;str) -&gt; Option&lt;Keyword&gt; {</span>
+<span class='doccomment'>//!     KEYWORDS.get(keyword).cloned()</span>
+<span class='doccomment'>//! }</span>
+<span class='doccomment'>//! # fn main() {}</span>
+<span class='doccomment'>//! ```</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>doc</span>(<span class='ident'>html_root_url</span><span class='op'>=</span><span class='string'>&quot;http://sfackler.github.io/rust-phf/doc&quot;</span>)]</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>plugin_registrar</span>, <span class='ident'>quote</span>, <span class='ident'>rustc_private</span>, <span class='ident'>env</span>, <span class='ident'>std_misc</span>)]</span>
 
@@ -339,6 +398,7 @@
 <span class='kw'>use</span> <span class='ident'>util</span>::{<span class='ident'>create_map</span>, <span class='ident'>create_set</span>, <span class='ident'>create_ordered_map</span>, <span class='ident'>create_ordered_set</span>};
 
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>util</span>;
+<span class='kw'>mod</span> <span class='ident'>macros</span>;
 
 <span class='attribute'>#[<span class='ident'>plugin_registrar</span>]</span>
 <span class='attribute'>#[<span class='ident'>doc</span>(<span class='ident'>hidden</span>)]</span>

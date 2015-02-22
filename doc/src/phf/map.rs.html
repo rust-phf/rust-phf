@@ -238,22 +238,6 @@
 <span id="196">196</span>
 <span id="197">197</span>
 <span id="198">198</span>
-<span id="199">199</span>
-<span id="200">200</span>
-<span id="201">201</span>
-<span id="202">202</span>
-<span id="203">203</span>
-<span id="204">204</span>
-<span id="205">205</span>
-<span id="206">206</span>
-<span id="207">207</span>
-<span id="208">208</span>
-<span id="209">209</span>
-<span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! An immutable map constructed at compile time.</span>
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>prelude</span>::<span class='ident'>v1</span>::<span class='op'>*</span>;
@@ -267,27 +251,11 @@
 
 <span class='doccomment'>/// An immutable map constructed at compile time.</span>
 <span class='doccomment'>///</span>
-<span class='doccomment'>/// `Map`s may be created with the `phf_map` macro:</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```rust</span>
-<span class='doccomment'>/// #![feature(plugin)]</span>
-<span class='doccomment'>/// #![plugin(phf_macros)]</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// extern crate phf;</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// static MY_MAP: phf::Map&lt;&amp;&#39;static str, isize&gt; = phf_map! {</span>
-<span class='doccomment'>///    &quot;hello&quot; =&gt; 10,</span>
-<span class='doccomment'>///    &quot;world&quot; =&gt; 11,</span>
-<span class='doccomment'>/// };</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// # fn main() {}</span>
-<span class='doccomment'>/// ```</span>
-<span class='doccomment'>///</span>
 <span class='doccomment'>/// ## Note</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// The fields of this struct are public so that they may be initialized by the</span>
-<span class='doccomment'>/// `phf_map` macro. They are subject to change at any time and should never</span>
-<span class='doccomment'>/// be accessed directly.</span>
+<span class='doccomment'>/// `phf_map!` macro and code generation. They are subject to change at any</span>
+<span class='doccomment'>/// time and should never be accessed directly.</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Map</span><span class='op'>&lt;</span><span class='ident'>K</span>:<span class='lifetime'>&#39;static</span>, <span class='ident'>V</span>:<span class='lifetime'>&#39;static</span><span class='op'>&gt;</span> {
     <span class='attribute'>#[<span class='ident'>doc</span>(<span class='ident'>hidden</span>)]</span>
     <span class='kw'>pub</span> <span class='ident'>key</span>: <span class='ident'>u64</span>,

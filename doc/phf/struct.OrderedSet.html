@@ -43,7 +43,7 @@
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>phf</a>::<wbr><a class='struct' href=''>OrderedSet</a><wbr></span><span class='out-of-band'><span id='render-detail'>
             <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
-        </span><a id='src-2972' href='../src/phf/ordered_set.rs.html#35-38'>[src]</a></span></h1>
+        </span><a id='src-2972' href='../src/phf/ordered_set.rs.html#19-22'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct OrderedSet&lt;T: 'static&gt; {
     // some fields omitted
 }</pre><div class='docblock'><p>An order-preserving immutable set constructed at compile time.</p>
@@ -51,24 +51,11 @@
 <p>Unlike a <code>Set</code>, iteration order is guaranteed to match the definition
 order.</p>
 
-<p><code>OrderedSet</code>s may be created with the <code>phf_ordered_set</code> macro:</p>
-<pre id='rust-example-rendered' class='rust '>
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>plugin</span>)]</span>
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>plugin</span>(<span class='ident'>phf_macros</span>)]</span>
-
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>phf</span>;
-
-<span class='kw'>static</span> <span class='ident'>MY_SET</span>: <span class='ident'>phf</span>::<span class='ident'>OrderedSet</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='macro'>phf_ordered_set</span><span class='macro'>!</span> {
-   <span class='string'>&quot;hello&quot;</span>,
-   <span class='string'>&quot;world&quot;</span>,
-};
-</pre>
-
 <h2 id="note" class='section-header'><a
                            href="#note">Note</a></h2>
 <p>The fields of this struct are public so that they may be initialized by the
-<code>phf_ordered_set</code> macro. They are subject to change at any time and should
-never be accessed directly.</p>
+<code>phf_ordered_set!</code> macro and code generation. They are subject to change at
+any time and should never be accessed directly.</p>
 </div><h2 id='methods'>Methods</h2><h3 class='impl'><a class='stability Unmarked' title='No stability level'></a><code>impl&lt;T&gt; <a class='struct' href='../phf/ordered_set/struct.OrderedSet.html' title='phf::ordered_set::OrderedSet'>OrderedSet</a>&lt;T&gt;</code></h3><div class='impl-items'><h4 id='method.len' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.len' class='fnname'>len</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
 <div class='docblock'><p>Returns the number of elements in the <code>OrderedSet</code>.</p>
 </div><h4 id='method.is_empty' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.is_empty' class='fnname'>is_empty</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>

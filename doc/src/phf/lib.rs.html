@@ -65,72 +65,12 @@
 <span id="23">23</span>
 <span id="24">24</span>
 <span id="25">25</span>
-<span id="26">26</span>
-<span id="27">27</span>
-<span id="28">28</span>
-<span id="29">29</span>
-<span id="30">30</span>
-<span id="31">31</span>
-<span id="32">32</span>
-<span id="33">33</span>
-<span id="34">34</span>
-<span id="35">35</span>
-<span id="36">36</span>
-<span id="37">37</span>
-<span id="38">38</span>
-<span id="39">39</span>
-<span id="40">40</span>
-<span id="41">41</span>
-<span id="42">42</span>
-<span id="43">43</span>
-<span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
-<span id="47">47</span>
-<span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Compile time optimized maps and sets.</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! Keys can be string literals, byte string literals, byte literals, char</span>
-<span class='doccomment'>//! literals, or any of the fixed-size isizeegral types.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! # Examples</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ```rust</span>
-<span class='doccomment'>//! #![feature(plugin)]</span>
-<span class='doccomment'>//! #![plugin(phf_macros)]</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! extern crate phf;</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! #[derive(Clone)]</span>
-<span class='doccomment'>//! pub enum Keyword {</span>
-<span class='doccomment'>//!     Loop,</span>
-<span class='doccomment'>//!     Continue,</span>
-<span class='doccomment'>//!     Break,</span>
-<span class='doccomment'>//!     Fn,</span>
-<span class='doccomment'>//!     Extern,</span>
-<span class='doccomment'>//! }</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! static KEYWORDS: phf::Map&lt;&amp;&#39;static str, Keyword&gt; = phf_map! {</span>
-<span class='doccomment'>//!     &quot;loop&quot; =&gt; Keyword::Loop,</span>
-<span class='doccomment'>//!     &quot;continue&quot; =&gt; Keyword::Continue,</span>
-<span class='doccomment'>//!     &quot;break&quot; =&gt; Keyword::Break,</span>
-<span class='doccomment'>//!     &quot;fn&quot; =&gt; Keyword::Fn,</span>
-<span class='doccomment'>//!     &quot;extern&quot; =&gt; Keyword::Extern,</span>
-<span class='doccomment'>//! };</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! pub fn parse_keyword(keyword: &amp;str) -&gt; Option&lt;Keyword&gt; {</span>
-<span class='doccomment'>//!     KEYWORDS.get(keyword).cloned()</span>
-<span class='doccomment'>//! }</span>
-<span class='doccomment'>//! # fn main() {}</span>
-<span class='doccomment'>//! ```</span>
+<span class='doccomment'>//! PHF data structures can be generated via the syntax extensions in the</span>
+<span class='doccomment'>//! `phf_macros` crate or via code generation in the `phf_codegen` crate. See</span>
+<span class='doccomment'>//! the documentation of those crates for more details.</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>doc</span>(<span class='ident'>html_root_url</span><span class='op'>=</span><span class='string'>&quot;https://sfackler.github.io/rust-phf/doc&quot;</span>)]</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>core</span>, <span class='ident'>no_std</span>)]</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>warn</span>(<span class='ident'>missing_docs</span>)]</span>

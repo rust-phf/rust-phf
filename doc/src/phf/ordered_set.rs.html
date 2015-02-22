@@ -185,22 +185,6 @@
 <span id="143">143</span>
 <span id="144">144</span>
 <span id="145">145</span>
-<span id="146">146</span>
-<span id="147">147</span>
-<span id="148">148</span>
-<span id="149">149</span>
-<span id="150">150</span>
-<span id="151">151</span>
-<span id="152">152</span>
-<span id="153">153</span>
-<span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-<span id="160">160</span>
-<span id="161">161</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! An order-preserving immutable set constructed at compile time.</span>
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>prelude</span>::<span class='ident'>v1</span>::<span class='op'>*</span>;
@@ -215,27 +199,11 @@
 <span class='doccomment'>/// Unlike a `Set`, iteration order is guaranteed to match the definition</span>
 <span class='doccomment'>/// order.</span>
 <span class='doccomment'>///</span>
-<span class='doccomment'>/// `OrderedSet`s may be created with the `phf_ordered_set` macro:</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```rust</span>
-<span class='doccomment'>/// #![feature(plugin)]</span>
-<span class='doccomment'>/// #![plugin(phf_macros)]</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// extern crate phf;</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// static MY_SET: phf::OrderedSet&lt;&amp;&#39;static str&gt; = phf_ordered_set! {</span>
-<span class='doccomment'>///    &quot;hello&quot;,</span>
-<span class='doccomment'>///    &quot;world&quot;,</span>
-<span class='doccomment'>/// };</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// # fn main() {}</span>
-<span class='doccomment'>/// ```</span>
-<span class='doccomment'>///</span>
 <span class='doccomment'>/// ## Note</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// The fields of this struct are public so that they may be initialized by the</span>
-<span class='doccomment'>/// `phf_ordered_set` macro. They are subject to change at any time and should</span>
-<span class='doccomment'>/// never be accessed directly.</span>
+<span class='doccomment'>/// `phf_ordered_set!` macro and code generation. They are subject to change at</span>
+<span class='doccomment'>/// any time and should never be accessed directly.</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>OrderedSet</span><span class='op'>&lt;</span><span class='ident'>T</span>:<span class='lifetime'>&#39;static</span><span class='op'>&gt;</span> {
     <span class='attribute'>#[<span class='ident'>doc</span>(<span class='ident'>hidden</span>)]</span>
     <span class='kw'>pub</span> <span class='ident'>map</span>: <span class='ident'>OrderedMap</span><span class='op'>&lt;</span><span class='ident'>T</span>, ()<span class='op'>&gt;</span>,

@@ -338,13 +338,13 @@ mod ordered_map {
 
     #[test]
     fn test_entries() {
-        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, i32> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
             "baz" => 12,
         );
         let vec = MAP.entries().map(|(&k, &v)| (k, v)).collect::<Vec<_>>();
-        assert_eq!(vec, vec!(("foo", 10is), ("bar", 11), ("baz", 12)));
+        assert_eq!(vec, vec!(("foo", 10), ("bar", 11), ("baz", 12)));
     }
 
     #[test]
@@ -360,13 +360,13 @@ mod ordered_map {
 
     #[test]
     fn test_values() {
-        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
+        static MAP: phf::OrderedMap<&'static str, i32> = phf_ordered_map!(
             "foo" => 10,
             "bar" => 11,
             "baz" => 12,
         );
         let vec = MAP.values().map(|&v| v).collect::<Vec<_>>();
-        assert_eq!(vec, vec!(10is, 11, 12));
+        assert_eq!(vec, vec!(10, 11, 12));
     }
 
     #[test]

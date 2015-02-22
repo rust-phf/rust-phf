@@ -36,14 +36,7 @@
 #![doc(html_root_url="https://sfackler.github.io/rust-phf/doc")]
 #![feature(core, no_std)]
 #![warn(missing_docs)]
-#![no_std]
 
-#[macro_use]
-#[cfg(feature = "core")]
-extern crate core;
-#[macro_use]
-#[cfg(not(feature = "core"))]
-extern crate std;
 extern crate phf_shared;
 
 pub use phf_shared::PhfHash;
@@ -60,16 +53,3 @@ pub mod map;
 pub mod set;
 pub mod ordered_map;
 pub mod ordered_set;
-
-#[cfg(feature = "core")]
-mod std {
-    pub use core::{borrow, fmt, iter, option, ops, slice};
-    pub mod prelude {
-        pub use core::prelude as v1;
-    }
-}
-
-#[cfg(not(feature = "core"))]
-mod core {
-    pub use std::{fmt, option, iter};
-}

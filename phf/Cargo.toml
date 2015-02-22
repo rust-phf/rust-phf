@@ -12,9 +12,6 @@ name = "phf"
 path = "src/lib.rs"
 test = false
 
-[features]
-core = ["phf_shared/core"]
-
 [dependencies.phf_shared]
 path = "../phf_shared"
 version = "=0.6.9"

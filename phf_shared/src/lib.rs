@@ -1,18 +1,8 @@
 #![feature(hash)]
-#![cfg_attr(feature = "core", feature(no_std))]
-#![cfg_attr(feature = "core", no_std)]
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
-
-#[cfg(feature = "core")]
-extern crate core;
 
 use std::str::StrExt;
 use std::hash::{Hasher, Hash, SipHasher};
-
-#[cfg(feature = "core")]
-mod std {
-    pub use core::{slice, str, hash};
-}
 
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {

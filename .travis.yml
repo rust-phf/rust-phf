@@ -1,7 +1,6 @@
 language: rust
 script:
 - (cd phf && cargo test)
-- (cd phf && cargo test --features core)
 - (cd phf_macros && cargo test --features stats)
 - ./.travis/build_docs.sh
 after_success:

@@ -106,15 +106,28 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(w, "::phf::Map {{ key: {}, disps: &[", state.key));
+        try!(write!(w, "::phf::Map {{
+    key: {},
+    disps: &[
+",
+                    state.key));
         for &(d1, d2) in &state.disps {
-            try!(write!(w, "({}, {}),", d1, d2));
+            try!(write!(w, "
+        ({}, {}),",
+                        d1, d2));
         }
-        try!(write!(w, "], entries: &["));
+        try!(write!(w, "
+    ],
+    entries: &[
+"));
         for &idx in &state.map {
-            try!(write!(w, "({:?}, {}),", &self.keys[idx], &self.values[idx]));
+            try!(write!(w, "
+        ({:?}, {}),",
+                        &self.keys[idx], &self.values[idx]));
         }
-        write!(w, "] }}")
+        write!(w, "
+    ]
+}}")
     }
 }
 
@@ -189,19 +202,34 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(w, "::phf::OrderedMap {{ key: {}, disps: &[", state.key));
+        try!(write!(w, "::phf::OrderedMap {{
+    key: {},
+    disps: &[",
+                    state.key));
         for &(d1, d2) in &state.disps {
-            try!(write!(w, "({}, {}),", d1, d2));
+            try!(write!(w, "
+        ({}, {}),",
+                        d1, d2));
         }
-        try!(write!(w, "], idxs: &["));
+        try!(write!(w, "
+    ],
+    idxs: &["));
         for &idx in &state.map {
-            try!(write!(w, "{},", idx));
+            try!(write!(w, "
+        {},",
+                        idx));
         }
-        try!(write!(w, "], entries: &["));
+        try!(write!(w, "
+    ],
+    entries: &["));
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
-            try!(write!(w, "({:?}, {}),", key, value));
+            try!(write!(w, "
+        ({:?}, {}),",
+                        key, value));
         }
-        write!(w, "] }}")
+        write!(w, "
+    ]
+}}")
     }
 }
 

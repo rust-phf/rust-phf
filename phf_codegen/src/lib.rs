@@ -108,8 +108,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
 
         try!(write!(w, "::phf::Map {{
     key: {},
-    disps: &[
-",
+    disps: &[",
                     state.key));
         for &(d1, d2) in &state.disps {
             try!(write!(w, "
@@ -118,8 +117,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         }
         try!(write!(w, "
     ],
-    entries: &[
-"));
+    entries: &["));
         for &idx in &state.map {
             try!(write!(w, "
         ({:?}, {}),",

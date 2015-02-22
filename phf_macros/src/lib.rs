@@ -2,14 +2,14 @@
 //!
 //! See the documentation for the `phf` crate for more details.
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
-#![feature(plugin_registrar, quote, rustc_private, core, env, std_misc)]
+#![feature(plugin_registrar, quote, rustc_private, env, std_misc)]
 
-extern crate rand;
 extern crate syntax;
 #[cfg(feature = "stats")]
 extern crate time;
 extern crate rustc;
 extern crate phf_shared;
+extern crate phf_generator;
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
@@ -23,9 +23,11 @@ use syntax::parse;
 use syntax::parse::token::{InternedString, Comma, Eof, FatArrow};
 use syntax::print::pprust;
 use rustc::plugin::Registry;
+use phf_generator::HashState;
+use std::env;
 
 use util::{Entry, Key};
-use util::{generate_hash, create_map, create_set, create_ordered_map, create_ordered_set};
+use util::{create_map, create_set, create_ordered_map, create_ordered_set};
 
 pub mod util;
 
@@ -36,6 +38,23 @@ pub fn macro_registrar(reg: &mut Registry) {
     reg.register_macro("phf_set", expand_phf_set);
     reg.register_macro("phf_ordered_map", expand_phf_ordered_map);
     reg.register_macro("phf_ordered_set", expand_phf_ordered_set);
+}
+
+fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
+    #[cfg(feature = "stats")]
+    use time::precise_time_s;
+    #[cfg(not(feature = "stats"))]
+    fn precise_time_s() -> f64 { 0. }
+
+    let start = precise_time_s();
+    let state = phf_generator::generate_hash(entries);
+    let time = precise_time_s() - start;
+
+    if cfg!(feature = "stats") && env::var_os("PHF_STATS").is_some() {
+        cx.span_note(sp, &format!("PHF generation took {} seconds", time));
+    }
+
+    state
 }
 
 fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult+'static> {

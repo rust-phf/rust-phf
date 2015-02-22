@@ -15,8 +15,9 @@ test = false
 [features]
 stats = ["time"]
 
-[dependencies]
-rand = "0.1"
+[dependencies.phf_generator]
+path = "../phf_generator"
+version = "=0.6.9"
 
 [dependencies.phf_shared]
 path = "../phf_shared"

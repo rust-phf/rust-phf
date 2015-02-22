@@ -25,3 +25,7 @@ version = "=0.6.9"
 [dependencies.time]
 version = "0.1"
 optional = true
+
+[dev-dependencies.phf]
+path = "../phf"
+version = "=0.6.9"

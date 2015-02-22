@@ -43,38 +43,88 @@
     <section id='main' class="content mod">
 <h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>phf_codegen</a><wbr></span><span class='out-of-band'><a href='stability.html'>[stability]</a> <span id='render-detail'>
             <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
-        </span><a id='src-0' href='../src/phf_codegen/lib.rs.html#1-144'>[src]</a></span></h1>
-<h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+        </span><a id='src-0' href='../src/phf_codegen/lib.rs.html#1-237'>[src]</a></span></h1>
+<div class='docblock'><p>A set of builders to generate Rust source for PHF data structures at
+compile time.</p>
+
+<p>The provided builders are intended to be used in a Cargo build script to
+generate a Rust source file that will be included in a library at build
+time.</p>
+
+<h1 id="examples" class='section-header'><a
+                           href="#examples">Examples</a></h1>
+<p>build.rs</p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>phf_codegen</span>;
+
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fs</span>::<span class='ident'>File</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>::{<span class='ident'>BufWriter</span>, <span class='ident'>Write</span>};
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>path</span>::<span class='ident'>AsPath</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>env</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>env</span>::<span class='ident'>var_os</span>(<span class='string'>&quot;OUT_DIR&quot;</span>).<span class='ident'>unwrap</span>().<span class='ident'>as_path</span>().<span class='ident'>join</span>(<span class='string'>&quot;codegen.rs&quot;</span>);
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>file</span> <span class='op'>=</span> <span class='ident'>BufWriter</span>::<span class='ident'>new</span>(<span class='ident'>File</span>::<span class='ident'>create</span>(<span class='kw-2'>&amp;</span><span class='ident'>path</span>).<span class='ident'>unwrap</span>());
+
+    <span class='macro'>write</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>file</span>, <span class='string'>&quot;static KEYWORDS: phf::Map&lt;&amp;&#39;static str, Keyword&gt; = &quot;</span>).<span class='ident'>unwrap</span>();
+    <span class='ident'>phf_codegen</span>::<span class='ident'>Map</span>::<span class='ident'>new</span>()
+        .<span class='ident'>entry</span>(<span class='string'>&quot;loop&quot;</span>, <span class='string'>&quot;Keyword::Loop&quot;</span>)
+        .<span class='ident'>entry</span>(<span class='string'>&quot;continue&quot;</span>, <span class='string'>&quot;Keyword::Continue&quot;</span>)
+        .<span class='ident'>entry</span>(<span class='string'>&quot;break&quot;</span>, <span class='string'>&quot;Keyword::Break&quot;</span>)
+        .<span class='ident'>entry</span>(<span class='string'>&quot;fn&quot;</span>, <span class='string'>&quot;Keyword::Fn&quot;</span>)
+        .<span class='ident'>entry</span>(<span class='string'>&quot;extern&quot;</span>, <span class='string'>&quot;Keyword::Extern&quot;</span>)
+        .<span class='ident'>build</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>file</span>)
+        .<span class='ident'>unwrap</span>();
+    <span class='macro'>write</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>file</span>, <span class='string'>&quot;;\n&quot;</span>).<span class='ident'>unwrap</span>();
+}
+</pre>
+
+<p>lib.rs</p>
+<pre id='rust-example-rendered' class='rust '>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>phf</span>;
+
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>)]</span>
+<span class='kw'>enum</span> <span class='ident'>Keyword</span> {
+    <span class='ident'>Loop</span>,
+    <span class='ident'>Continue</span>,
+    <span class='ident'>Break</span>,
+    <span class='ident'>Fn</span>,
+    <span class='ident'>Extern</span>,
+}
+
+<span class='macro'>include</span><span class='macro'>!</span>(<span class='macro'>concat</span><span class='macro'>!</span>(<span class='macro'>env</span><span class='macro'>!</span>(<span class='string'>&quot;OUT_DIR&quot;</span>), <span class='string'>&quot;/codegen.rs&quot;</span>));
+
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>parse_keyword</span>(<span class='ident'>keyword</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Keyword</span><span class='op'>&gt;</span> {
+    <span class='ident'>KEYWORDS</span>.<span class='ident'>get</span>(<span class='ident'>keyword</span>).<span class='ident'>cloned</span>()
+}
+</pre>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
                     <tr>
                         <td><a class='stability Unmarked' title='No stability level'></a><a class='struct' href='struct.Map.html'
                                title='phf_codegen::Map'>Map</a></td>
-                        <td class='docblock short'></td>
+                        <td class='docblock short'><p>A builder for the <code>phf::Map</code> type.</p>
+</td>
                     </tr>
                 
                     <tr>
                         <td><a class='stability Unmarked' title='No stability level'></a><a class='struct' href='struct.OrderedMap.html'
                                title='phf_codegen::OrderedMap'>OrderedMap</a></td>
-                        <td class='docblock short'></td>
+                        <td class='docblock short'><p>A builder for the <code>phf::OrderedMap</code> type.</p>
+</td>
                     </tr>
                 
                     <tr>
                         <td><a class='stability Unmarked' title='No stability level'></a><a class='struct' href='struct.OrderedSet.html'
                                title='phf_codegen::OrderedSet'>OrderedSet</a></td>
-                        <td class='docblock short'></td>
+                        <td class='docblock short'><p>A builder for the <code>phf::OrderedSet</code> type.</p>
+</td>
                     </tr>
                 
                     <tr>
                         <td><a class='stability Unmarked' title='No stability level'></a><a class='struct' href='struct.Set.html'
                                title='phf_codegen::Set'>Set</a></td>
-                        <td class='docblock short'></td>
-                    </tr>
-                </table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
-<table>
-                    <tr>
-                        <td><a class='stability Unmarked' title='No stability level'></a><a class='trait' href='trait.PhfHash.html'
-                               title='phf_codegen::PhfHash'>PhfHash</a></td>
-                        <td class='docblock short'><p>A trait implemented by types which can be used in PHF data structures</p>
+                        <td class='docblock short'><p>A builder for the <code>phf::Set</code> type.</p>
 </td>
                     </tr>
                 </table></section>

@@ -10,27 +10,11 @@ use phf_shared;
 
 /// An immutable map constructed at compile time.
 ///
-/// `Map`s may be created with the `phf_map` macro:
-///
-/// ```rust
-/// #![feature(plugin)]
-/// #![plugin(phf_macros)]
-///
-/// extern crate phf;
-///
-/// static MY_MAP: phf::Map<&'static str, isize> = phf_map! {
-///    "hello" => 10,
-///    "world" => 11,
-/// };
-///
-/// # fn main() {}
-/// ```
-///
 /// ## Note
 ///
 /// The fields of this struct are public so that they may be initialized by the
-/// `phf_map` macro. They are subject to change at any time and should never
-/// be accessed directly.
+/// `phf_map!` macro and code generation. They are subject to change at any
+/// time and should never be accessed directly.
 pub struct Map<K:'static, V:'static> {
     #[doc(hidden)]
     pub key: u64,

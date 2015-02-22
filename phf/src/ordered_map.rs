@@ -14,27 +14,11 @@ use phf_shared;
 /// Unlike a `Map`, iteration order is guaranteed to match the definition
 /// order.
 ///
-/// `OrderedMap`s may be created with the `phf_ordered_map` macro:
-///
-/// ```rust
-/// #![feature(plugin)]
-/// #![plugin(phf_macros)]
-///
-/// extern crate phf;
-///
-/// static MY_MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map! {
-///    "hello" => 10,
-///    "world" => 11,
-/// };
-///
-/// # fn main() {}
-/// ```
-///
 /// ## Note
 ///
 /// The fields of this struct are public so that they may be initialized by the
-/// `phf_ordered_map` macro. They are subject to change at any time and should
-/// never be accessed directly.
+/// `phf_ordered_map!` macro and code generation. They are subject to change at
+/// any time and should never be accessed directly.
 pub struct OrderedMap<K:'static, V:'static> {
     #[doc(hidden)]
     pub key: u64,

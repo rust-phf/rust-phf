@@ -11,27 +11,11 @@ use {PhfHash, OrderedMap};
 /// Unlike a `Set`, iteration order is guaranteed to match the definition
 /// order.
 ///
-/// `OrderedSet`s may be created with the `phf_ordered_set` macro:
-///
-/// ```rust
-/// #![feature(plugin)]
-/// #![plugin(phf_macros)]
-///
-/// extern crate phf;
-///
-/// static MY_SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
-///    "hello",
-///    "world",
-/// };
-///
-/// # fn main() {}
-/// ```
-///
 /// ## Note
 ///
 /// The fields of this struct are public so that they may be initialized by the
-/// `phf_ordered_set` macro. They are subject to change at any time and should
-/// never be accessed directly.
+/// `phf_ordered_set!` macro and code generation. They are subject to change at
+/// any time and should never be accessed directly.
 pub struct OrderedSet<T:'static> {
     #[doc(hidden)]
     pub map: OrderedMap<T, ()>,

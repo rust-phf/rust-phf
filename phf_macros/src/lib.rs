@@ -1,6 +1,35 @@
-//! Compiler plugin for Rust-PHF
+//! Compiler plugin defining macros that create PHF data structures.
 //!
-//! See the documentation for the `phf` crate for more details.
+//! # Example
+//!
+//! ```rust
+//! #![feature(plugin)]
+//! #![plugin(phf_macros)]
+//!
+//! extern crate phf;
+//!
+//! #[derive(Clone)]
+//! pub enum Keyword {
+//!     Loop,
+//!     Continue,
+//!     Break,
+//!     Fn,
+//!     Extern,
+//! }
+//!
+//! static KEYWORDS: phf::Map<&'static str, Keyword> = phf_map! {
+//!     "loop" => Keyword::Loop,
+//!     "continue" => Keyword::Continue,
+//!     "break" => Keyword::Break,
+//!     "fn" => Keyword::Fn,
+//!     "extern" => Keyword::Extern,
+//! };
+//!
+//! pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
+//!     KEYWORDS.get(keyword).cloned()
+//! }
+//! # fn main() {}
+//! ```
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
 #![feature(plugin_registrar, quote, rustc_private, env, std_misc)]
 
@@ -30,6 +59,7 @@ use util::{Entry, Key};
 use util::{create_map, create_set, create_ordered_map, create_ordered_set};
 
 pub mod util;
+mod macros;
 
 #[plugin_registrar]
 #[doc(hidden)]

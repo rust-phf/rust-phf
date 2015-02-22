@@ -1,1 +1,1 @@
-{"name":"phf_macros","counts":{"deprecated":0,"unstable":1,"stable":3,"unmarked":24},"submodules":[{"name":"util","counts":{"deprecated":0,"unstable":1,"stable":3,"unmarked":23},"submodules":[]}]}
+{"name":"phf_macros","counts":{"deprecated":0,"unstable":0,"stable":4,"unmarked":24},"submodules":[{"name":"util","counts":{"deprecated":0,"unstable":0,"stable":4,"unmarked":23},"submodules":[]}]}

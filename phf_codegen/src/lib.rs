@@ -40,7 +40,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Display> Map<K> {
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(w, "phf::Map {{ key: {}, disps: &[", state.key));
+        try!(write!(w, "::phf::Map {{ key: {}, disps: &[", state.key));
         for &(d1, d2) in &state.disps {
             try!(write!(w, "({}, {}),", d1, d2));
         }
@@ -69,7 +69,7 @@ impl<T: Hash+PhfHash+Eq+fmt::Display> Set<T> {
     }
 
     pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
-        try!(write!(w, "phf::Set {{ map: "));
+        try!(write!(w, "::phf::Set {{ map: "));
         try!(self.map.build(w));
         write!(w, " }}")
     }
@@ -104,7 +104,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Display> OrderedMap<K> {
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(w, "phf::OrderedMap {{ key: {}, disps: &[", state.key));
+        try!(write!(w, "::phf::OrderedMap {{ key: {}, disps: &[", state.key));
         for &(d1, d2) in &state.disps {
             try!(write!(w, "({}, {}),", d1, d2));
         }
@@ -137,7 +137,7 @@ impl<T: Hash+PhfHash+Eq+fmt::Display> OrderedSet<T> {
     }
 
     pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
-        try!(write!(w, "phf::OrderedSet {{ map: "));
+        try!(write!(w, "::phf::OrderedSet {{ map: "));
         try!(self.map.build(w));
         write!(w, " }}")
     }

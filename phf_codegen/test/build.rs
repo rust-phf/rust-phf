@@ -10,7 +10,7 @@ fn main() {
     let file = Path::new(env!("OUT_DIR")).join("codegen.rs");
     let mut file = BufWriter::new(File::create(&file).unwrap());
 
-    write!(&mut file, "static MAP: phf::Map<u32, &'static str> = ").unwrap();
+    write!(&mut file, "static MAP: ::phf::Map<u32, &'static str> = ").unwrap();
     phf_codegen::Map::new()
         .entry(1u32, "\"a\"")
         .entry(2u32, "\"b\"")
@@ -19,7 +19,7 @@ fn main() {
         .unwrap();
     write!(&mut file, ";\n").unwrap();
 
-    write!(&mut file, "static SET: phf::Set<u32> = ").unwrap();
+    write!(&mut file, "static SET: ::phf::Set<u32> = ").unwrap();
     phf_codegen::Set::new()
         .entry(1u32)
         .entry(2u32)
@@ -28,7 +28,7 @@ fn main() {
         .unwrap();
     write!(&mut file, ";\n").unwrap();
 
-    write!(&mut file, "static ORDERED_MAP: phf::OrderedMap<u32, &'static str> = ").unwrap();
+    write!(&mut file, "static ORDERED_MAP: ::phf::OrderedMap<u32, &'static str> = ").unwrap();
     phf_codegen::OrderedMap::new()
         .entry(1u32, "\"a\"")
         .entry(2u32, "\"b\"")
@@ -37,7 +37,7 @@ fn main() {
         .unwrap();
     write!(&mut file, ";\n").unwrap();
 
-    write!(&mut file, "static ORDERED_SET: phf::OrderedSet<u32> = ").unwrap();
+    write!(&mut file, "static ORDERED_SET: ::phf::OrderedSet<u32> = ").unwrap();
     phf_codegen::OrderedSet::new()
         .entry(1u32)
         .entry(2u32)

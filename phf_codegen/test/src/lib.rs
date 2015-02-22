@@ -4,8 +4,6 @@ extern crate phf;
 
 #[cfg(test)]
 mod test {
-    use phf;
-
     include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
     #[test]

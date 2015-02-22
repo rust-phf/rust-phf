@@ -1,0 +1,11 @@
+[package]
+name = "phf_codegen_test"
+authors = ["Steven Fackler <sfackler@gmail.com>"]
+version = "0.0.0"
+build = "build.rs"
+
+[build-dependencies.phf_codegen]
+path = ".."
+
+[dependencies.phf]
+path = "../../phf"

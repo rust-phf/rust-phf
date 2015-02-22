@@ -73,7 +73,7 @@ pub struct Map<K> {
     values: Vec<String>,
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Display> Map<K> {
+impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
     /// Creates a new `phf::Map` builder.
     pub fn new() -> Map<K> {
         Map {
@@ -100,7 +100,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Display> Map<K> {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
-                panic!("duplicate key `{}`", key);
+                panic!("duplicate key `{:?}`", key);
             }
         }
 
@@ -112,7 +112,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Display> Map<K> {
         }
         try!(write!(w, "], entries: &["));
         for &idx in &state.map {
-            try!(write!(w, "({}, {}),", &self.keys[idx], &self.values[idx]));
+            try!(write!(w, "({:?}, {}),", &self.keys[idx], &self.values[idx]));
         }
         write!(w, "] }}")
     }
@@ -123,7 +123,7 @@ pub struct Set<T> {
     map: Map<T>
 }
 
-impl<T: Hash+PhfHash+Eq+fmt::Display> Set<T> {
+impl<T: Hash+PhfHash+Eq+fmt::Debug> Set<T> {
     /// Constructs a new `phf::Set` builder.
     pub fn new() -> Set<T> {
         Set {
@@ -155,7 +155,7 @@ pub struct OrderedMap<K> {
     values: Vec<String>,
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Display> OrderedMap<K> {
+impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
     /// Constructs a enw `phf::OrderedMap` builder.
     pub fn new() -> OrderedMap<K> {
         OrderedMap {
@@ -183,7 +183,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Display> OrderedMap<K> {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
-                panic!("duplicate key `{}`", key);
+                panic!("duplicate key `{:?}`", key);
             }
         }
 
@@ -199,7 +199,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Display> OrderedMap<K> {
         }
         try!(write!(w, "], entries: &["));
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
-            try!(write!(w, "({}, {}),", key, value));
+            try!(write!(w, "({:?}, {}),", key, value));
         }
         write!(w, "] }}")
     }
@@ -210,7 +210,7 @@ pub struct OrderedSet<T> {
     map: OrderedMap<T>
 }
 
-impl<T: Hash+PhfHash+Eq+fmt::Display> OrderedSet<T> {
+impl<T: Hash+PhfHash+Eq+fmt::Debug> OrderedSet<T> {
     /// Constructs a new `phf::OrderedSet` builder.
     pub fn new() -> OrderedSet<T> {
         OrderedSet {

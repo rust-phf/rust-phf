@@ -39,4 +39,11 @@ mod test {
         assert!(!ORDERED_SET.contains(&4));
         assert_eq!(&[1, 2, 3][..], ORDERED_SET.iter().cloned().collect::<Vec<_>>());
     }
+
+    #[test]
+    fn str_keys() {
+        assert_eq!(1, STR_KEYS["a"]);
+        assert_eq!(2, STR_KEYS["b"]);
+        assert_eq!(3, STR_KEYS["c"]);
+    }
 }

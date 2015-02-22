@@ -45,4 +45,13 @@ fn main() {
         .build(&mut file)
         .unwrap();
     write!(&mut file, ";\n").unwrap();
+
+    write!(&mut file, "static STR_KEYS: ::phf::Map<&'static str, u32> = ").unwrap();
+    phf_codegen::Map::new()
+        .entry("a", "1")
+        .entry("b", "2")
+        .entry("c", "3")
+        .build(&mut file)
+        .unwrap();
+    write!(&mut file, ";\n").unwrap();
 }

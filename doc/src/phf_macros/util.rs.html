@@ -181,7 +181,7 @@
 
 <span class='kw'>use</span> <span class='ident'>syntax</span>::<span class='ident'>ast</span>::<span class='ident'>Expr</span>;
 <span class='kw'>use</span> <span class='ident'>syntax</span>::<span class='ident'>codemap</span>::<span class='ident'>Span</span>;
-<span class='kw'>use</span> <span class='ident'>syntax</span>::<span class='ident'>ext</span>::<span class='ident'>base</span>::{<span class='ident'>ExtCtxt</span>, <span class='ident'>MacResult</span>, <span class='ident'>MacExpr</span>};
+<span class='kw'>use</span> <span class='ident'>syntax</span>::<span class='ident'>ext</span>::<span class='ident'>base</span>::{<span class='ident'>ExtCtxt</span>, <span class='ident'>MacResult</span>, <span class='ident'>MacEager</span>};
 <span class='kw'>use</span> <span class='ident'>syntax</span>::<span class='ident'>ext</span>::<span class='ident'>build</span>::<span class='ident'>AstBuilder</span>;
 <span class='kw'>use</span> <span class='ident'>syntax</span>::<span class='ident'>parse</span>::<span class='ident'>token</span>::<span class='ident'>InternedString</span>;
 <span class='kw'>use</span> <span class='ident'>syntax</span>::<span class='ident'>ptr</span>::<span class='ident'>P</span>;
@@ -269,7 +269,7 @@
     <span class='kw'>let</span> <span class='ident'>entries</span> <span class='op'>=</span> <span class='ident'>cx</span>.<span class='ident'>expr_vec</span>(<span class='ident'>sp</span>, <span class='ident'>entries</span>);
 
     <span class='kw'>let</span> <span class='ident'>key</span> <span class='op'>=</span> <span class='ident'>state</span>.<span class='ident'>key</span>;
-    <span class='ident'>MacExpr</span>::<span class='ident'>new</span>(<span class='macro'>quote_expr</span><span class='macro'>!</span>(<span class='ident'>cx</span>, ::<span class='ident'>phf</span>::<span class='ident'>Map</span> {
+    <span class='ident'>MacEager</span>::<span class='ident'>expr</span>(<span class='macro'>quote_expr</span><span class='macro'>!</span>(<span class='ident'>cx</span>, ::<span class='ident'>phf</span>::<span class='ident'>Map</span> {
         <span class='ident'>key</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>key</span>,
         <span class='ident'>disps</span>: <span class='kw-2'>&amp;</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>disps</span>,
         <span class='ident'>entries</span>: <span class='kw-2'>&amp;</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>entries</span>,
@@ -279,7 +279,7 @@
 <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>create_set</span>(<span class='ident'>cx</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>ExtCtxt</span>, <span class='ident'>sp</span>: <span class='ident'>Span</span>, <span class='ident'>entries</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Entry</span><span class='op'>&gt;</span>, <span class='ident'>state</span>: <span class='ident'>HashState</span>)
               <span class='op'>-&gt;</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>MacResult</span><span class='op'>+</span><span class='lifetime'>&#39;static</span><span class='op'>&gt;</span> {
     <span class='kw'>let</span> <span class='ident'>map</span> <span class='op'>=</span> <span class='ident'>create_map</span>(<span class='ident'>cx</span>, <span class='ident'>sp</span>, <span class='ident'>entries</span>, <span class='ident'>state</span>).<span class='ident'>make_expr</span>().<span class='ident'>unwrap</span>();
-    <span class='ident'>MacExpr</span>::<span class='ident'>new</span>(<span class='macro'>quote_expr</span><span class='macro'>!</span>(<span class='ident'>cx</span>, ::<span class='ident'>phf</span>::<span class='ident'>Set</span> { <span class='ident'>map</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>map</span> }))
+    <span class='ident'>MacEager</span>::<span class='ident'>expr</span>(<span class='macro'>quote_expr</span><span class='macro'>!</span>(<span class='ident'>cx</span>, ::<span class='ident'>phf</span>::<span class='ident'>Set</span> { <span class='ident'>map</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>map</span> }))
 }
 
 <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>create_ordered_map</span>(<span class='ident'>cx</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>ExtCtxt</span>, <span class='ident'>sp</span>: <span class='ident'>Span</span>, <span class='ident'>entries</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Entry</span><span class='op'>&gt;</span>, <span class='ident'>state</span>: <span class='ident'>HashState</span>)
@@ -298,7 +298,7 @@
     <span class='kw'>let</span> <span class='ident'>entries</span> <span class='op'>=</span> <span class='ident'>cx</span>.<span class='ident'>expr_vec</span>(<span class='ident'>sp</span>, <span class='ident'>entries</span>);
 
     <span class='kw'>let</span> <span class='ident'>key</span> <span class='op'>=</span> <span class='ident'>state</span>.<span class='ident'>key</span>;
-    <span class='ident'>MacExpr</span>::<span class='ident'>new</span>(<span class='macro'>quote_expr</span><span class='macro'>!</span>(<span class='ident'>cx</span>, ::<span class='ident'>phf</span>::<span class='ident'>OrderedMap</span> {
+    <span class='ident'>MacEager</span>::<span class='ident'>expr</span>(<span class='macro'>quote_expr</span><span class='macro'>!</span>(<span class='ident'>cx</span>, ::<span class='ident'>phf</span>::<span class='ident'>OrderedMap</span> {
         <span class='ident'>key</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>key</span>,
         <span class='ident'>disps</span>: <span class='kw-2'>&amp;</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>disps</span>,
         <span class='ident'>idxs</span>: <span class='kw-2'>&amp;</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>idxs</span>,
@@ -309,7 +309,7 @@
 <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>create_ordered_set</span>(<span class='ident'>cx</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>ExtCtxt</span>, <span class='ident'>sp</span>: <span class='ident'>Span</span>, <span class='ident'>entries</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Entry</span><span class='op'>&gt;</span>, <span class='ident'>state</span>: <span class='ident'>HashState</span>)
                           <span class='op'>-&gt;</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>MacResult</span><span class='op'>+</span><span class='lifetime'>&#39;static</span><span class='op'>&gt;</span> {
     <span class='kw'>let</span> <span class='ident'>map</span> <span class='op'>=</span> <span class='ident'>create_ordered_map</span>(<span class='ident'>cx</span>, <span class='ident'>sp</span>, <span class='ident'>entries</span>, <span class='ident'>state</span>).<span class='ident'>make_expr</span>().<span class='ident'>unwrap</span>();
-    <span class='ident'>MacExpr</span>::<span class='ident'>new</span>(<span class='macro'>quote_expr</span><span class='macro'>!</span>(<span class='ident'>cx</span>, ::<span class='ident'>phf</span>::<span class='ident'>OrderedSet</span> { <span class='ident'>map</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>map</span> }))
+    <span class='ident'>MacEager</span>::<span class='ident'>expr</span>(<span class='macro'>quote_expr</span><span class='macro'>!</span>(<span class='ident'>cx</span>, ::<span class='ident'>phf</span>::<span class='ident'>OrderedSet</span> { <span class='ident'>map</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>map</span> }))
 }
 </pre>
 </section>

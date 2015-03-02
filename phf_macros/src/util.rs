@@ -3,7 +3,7 @@ use std::hash::{Hash, Hasher};
 
 use syntax::ast::Expr;
 use syntax::codemap::Span;
-use syntax::ext::base::{ExtCtxt, MacResult, MacExpr};
+use syntax::ext::base::{ExtCtxt, MacResult, MacEager};
 use syntax::ext::build::AstBuilder;
 use syntax::parse::token::InternedString;
 use syntax::ptr::P;
@@ -91,7 +91,7 @@ pub fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashSt
     let entries = cx.expr_vec(sp, entries);
 
     let key = state.key;
-    MacExpr::new(quote_expr!(cx, ::phf::Map {
+    MacEager::expr(quote_expr!(cx, ::phf::Map {
         key: $key,
         disps: &$disps,
         entries: &$entries,
@@ -101,7 +101,7 @@ pub fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashSt
 pub fn create_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
               -> Box<MacResult+'static> {
     let map = create_map(cx, sp, entries, state).make_expr().unwrap();
-    MacExpr::new(quote_expr!(cx, ::phf::Set { map: $map }))
+    MacEager::expr(quote_expr!(cx, ::phf::Set { map: $map }))
 }
 
 pub fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
@@ -120,7 +120,7 @@ pub fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state
     let entries = cx.expr_vec(sp, entries);
 
     let key = state.key;
-    MacExpr::new(quote_expr!(cx, ::phf::OrderedMap {
+    MacEager::expr(quote_expr!(cx, ::phf::OrderedMap {
         key: $key,
         disps: &$disps,
         idxs: &$idxs,
@@ -131,5 +131,5 @@ pub fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state
 pub fn create_ordered_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
                           -> Box<MacResult+'static> {
     let map = create_ordered_map(cx, sp, entries, state).make_expr().unwrap();
-    MacExpr::new(quote_expr!(cx, ::phf::OrderedSet { map: $map }))
+    MacEager::expr(quote_expr!(cx, ::phf::OrderedSet { map: $map }))
 }

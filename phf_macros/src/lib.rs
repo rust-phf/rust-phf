@@ -31,7 +31,7 @@
 //! # fn main() {}
 //! ```
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
-#![feature(plugin_registrar, quote, rustc_private, env, std_misc)]
+#![feature(plugin_registrar, quote, rustc_private, std_misc)]
 
 extern crate syntax;
 #[cfg(feature = "stats")]

@@ -23,16 +23,11 @@ pub struct OrderedSet<T:'static> {
 
 impl<T> fmt::Debug for OrderedSet<T> where T: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(fmt, "OrderedSet {{"));
-        let mut first = true;
-        for entry in self.iter() {
-            if !first {
-                try!(write!(fmt, ", "));
-            }
-            try!(write!(fmt, "{:?}", entry));
-            first = false;
+        let mut builder = fmt.debug_set("OrderedSet");
+        for entry in self {
+            builder = builder.entry(entry);
         }
-        write!(fmt, "}}")
+        builder.finish()
     }
 }
 

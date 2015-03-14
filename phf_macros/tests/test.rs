@@ -123,7 +123,7 @@ mod map {
     }
 
     #[test]
-    #[should_fail]
+    #[should_panic]
     fn test_index_fail() {
         static MAP: phf::Map<&'static str, isize> = phf_map!(
             "a" => 0,
@@ -378,7 +378,7 @@ mod ordered_map {
     }
 
     #[test]
-    #[should_fail]
+    #[should_panic]
     fn test_index_fail() {
         static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
             "a" => 0,

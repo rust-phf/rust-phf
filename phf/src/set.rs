@@ -22,16 +22,11 @@ pub struct Set<T:'static> {
 
 impl<T> fmt::Debug for Set<T> where T: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(fmt, "Set {{"));
-        let mut first = true;
-        for entry in self.iter() {
-            if !first {
-                try!(write!(fmt, ", "));
-            }
-            try!(write!(fmt, "{:?}", entry));
-            first = false;
+        let mut builder = fmt.debug_set("Set");
+        for entry in self {
+            builder = builder.entry(entry);
         }
-        write!(fmt, "}}")
+        builder.finish()
     }
 }
 

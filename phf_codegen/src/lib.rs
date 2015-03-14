@@ -55,8 +55,6 @@
 //! }
 //! ```
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
-#![feature(io)]
-
 extern crate phf_shared;
 extern crate phf_generator;
 

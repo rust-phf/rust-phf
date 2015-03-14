@@ -32,16 +32,11 @@ pub struct OrderedMap<K:'static, V:'static> {
 
 impl<K, V> fmt::Debug for OrderedMap<K, V> where K: fmt::Debug, V: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(fmt, "OrderedMap {{"));
-        let mut first = true;
-        for (k, v) in self.entries() {
-            if !first {
-                try!(write!(fmt, ", "));
-            }
-            try!(write!(fmt, "{:?}: {:?}", k, v));
-            first = false;
+        let mut builder = fmt.debug_map("OrderedMap");
+        for (k, v) in self {
+            builder = builder.entry(k, v);
         }
-        write!(fmt, "}}")
+        builder.finish()
     }
 }
 

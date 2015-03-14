@@ -1,5 +1,3 @@
-#![feature(io, path)]
-
 extern crate phf_codegen;
 
 use std::fs::File;

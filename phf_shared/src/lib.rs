@@ -1,7 +1,6 @@
 #![feature(hash)]
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
 
-use std::str::StrExt;
 use std::hash::{Hasher, Hash, SipHasher};
 
 #[inline]

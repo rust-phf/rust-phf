@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["displace",""]],"trait":[["PhfHash","A trait implemented by types which can be used in PHF data structures"]]});
+initSidebarItems({"trait":[["PhfHash","A trait implemented by types which can be used in PHF data structures"]],"fn":[["displace",""]]});

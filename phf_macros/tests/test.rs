@@ -161,11 +161,6 @@ mod map {
     }
 
     #[test]
-    fn test_binary_keys() {
-        test_key_type!(&'static [u8], b"hello" => 0, b"world" => 1);
-    }
-
-    #[test]
     fn test_byte_keys() {
         test_key_type!(u8, b'a' => 0, b'b' => 1);
     }

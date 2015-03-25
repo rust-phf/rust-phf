@@ -342,7 +342,7 @@
 <span class='doccomment'>//! # Example</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! ```rust</span>
-<span class='doccomment'>//! #![feature(plugin)]</span>
+<span class='doccomment'>//! #![feature(plugin, core)]</span>
 <span class='doccomment'>//! #![plugin(phf_macros)]</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! extern crate phf;</span>
@@ -370,7 +370,7 @@
 <span class='doccomment'>//! # fn main() {}</span>
 <span class='doccomment'>//! ```</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>doc</span>(<span class='ident'>html_root_url</span><span class='op'>=</span><span class='string'>&quot;http://sfackler.github.io/rust-phf/doc&quot;</span>)]</span>
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>plugin_registrar</span>, <span class='ident'>quote</span>, <span class='ident'>rustc_private</span>, <span class='ident'>std_misc</span>)]</span>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>plugin_registrar</span>, <span class='ident'>quote</span>, <span class='ident'>rustc_private</span>)]</span>
 
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>syntax</span>;
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;stats&quot;</span>)]</span>

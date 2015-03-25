@@ -34,10 +34,10 @@ impl<K, V> fmt::Debug for Map<K, V> where K: fmt::Debug, V: fmt::Debug {
     }
 }
 
-impl<K, V, T: ?Sized> Index<T> for Map<K, V> where T: Eq + PhfHash, K: Borrow<T> {
+impl<'a, K, V, T: ?Sized> Index<&'a T> for Map<K, V> where T: Eq + PhfHash, K: Borrow<T> {
     type Output = V;
 
-    fn index(&self, k: &T) -> &V {
+    fn index(&self, k: &'a T) -> &V {
         self.get(k).expect("invalid key")
     }
 }

@@ -1,7 +1,7 @@
 [package]
 name = "phf_macros"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.6.18"
+version = "0.6.19"
 license = "MIT"
 description = "Compiler plugin for perfect hash function data structures"
 repository = "https://github.com/sfackler/rust-phf"
@@ -18,11 +18,11 @@ stats = ["time"]
 
 [dependencies.phf_generator]
 path = "../phf_generator"
-version = "=0.6.18"
+version = "=0.6.19"
 
 [dependencies.phf_shared]
 path = "../phf_shared"
-version = "=0.6.18"
+version = "=0.6.19"
 
 [dependencies.time]
 version = "0.1"
@@ -30,4 +30,4 @@ optional = true
 
 [dev-dependencies.phf]
 path = "../phf"
-version = "=0.6.18"
+version = "=0.6.19"

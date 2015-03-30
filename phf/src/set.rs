@@ -22,11 +22,7 @@ pub struct Set<T:'static> {
 
 impl<T> fmt::Debug for Set<T> where T: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        let mut builder = fmt.debug_set();
-        for entry in self {
-            builder = builder.entry(entry);
-        }
-        builder.finish()
+        self.iter().fold(fmt.debug_set(), |b, e| b.entry(e)).finish()
     }
 }
 

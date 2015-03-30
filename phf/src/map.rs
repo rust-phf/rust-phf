@@ -26,7 +26,7 @@ pub struct Map<K:'static, V:'static> {
 
 impl<K, V> fmt::Debug for Map<K, V> where K: fmt::Debug, V: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        let mut builder = fmt.debug_map("Map");
+        let mut builder = fmt.debug_map();
         for (k, v) in self {
             builder = builder.entry(k, v);
         }

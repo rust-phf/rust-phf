@@ -4,9 +4,10 @@
 //! `phf_macros` crate or via code generation in the `phf_codegen` crate. See
 //! the documentation of those crates for more details.
 #![doc(html_root_url="https://sfackler.github.io/rust-phf/doc")]
-#![feature(core, debug_builders)]
+#![feature(core)]
 #![warn(missing_docs)]
 
+extern crate debug_builders;
 extern crate phf_shared;
 
 pub use phf_shared::PhfHash;

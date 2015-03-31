@@ -1,4 +1,5 @@
 //! An immutable map constructed at compile time.
+use debug_builders::DebugMap;
 use std::prelude::v1::*;
 use std::borrow::Borrow;
 use std::ops::Index;
@@ -26,7 +27,7 @@ pub struct Map<K:'static, V:'static> {
 
 impl<K, V> fmt::Debug for Map<K, V> where K: fmt::Debug, V: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        self.entries().fold(fmt.debug_map(), |b, (k, v)| b.entry(k, v)).finish()
+        self.entries().fold(DebugMap::new(fmt), |b, (k, v)| b.entry(k, v)).finish()
     }
 }
 

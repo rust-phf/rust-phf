@@ -1,4 +1,5 @@
 //! An order-preserving immutable set constructed at compile time.
+use debug_builders::DebugSet;
 use std::prelude::v1::*;
 use std::borrow::Borrow;
 use std::iter::{IntoIterator, RandomAccessIterator};
@@ -23,7 +24,7 @@ pub struct OrderedSet<T:'static> {
 
 impl<T> fmt::Debug for OrderedSet<T> where T: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        self.iter().fold(fmt.debug_set(), |b, e| b.entry(e)).finish()
+        self.iter().fold(DebugSet::new(fmt), |b, e| b.entry(e)).finish()
     }
 }
 

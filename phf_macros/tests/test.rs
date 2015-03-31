@@ -1,4 +1,4 @@
-#![feature(plugin, core)]
+#![feature(plugin)]
 #![plugin(phf_macros)]
 
 extern crate phf;
@@ -288,8 +288,6 @@ mod set {
 }
 
 mod ordered_map {
-    use std::iter::RandomAccessIterator;
-
     use phf;
 
     #[allow(dead_code)]
@@ -324,7 +322,6 @@ mod ordered_map {
         assert_eq!(Some(0), MAP.get_index(&"foo"));
         assert_eq!(Some(2), MAP.get_index(&"baz"));
         assert_eq!(None, MAP.get_index(&"xyz"));
-        assert_eq!(&"baz", MAP.keys().idx(MAP.get_index(&"baz").unwrap()).unwrap());
 
         assert_eq!(Some(0), MAP.get_index(&*"foo".to_string()));
         assert_eq!(Some(2), MAP.get_index(&*"baz".to_string()));
@@ -403,7 +400,6 @@ mod ordered_map {
 }
 
 mod ordered_set {
-    use std::iter::RandomAccessIterator;
     use phf;
 
     #[allow(dead_code)]
@@ -440,7 +436,6 @@ mod ordered_set {
         assert_eq!(Some(0), SET.get_index(&"foo"));
         assert_eq!(Some(2), SET.get_index(&"baz"));
         assert_eq!(None, SET.get_index(&"xyz"));
-        assert_eq!(&"baz", SET.iter().idx(SET.get_index(&"baz").unwrap()).unwrap());
 
         assert_eq!(Some(0), SET.get_index(&*"foo".to_string()));
         assert_eq!(Some(2), SET.get_index(&*"baz".to_string()));

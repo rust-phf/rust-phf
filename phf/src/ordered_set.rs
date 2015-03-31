@@ -2,7 +2,7 @@
 use debug_builders::DebugSet;
 use std::prelude::v1::*;
 use std::borrow::Borrow;
-use std::iter::{IntoIterator, RandomAccessIterator};
+use std::iter::IntoIterator;
 use std::fmt;
 use ordered_map;
 use {PhfHash, OrderedMap};
@@ -119,18 +119,6 @@ impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
     #[inline]
     fn next_back(&mut self) -> Option<&'a T> {
         self.iter.next_back()
-    }
-}
-
-impl<'a, T> RandomAccessIterator for Iter<'a, T> {
-    #[inline]
-    fn indexable(&self) -> usize {
-        self.iter.indexable()
-    }
-
-    #[inline]
-    fn idx(&mut self, index: usize) -> Option<&'a T> {
-        self.iter.idx(index)
     }
 }
 

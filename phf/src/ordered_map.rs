@@ -2,7 +2,7 @@
 use debug_builders::DebugMap;
 use std::prelude::v1::*;
 use std::borrow::Borrow;
-use std::iter::{IntoIterator, RandomAccessIterator};
+use std::iter::IntoIterator;
 use std::ops::Index;
 use std::fmt;
 use std::slice;
@@ -156,16 +156,6 @@ impl<'a, K, V> DoubleEndedIterator for Entries<'a, K, V> {
     }
 }
 
-impl<'a, K, V> RandomAccessIterator for Entries<'a, K, V> {
-    fn indexable(&self) -> usize {
-        self.iter.indexable()
-    }
-
-    fn idx(&mut self, index: usize) -> Option<(&'a K, &'a V)> {
-        self.iter.idx(index).map(|e| (&e.0, &e.1))
-    }
-}
-
 impl<'a, K, V> ExactSizeIterator for Entries<'a, K, V> {}
 
 /// An iterator over the keys in a `OrderedMap`.
@@ -191,16 +181,6 @@ impl<'a, K, V> DoubleEndedIterator for Keys<'a, K, V> {
     }
 }
 
-impl<'a, K, V> RandomAccessIterator for Keys<'a, K, V> {
-    fn indexable(&self) -> usize {
-        self.iter.indexable()
-    }
-
-    fn idx(&mut self, index: usize) -> Option<&'a K> {
-        self.iter.idx(index).map(|e| e.0)
-    }
-}
-
 impl<'a, K, V> ExactSizeIterator for Keys<'a, K, V> {}
 
 /// An iterator over the values in a `OrderedMap`.
@@ -223,16 +203,6 @@ impl<'a, K, V> Iterator for Values<'a, K, V> {
 impl<'a, K, V> DoubleEndedIterator for Values<'a, K, V> {
     fn next_back(&mut self) -> Option<&'a V> {
         self.iter.next_back().map(|e| e.1)
-    }
-}
-
-impl<'a, K, V> RandomAccessIterator for Values<'a, K, V> {
-    fn indexable(&self) -> usize {
-        self.iter.indexable()
-    }
-
-    fn idx(&mut self, index: usize) -> Option<&'a V> {
-        self.iter.idx(index).map(|e| e.1)
     }
 }
 

@@ -159,7 +159,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
             Key::Str(InternedString::new(""))
         });
 
-        if !parser.eat(&FatArrow) {
+        if !parser.eat(&FatArrow).ok().unwrap() {
             cx.span_err(parser.span, "expected `=>`");
             return None;
         }
@@ -172,7 +172,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
             value: value
         });
 
-        if !parser.eat(&Comma) && parser.token != Eof {
+        if !parser.eat(&Comma).ok().unwrap() && parser.token != Eof {
             cx.span_err(parser.span, "expected `,`");
             return None;
         }
@@ -204,7 +204,7 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
             value: value.clone(),
         });
 
-        if !parser.eat(&Comma) && parser.token != Eof {
+        if !parser.eat(&Comma).ok().unwrap() && parser.token != Eof {
             cx.span_err(parser.span, "expected `,`");
             return None;
         }

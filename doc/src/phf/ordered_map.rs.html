@@ -249,6 +249,12 @@
 <span id="207">207</span>
 <span id="208">208</span>
 <span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! An order-preserving immutable map constructed at compile time.</span>
 <span class='kw'>use</span> <span class='ident'>debug_builders</span>::<span class='ident'>DebugMap</span>;
@@ -331,6 +337,12 @@
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_index</span><span class='op'>&lt;</span><span class='ident'>T</span>: ?<span class='ident'>Sized</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>key</span>: <span class='kw-2'>&amp;</span><span class='ident'>T</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span>
             <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>PhfHash</span>, <span class='ident'>K</span>: <span class='ident'>Borrow</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='self'>self</span>.<span class='ident'>get_internal</span>(<span class='ident'>key</span>).<span class='ident'>map</span>(<span class='op'>|</span>(<span class='ident'>i</span>, _)<span class='op'>|</span> <span class='ident'>i</span>)
+    }
+
+    <span class='doccomment'>/// Returns references to both the key and values at an index</span>
+    <span class='doccomment'>/// within the list used to initialize the ordered map. See `.get_index(key)`.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>index</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>index</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>K</span>, <span class='kw-2'>&amp;</span><span class='ident'>V</span>)<span class='op'>&gt;</span> {
+        <span class='self'>self</span>.<span class='ident'>entries</span>.<span class='ident'>get</span>(<span class='ident'>index</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(<span class='kw-2'>ref</span> <span class='ident'>k</span>, <span class='kw-2'>ref</span> <span class='ident'>v</span>)<span class='op'>|</span> (<span class='ident'>k</span>, <span class='ident'>v</span>))
     }
 
     <span class='doccomment'>/// Like `get`, but returns both the key and the value.</span>

@@ -54,6 +54,12 @@ impl<T> OrderedSet<T> {
         self.map.get_index(key)
     }
 
+    /// Returns references to both the key and values at an index
+    /// within the list used to initialize the ordered map. See `.get_index(key)`.
+    pub fn index(&self, index: usize) -> Option<&T> {
+        self.map.index(index).map(|(k, &())| k)
+    }
+
     /// Returns true if `value` is in the `Set`.
     pub fn contains<U: ?Sized>(&self, value: &U) -> bool where U: Eq + PhfHash, T: Borrow<U> {
         self.map.contains_key(value)

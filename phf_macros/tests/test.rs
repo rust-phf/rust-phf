@@ -329,6 +329,17 @@ mod ordered_map {
     }
 
     #[test]
+    fn test_index() {
+        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
+            "foo" => 5,
+            "bar" => 6,
+        );
+        assert_eq!(Some((&"foo", &5)), MAP.index(0));
+        assert_eq!(Some((&"bar", &6)), MAP.index(1));
+        assert_eq!(None, MAP.index(2));
+    }
+
+    #[test]
     fn test_entries() {
         static MAP: phf::OrderedMap<&'static str, i32> = phf_ordered_map!(
             "foo" => 10,
@@ -440,6 +451,17 @@ mod ordered_set {
         assert_eq!(Some(0), SET.get_index(&*"foo".to_string()));
         assert_eq!(Some(2), SET.get_index(&*"baz".to_string()));
         assert_eq!(None, SET.get_index(&*"xyz".to_string()));
+    }
+
+    #[test]
+    fn test_index() {
+        static MAP: phf::OrderedSet<&'static str> = phf_ordered_set!(
+            "foo",
+            "bar",
+        );
+        assert_eq!(Some(&"foo"), MAP.index(0));
+        assert_eq!(Some(&"bar"), MAP.index(1));
+        assert_eq!(None, MAP.index(2));
     }
 
     #[test]

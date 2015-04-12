@@ -175,7 +175,7 @@
 }
 
 <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>generate_hash</span><span class='op'>&lt;</span><span class='ident'>H</span>: <span class='ident'>PhfHash</span><span class='op'>&gt;</span>(<span class='ident'>entries</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>H</span>]) <span class='op'>-&gt;</span> <span class='ident'>HashState</span> {
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rng</span>: <span class='ident'>XorShiftRng</span> <span class='op'>=</span> <span class='ident'>SeedableRng</span>::<span class='ident'>from_seed</span>(<span class='ident'>FIXED_SEED</span>);
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rng</span> <span class='op'>=</span> <span class='ident'>XorShiftRng</span>::<span class='ident'>from_seed</span>(<span class='ident'>FIXED_SEED</span>);
     <span class='kw'>loop</span> {
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>s</span>) <span class='op'>=</span> <span class='ident'>try_generate_hash</span>(<span class='ident'>entries</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>rng</span>) {
             <span class='kw'>return</span> <span class='ident'>s</span>;
@@ -237,15 +237,15 @@
     <span class='comment'>// chosen the right disps.</span>
     <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>values_to_add</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[];
 
-    <span class='lifetime'>&#39;buckets</span>: <span class='kw'>for</span> <span class='ident'>bucket</span> <span class='kw'>in</span> <span class='ident'>buckets</span>.<span class='ident'>iter</span>() {
+    <span class='lifetime'>&#39;buckets</span>: <span class='kw'>for</span> <span class='ident'>bucket</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='ident'>buckets</span> {
         <span class='kw'>for</span> <span class='ident'>d1</span> <span class='kw'>in</span> <span class='number'>0</span>..(<span class='ident'>table_len</span> <span class='kw'>as</span> <span class='ident'>u32</span>) {
             <span class='lifetime'>&#39;disps</span>: <span class='kw'>for</span> <span class='ident'>d2</span> <span class='kw'>in</span> <span class='number'>0</span>..(<span class='ident'>table_len</span> <span class='kw'>as</span> <span class='ident'>u32</span>) {
                 <span class='ident'>values_to_add</span>.<span class='ident'>clear</span>();
                 <span class='ident'>generation</span> <span class='op'>+=</span> <span class='number'>1</span>;
 
-                <span class='kw'>for</span> <span class='kw-2'>&amp;</span><span class='ident'>key</span> <span class='kw'>in</span> <span class='ident'>bucket</span>.<span class='ident'>keys</span>.<span class='ident'>iter</span>() {
+                <span class='kw'>for</span> <span class='kw-2'>&amp;</span><span class='ident'>key</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='ident'>bucket</span>.<span class='ident'>keys</span> {
                     <span class='kw'>let</span> <span class='ident'>idx</span> <span class='op'>=</span> (<span class='ident'>phf_shared</span>::<span class='ident'>displace</span>(<span class='ident'>hashes</span>[<span class='ident'>key</span>].<span class='ident'>f1</span>, <span class='ident'>hashes</span>[<span class='ident'>key</span>].<span class='ident'>f2</span>, <span class='ident'>d1</span>, <span class='ident'>d2</span>)
-                                <span class='op'>%</span> (<span class='ident'>table_len</span> <span class='kw'>as</span> <span class='ident'>u32</span>)) <span class='kw'>as</span> <span class='ident'>usize</span>;
+                               <span class='op'>%</span> (<span class='ident'>table_len</span> <span class='kw'>as</span> <span class='ident'>u32</span>)) <span class='kw'>as</span> <span class='ident'>usize</span>;
                     <span class='kw'>if</span> <span class='ident'>map</span>[<span class='ident'>idx</span>].<span class='ident'>is_some</span>() <span class='op'>||</span> <span class='ident'>try_map</span>[<span class='ident'>idx</span>] <span class='op'>==</span> <span class='ident'>generation</span> {
                         <span class='kw'>continue</span> <span class='lifetime'>&#39;disps</span>;
                     }
@@ -255,7 +255,7 @@
 
                 <span class='comment'>// We&#39;ve picked a good set of disps</span>
                 <span class='ident'>disps</span>[<span class='ident'>bucket</span>.<span class='ident'>idx</span>] <span class='op'>=</span> (<span class='ident'>d1</span>, <span class='ident'>d2</span>);
-                <span class='kw'>for</span> <span class='kw-2'>&amp;</span>(<span class='ident'>idx</span>, <span class='ident'>key</span>) <span class='kw'>in</span> <span class='ident'>values_to_add</span>.<span class='ident'>iter</span>() {
+                <span class='kw'>for</span> <span class='kw-2'>&amp;</span>(<span class='ident'>idx</span>, <span class='ident'>key</span>) <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='ident'>values_to_add</span> {
                     <span class='ident'>map</span>[<span class='ident'>idx</span>] <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='ident'>key</span>);
                 }
                 <span class='kw'>continue</span> <span class='lifetime'>&#39;buckets</span>;

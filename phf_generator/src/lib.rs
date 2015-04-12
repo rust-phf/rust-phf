@@ -16,7 +16,7 @@ pub struct HashState {
 }
 
 pub fn generate_hash<H: PhfHash>(entries: &[H]) -> HashState {
-    let mut rng: XorShiftRng = SeedableRng::from_seed(FIXED_SEED);
+    let mut rng = XorShiftRng::from_seed(FIXED_SEED);
     loop {
         if let Some(s) = try_generate_hash(entries, &mut rng) {
             return s;
@@ -78,15 +78,15 @@ fn try_generate_hash<H: PhfHash>(entries: &[H], rng: &mut XorShiftRng) -> Option
     // chosen the right disps.
     let mut values_to_add = vec![];
 
-    'buckets: for bucket in buckets.iter() {
+    'buckets: for bucket in &buckets {
         for d1 in 0..(table_len as u32) {
             'disps: for d2 in 0..(table_len as u32) {
                 values_to_add.clear();
                 generation += 1;
 
-                for &key in bucket.keys.iter() {
+                for &key in &bucket.keys {
                     let idx = (phf_shared::displace(hashes[key].f1, hashes[key].f2, d1, d2)
-                                % (table_len as u32)) as usize;
+                               % (table_len as u32)) as usize;
                     if map[idx].is_some() || try_map[idx] == generation {
                         continue 'disps;
                     }
@@ -96,7 +96,7 @@ fn try_generate_hash<H: PhfHash>(entries: &[H], rng: &mut XorShiftRng) -> Option
 
                 // We've picked a good set of disps
                 disps[bucket.idx] = (d1, d2);
-                for &(idx, key) in values_to_add.iter() {
+                for &(idx, key) in &values_to_add {
                     map[idx] = Some(key);
                 }
                 continue 'buckets;

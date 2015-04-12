@@ -10,7 +10,6 @@
 //! build.rs
 //!
 //! ```rust,no_run
-//! #![feature(std_misc)]
 //! extern crate phf_codegen;
 //!
 //! use std::fs::File;

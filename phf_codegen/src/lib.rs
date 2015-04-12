@@ -14,11 +14,10 @@
 //!
 //! use std::fs::File;
 //! use std::io::{BufWriter, Write};
-//! use std::path::AsPath;
-//! use std::env;
+//! use std::path::Path;
 //!
 //! fn main() {
-//!     let path = env::var_os("OUT_DIR").unwrap().as_path().join("codegen.rs");
+//!     let file = Path::new(env!("OUT_DIR")).join("codegen.rs");
 //!     let mut file = BufWriter::new(File::create(&path).unwrap());
 //!
 //!     write!(&mut file, "static KEYWORDS: phf::Map<&'static str, Keyword> = ").unwrap();

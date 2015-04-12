@@ -301,6 +301,29 @@
 <span id="259">259</span>
 <span id="260">260</span>
 <span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! A set of builders to generate Rust source for PHF data structures at</span>
 <span class='doccomment'>//! compile time.</span>
@@ -356,6 +379,29 @@
 <span class='doccomment'>//! pub fn parse_keyword(keyword: &amp;str) -&gt; Option&lt;Keyword&gt; {</span>
 <span class='doccomment'>//!     KEYWORDS.get(keyword).cloned()</span>
 <span class='doccomment'>//! }</span>
+<span class='doccomment'>//! ```</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! # Note</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! The compiler&#39;s stack will overflow when processing extremely long method</span>
+<span class='doccomment'>//! chains (500+ calls). If generating a large PHF data structure, consider</span>
+<span class='doccomment'>//! looping over the entries or making each call a separate statement:</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! ```rust</span>
+<span class='doccomment'>//! let entries = [(&quot;hello&quot;, &quot;1&quot;), (&quot;world&quot;, &quot;2&quot;)];</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! let mut builder = phf_codegen::Map::new();</span>
+<span class='doccomment'>//! for &amp;(key, value) in &amp;entries {</span>
+<span class='doccomment'>//!     builder.entry(key, value);</span>
+<span class='doccomment'>//! }</span>
+<span class='doccomment'>//! // ...</span>
+<span class='doccomment'>//! ```</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! ```rust</span>
+<span class='doccomment'>//! let mut builder = phf_codegen::Map::new();</span>
+<span class='doccomment'>//! builder.entry(&quot;hello&quot;, &quot;1&quot;);</span>
+<span class='doccomment'>//! builder.entry(&quot;world&quot;, &quot;2&quot;);</span>
+<span class='doccomment'>//! // ...</span>
 <span class='doccomment'>//! ```</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>doc</span>(<span class='ident'>html_root_url</span><span class='op'>=</span><span class='string'>&quot;http://sfackler.github.io/rust-phf/doc&quot;</span>)]</span>
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>phf_shared</span>;

@@ -101,7 +101,7 @@ time.</p>
 <h1 id="note" class='section-header'><a
                            href="#note">Note</a></h1>
 <p>The compiler&#39;s stack will overflow when processing extremely long method
-chains (500+ calls). If generating a large PHF data structure, consider
+chains (500+ calls). When generating large PHF data structures, consider
 looping over the entries or making each call a separate statement:</p>
 <pre id='rust-example-rendered' class='rust '>
 <span class='kw'>let</span> <span class='ident'>entries</span> <span class='op'>=</span> [(<span class='string'>&quot;hello&quot;</span>, <span class='string'>&quot;1&quot;</span>), (<span class='string'>&quot;world&quot;</span>, <span class='string'>&quot;2&quot;</span>)];

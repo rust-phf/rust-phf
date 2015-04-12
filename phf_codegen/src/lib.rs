@@ -57,7 +57,7 @@
 //! # Note
 //!
 //! The compiler's stack will overflow when processing extremely long method
-//! chains (500+ calls). If generating a large PHF data structure, consider
+//! chains (500+ calls). When generating large PHF data structures, consider
 //! looping over the entries or making each call a separate statement:
 //!
 //! ```rust

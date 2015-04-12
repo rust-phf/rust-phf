@@ -53,6 +53,29 @@
 //!     KEYWORDS.get(keyword).cloned()
 //! }
 //! ```
+//!
+//! # Note
+//!
+//! The compiler's stack will overflow when processing extremely long method
+//! chains (500+ calls). If generating a large PHF data structure, consider
+//! looping over the entries or making each call a separate statement:
+//!
+//! ```rust
+//! let entries = [("hello", "1"), ("world", "2")];
+//!
+//! let mut builder = phf_codegen::Map::new();
+//! for &(key, value) in &entries {
+//!     builder.entry(key, value);
+//! }
+//! // ...
+//! ```
+//!
+//! ```rust
+//! let mut builder = phf_codegen::Map::new();
+//! builder.entry("hello", "1");
+//! builder.entry("world", "2");
+//! // ...
+//! ```
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
 extern crate phf_shared;
 extern crate phf_generator;

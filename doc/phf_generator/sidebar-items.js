@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["HashState",""]],"fn":[["generate_hash",""]]});
+initSidebarItems({"fn":[["generate_hash",""]],"struct":[["HashState",""]]});

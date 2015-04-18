@@ -41,19 +41,19 @@
     </nav>
 
     <section id='main' class="content struct">
-<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>phf_codegen</a>::<wbr><a class='struct' href=''>Map</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>phf_codegen</a>::<wbr><a class='struct' href=''>Map</a></span><span class='out-of-band'><span id='render-detail'>
             <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
-        </span><a id='src-12' href='../src/phf_codegen/lib.rs.html#91-94'>[src]</a></span></h1>
+        </span><a id='src-12' class='srclink' href='../src/phf_codegen/lib.rs.html#91-94'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct Map&lt;K&gt; {
     // some fields omitted
 }</pre><div class='docblock'><p>A builder for the <code>phf::Map</code> type.</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><a class='stability Unmarked' title='No stability level'></a><code>impl&lt;K: <a class='trait' href='http://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='../phf_shared/trait.PhfHash.html' title='phf_shared::PhfHash'>PhfHash</a> + <a class='trait' href='http://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='http://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='struct' href='../phf_codegen/struct.Map.html' title='phf_codegen::Map'>Map</a>&lt;K&gt;</code></h3><div class='impl-items'><h4 id='method.new' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../phf_codegen/struct.Map.html' title='phf_codegen::Map'>Map</a>&lt;K&gt;</code></h4>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;K: <a class='trait' href='http://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='../phf_shared/trait.PhfHash.html' title='phf_shared::PhfHash'>PhfHash</a> + <a class='trait' href='http://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='http://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='struct' href='../phf_codegen/struct.Map.html' title='phf_codegen::Map'>Map</a>&lt;K&gt;</code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../phf_codegen/struct.Map.html' title='phf_codegen::Map'>Map</a>&lt;K&gt;</code></h4>
 <div class='docblock'><p>Creates a new <code>phf::Map</code> builder.</p>
-</div><h4 id='method.entry' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.entry' class='fnname'>entry</a>(&amp;mut self, key: K, value: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; &amp;mut <a class='struct' href='../phf_codegen/struct.Map.html' title='phf_codegen::Map'>Map</a>&lt;K&gt;</code></h4>
+</div><h4 id='method.entry' class='method'><code>fn <a href='#method.entry' class='fnname'>entry</a>(&amp;mut self, key: K, value: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; &amp;mut <a class='struct' href='../phf_codegen/struct.Map.html' title='phf_codegen::Map'>Map</a>&lt;K&gt;</code></h4>
 <div class='docblock'><p>Adds an entry to the builder.</p>
 
 <p><code>value</code> will be written exactly as provided in the constructed source.</p>
-</div><h4 id='method.build' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.build' class='fnname'>build</a>&lt;W: <a class='trait' href='http://doc.rust-lang.org/nightly/std/io/trait.Write.html' title='std::io::Write'>Write</a>&gt;(&amp;self, w: &amp;mut W) -&gt; <a class='type' href='http://doc.rust-lang.org/nightly/std/io/error/type.Result.html' title='std::io::error::Result'>Result</a>&lt;<a href='http://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+</div><h4 id='method.build' class='method'><code>fn <a href='#method.build' class='fnname'>build</a>&lt;W: <a class='trait' href='http://doc.rust-lang.org/nightly/std/io/trait.Write.html' title='std::io::Write'>Write</a>&gt;(&amp;self, w: &amp;mut W) -&gt; <a class='type' href='http://doc.rust-lang.org/nightly/std/io/error/type.Result.html' title='std::io::error::Result'>Result</a>&lt;<a href='http://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
 <div class='docblock'><p>Constructs a <code>phf::Map</code>, outputting Rust source to the provided writer.</p>
 
 <h1 id="panics" class='section-header'><a

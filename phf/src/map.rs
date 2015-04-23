@@ -1,6 +1,5 @@
 //! An immutable map constructed at compile time.
 use debug_builders::DebugMap;
-use std::prelude::v1::*;
 use std::borrow::Borrow;
 use std::ops::Index;
 use std::slice;

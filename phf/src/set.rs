@@ -1,6 +1,5 @@
 //! An immutable set constructed at compile time.
 use debug_builders::DebugSet;
-use std::prelude::v1::*;
 use std::borrow::Borrow;
 use std::iter::IntoIterator;
 use std::fmt;

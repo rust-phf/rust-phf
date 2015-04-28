@@ -1,4 +1,7 @@
 language: rust
+rust:
+- nightly
+- beta
 script:
 - (cd phf_macros && cargo test)
 - (cd phf_macros && cargo test --features stats)
@@ -6,7 +9,7 @@ script:
 - (cd phf_codegen/test && cargo test)
 - ./.travis/build_docs.sh
 after_success:
-  - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && ./.travis/update_docs.sh
+  - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && test $TRAVIS_RUST_VERSION == "nightly" && ./.travis/update_docs.sh
 env:
   global:
     secure: H8UjXPVRBOF3peqdBwrAS1cvW4TXz9wJCwUqh5K+AP2TbFQAVt9LLkiUySVERRckR7sM/C9m8IE/nhKz7ck8+Dj7tbqd7Jef3dlienpucDF1jpbENyvsshPRvGlvd4jAQCONL9Yxs3MnRnkbr5qI3Gz/JqP7z8jzp5V5Wf7mc/I=

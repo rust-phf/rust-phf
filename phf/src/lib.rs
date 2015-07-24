@@ -9,7 +9,6 @@
 extern crate debug_builders;
 extern crate phf_shared;
 
-pub use phf_shared::PhfHash;
 #[doc(inline)]
 pub use map::Map;
 #[doc(inline)]

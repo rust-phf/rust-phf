@@ -1,10 +1,11 @@
 //! An order-preserving immutable set constructed at compile time.
 use debug_builders::DebugSet;
 use std::borrow::Borrow;
+use std::hash::Hash;
 use std::iter::IntoIterator;
 use std::fmt;
 use ordered_map;
-use {PhfHash, OrderedMap};
+use OrderedMap;
 
 /// An order-preserving immutable set constructed at compile time.
 ///
@@ -42,14 +43,14 @@ impl<T> OrderedSet<T> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash, T: Borrow<U> {
+    pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T> where U: Eq + Hash, T: Borrow<U> {
         self.map.get_key(key)
     }
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered set.
     pub fn get_index<U: ?Sized>(&self, key: &U) -> Option<usize>
-            where U: Eq + PhfHash, T: Borrow<U> {
+            where U: Eq + Hash, T: Borrow<U> {
         self.map.get_index(key)
     }
 
@@ -60,7 +61,7 @@ impl<T> OrderedSet<T> {
     }
 
     /// Returns true if `value` is in the `Set`.
-    pub fn contains<U: ?Sized>(&self, value: &U) -> bool where U: Eq + PhfHash, T: Borrow<U> {
+    pub fn contains<U: ?Sized>(&self, value: &U) -> bool where U: Eq + Hash, T: Borrow<U> {
         self.map.contains_key(value)
     }
 
@@ -72,7 +73,7 @@ impl<T> OrderedSet<T> {
     }
 }
 
-impl<T> OrderedSet<T> where T: Eq + PhfHash {
+impl<T> OrderedSet<T> where T: Eq + Hash {
     /// Returns true if `other` shares no elements with `self`.
     #[inline]
     pub fn is_disjoint(&self, other: &OrderedSet<T>) -> bool {

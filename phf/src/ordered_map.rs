@@ -1,12 +1,12 @@
 //! An order-preserving immutable map constructed at compile time.
 use debug_builders::DebugMap;
 use std::borrow::Borrow;
+use std::hash::Hash;
 use std::iter::IntoIterator;
 use std::ops::Index;
 use std::fmt;
 use std::slice;
 
-use PhfHash;
 use phf_shared;
 
 /// An order-preserving immutable map constructed at compile time.
@@ -36,7 +36,7 @@ impl<K, V> fmt::Debug for OrderedMap<K, V> where K: fmt::Debug, V: fmt::Debug {
     }
 }
 
-impl<'a, K, V, T: ?Sized> Index<&'a T> for OrderedMap<K, V> where T: Eq + PhfHash, K: Borrow<T> {
+impl<'a, K, V, T: ?Sized> Index<&'a T> for OrderedMap<K, V> where T: Eq + Hash, K: Borrow<T> {
     type Output = V;
 
     fn index(&self, k: &'a T) -> &V {
@@ -56,7 +56,7 @@ impl<K, V> OrderedMap<K, V> {
     }
 
     /// Returns a reference to the value that `key` maps to.
-    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V> where T: Eq + PhfHash, K: Borrow<T> {
+    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V> where T: Eq + Hash, K: Borrow<T> {
         self.get_entry(key).map(|e| e.1)
     }
 
@@ -64,19 +64,19 @@ impl<K, V> OrderedMap<K, V> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash, K: Borrow<T> {
+    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K> where T: Eq + Hash, K: Borrow<T> {
         self.get_entry(key).map(|e| e.0)
     }
 
     /// Determines if `key` is in the `Map`.
-    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool where T: Eq + PhfHash, K: Borrow<T> {
+    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool where T: Eq + Hash, K: Borrow<T> {
         self.get(key).is_some()
     }
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered map.
     pub fn get_index<T: ?Sized>(&self, key: &T) -> Option<usize>
-            where T: Eq + PhfHash, K: Borrow<T> {
+            where T: Eq + Hash, K: Borrow<T> {
         self.get_internal(key).map(|(i, _)| i)
     }
 
@@ -88,13 +88,13 @@ impl<K, V> OrderedMap<K, V> {
 
     /// Like `get`, but returns both the key and the value.
     pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
-            where T: Eq + PhfHash, K: Borrow<T> {
+            where T: Eq + Hash, K: Borrow<T> {
         self.get_internal(key).map(|(_, e)| e)
     }
 
     fn get_internal<T: ?Sized>(&self, key: &T) -> Option<(usize, (&K, &V))>
-            where T: Eq + PhfHash, K: Borrow<T> {
-        let (g, f1, f2) = key.phf_hash(self.key);
+            where T: Eq + Hash, K: Borrow<T> {
+        let (g, f1, f2) = phf_shared::hash(key, self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as usize];
         let idx = self.idxs[(phf_shared::displace(f1, f2, d1, d2) % (self.idxs.len() as u32)) as usize];
         let entry = &self.entries[idx];

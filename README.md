@@ -64,12 +64,13 @@ build.rs
 ```rust
 extern crate phf_codegen;
 
+use std::env;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::Path;
 
 fn main() {
-    let path = Path::new(env!("OUT_DIR")).join("codegen.rs");
+    let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
     let mut file = BufWriter::new(File::create(&path).unwrap());
 
     write!(&mut file, "static KEYWORDS: phf::Map<&'static str, Keyword> = ").unwrap();

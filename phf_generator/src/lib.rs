@@ -2,7 +2,7 @@
 extern crate phf_shared;
 extern crate rand;
 
-use phf_shared::PhfHash;
+use std::hash::Hash;
 use rand::{SeedableRng, XorShiftRng, Rng};
 
 const DEFAULT_LAMBDA: usize = 5;
@@ -15,7 +15,7 @@ pub struct HashState {
     pub map: Vec<usize>,
 }
 
-pub fn generate_hash<H: PhfHash>(entries: &[H]) -> HashState {
+pub fn generate_hash<H: Hash>(entries: &[H]) -> HashState {
     let mut rng = XorShiftRng::from_seed(FIXED_SEED);
     loop {
         if let Some(s) = try_generate_hash(entries, &mut rng) {
@@ -24,7 +24,7 @@ pub fn generate_hash<H: PhfHash>(entries: &[H]) -> HashState {
     }
 }
 
-fn try_generate_hash<H: PhfHash>(entries: &[H], rng: &mut XorShiftRng) -> Option<HashState> {
+fn try_generate_hash<H: Hash>(entries: &[H], rng: &mut XorShiftRng) -> Option<HashState> {
     struct Bucket {
         idx: usize,
         keys: Vec<usize>,
@@ -39,7 +39,7 @@ fn try_generate_hash<H: PhfHash>(entries: &[H], rng: &mut XorShiftRng) -> Option
     let key = rng.gen();
 
     let hashes: Vec<_> = entries.iter().map(|entry| {
-        let (g, f1, f2) = entry.phf_hash(key);
+        let (g, f1, f2) = phf_shared::hash(entry, key);
         Hashes {
             g: g,
             f1: f1,

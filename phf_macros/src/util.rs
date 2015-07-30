@@ -8,7 +8,6 @@ use syntax::ext::build::AstBuilder;
 use syntax::parse::token::InternedString;
 use syntax::ptr::P;
 
-use phf_shared::PhfHash;
 use phf_generator::HashState;
 
 #[derive(PartialEq, Eq, Clone)]
@@ -46,34 +45,15 @@ impl Hash for Key {
     }
 }
 
-impl PhfHash for Key {
-    fn phf_hash(&self, key: u64) -> (u32, u32, u32) {
-        match *self {
-            Key::Str(ref s) => s.phf_hash(key),
-            Key::Binary(ref b) => b.phf_hash(key),
-            Key::Char(c) => c.phf_hash(key),
-            Key::U8(b) => b.phf_hash(key),
-            Key::I8(b) => b.phf_hash(key),
-            Key::U16(b) => b.phf_hash(key),
-            Key::I16(b) => b.phf_hash(key),
-            Key::U32(b) => b.phf_hash(key),
-            Key::I32(b) => b.phf_hash(key),
-            Key::U64(b) => b.phf_hash(key),
-            Key::I64(b) => b.phf_hash(key),
-            Key::Bool(b) => b.phf_hash(key),
-        }
-    }
-}
-
 pub struct Entry {
     pub key_contents: Key,
     pub key: P<Expr>,
     pub value: P<Expr>
 }
 
-impl PhfHash for Entry {
-    fn phf_hash(&self, key: u64) -> (u32, u32, u32) {
-        self.key_contents.phf_hash(key)
+impl Hash for Entry {
+    fn hash<S: Hasher>(&self, state: &mut S) {
+        self.key_contents.hash(state)
     }
 }
 

@@ -1,11 +1,11 @@
 //! An immutable map constructed at compile time.
 use debug_builders::DebugMap;
 use std::borrow::Borrow;
+use std::hash::Hash;
 use std::ops::Index;
 use std::slice;
 use std::fmt;
 use std::iter::IntoIterator;
-use PhfHash;
 use phf_shared;
 
 /// An immutable map constructed at compile time.
@@ -30,7 +30,7 @@ impl<K, V> fmt::Debug for Map<K, V> where K: fmt::Debug, V: fmt::Debug {
     }
 }
 
-impl<'a, K, V, T: ?Sized> Index<&'a T> for Map<K, V> where T: Eq + PhfHash, K: Borrow<T> {
+impl<'a, K, V, T: ?Sized> Index<&'a T> for Map<K, V> where T: Eq + Hash, K: Borrow<T> {
     type Output = V;
 
     fn index(&self, k: &'a T) -> &V {
@@ -50,12 +50,12 @@ impl<K, V> Map<K, V> {
     }
 
     /// Determines if `key` is in the `Map`.
-    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool where T: Eq + PhfHash, K: Borrow<T> {
+    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool where T: Eq + Hash, K: Borrow<T> {
         self.get(key).is_some()
     }
 
     /// Returns a reference to the value that `key` maps to.
-    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V> where T: Eq + PhfHash, K: Borrow<T> {
+    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V> where T: Eq + Hash, K: Borrow<T> {
         self.get_entry(key).map(|e| e.1)
     }
 
@@ -63,14 +63,14 @@ impl<K, V> Map<K, V> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash, K: Borrow<T> {
+    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K> where T: Eq + Hash, K: Borrow<T> {
         self.get_entry(key).map(|e| e.0)
     }
 
     /// Like `get`, but returns both the key and the value.
     pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
-            where T: Eq + PhfHash, K: Borrow<T> {
-        let (g, f1, f2) = key.phf_hash(self.key);
+            where T: Eq + Hash, K: Borrow<T> {
+        let (g, f1, f2) = phf_shared::hash(key, self.key);
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as usize];
         let entry = &self.entries[(phf_shared::displace(f1, f2, d1, d2) % (self.entries.len() as u32))
                                   as usize];

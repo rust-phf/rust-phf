@@ -81,7 +81,6 @@
 extern crate phf_shared;
 extern crate phf_generator;
 
-use phf_shared::PhfHash;
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
@@ -94,7 +93,7 @@ pub struct Map<K> {
     values: Vec<String>,
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
+impl<K: Hash+Eq+fmt::Debug> Map<K> {
     /// Creates a new `phf::Map` builder.
     pub fn new() -> Map<K> {
         Map {
@@ -155,7 +154,7 @@ pub struct Set<T> {
     map: Map<T>
 }
 
-impl<T: Hash+PhfHash+Eq+fmt::Debug> Set<T> {
+impl<T: Hash+Eq+fmt::Debug> Set<T> {
     /// Constructs a new `phf::Set` builder.
     pub fn new() -> Set<T> {
         Set {
@@ -187,7 +186,7 @@ pub struct OrderedMap<K> {
     values: Vec<String>,
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
+impl<K: Hash+Eq+fmt::Debug> OrderedMap<K> {
     /// Constructs a enw `phf::OrderedMap` builder.
     pub fn new() -> OrderedMap<K> {
         OrderedMap {
@@ -257,7 +256,7 @@ pub struct OrderedSet<T> {
     map: OrderedMap<T>
 }
 
-impl<T: Hash+PhfHash+Eq+fmt::Debug> OrderedSet<T> {
+impl<T: Hash+Eq+fmt::Debug> OrderedSet<T> {
     /// Constructs a new `phf::OrderedSet` builder.
     pub fn new() -> OrderedSet<T> {
         OrderedSet {

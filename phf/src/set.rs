@@ -1,10 +1,10 @@
 //! An immutable set constructed at compile time.
 use debug_builders::DebugSet;
 use std::borrow::Borrow;
+use std::hash::Hash;
 use std::iter::IntoIterator;
 use std::fmt;
 
-use PhfHash;
 use map;
 use Map;
 
@@ -41,12 +41,12 @@ impl<T> Set<T> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash, T: Borrow<U> {
+    pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T> where U: Eq + Hash, T: Borrow<U> {
         self.map.get_key(key)
     }
 
     /// Returns true if `value` is in the `Set`.
-    pub fn contains<U: ?Sized>(&self, value: &U) -> bool where U: Eq + PhfHash, T: Borrow<U> {
+    pub fn contains<U: ?Sized>(&self, value: &U) -> bool where U: Eq + Hash, T: Borrow<U> {
         self.map.contains_key(value)
     }
 
@@ -58,7 +58,7 @@ impl<T> Set<T> {
     }
 }
 
-impl<T> Set<T> where T: Eq + PhfHash {
+impl<T> Set<T> where T: Eq + Hash {
     /// Returns true if `other` shares no elements with `self`.
     pub fn is_disjoint(&self, other: &Set<T>) -> bool {
         !self.iter().any(|value| other.contains(value))

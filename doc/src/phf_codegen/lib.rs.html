@@ -34,7 +34,7 @@
             <div class="search-container">
                 <input class="search-input" name="search"
                        autocomplete="off"
-                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
                        type="search">
             </div>
         </form>
@@ -324,6 +324,7 @@
 <span id="282">282</span>
 <span id="283">283</span>
 <span id="284">284</span>
+<span id="285">285</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! A set of builders to generate Rust source for PHF data structures at</span>
 <span class='doccomment'>//! compile time.</span>
@@ -339,12 +340,13 @@
 <span class='doccomment'>//! ```rust,no_run</span>
 <span class='doccomment'>//! extern crate phf_codegen;</span>
 <span class='doccomment'>//!</span>
+<span class='doccomment'>//! use std::env;</span>
 <span class='doccomment'>//! use std::fs::File;</span>
 <span class='doccomment'>//! use std::io::{BufWriter, Write};</span>
 <span class='doccomment'>//! use std::path::Path;</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! fn main() {</span>
-<span class='doccomment'>//!     let path = Path::new(env!(&quot;OUT_DIR&quot;)).join(&quot;codegen.rs&quot;);</span>
+<span class='doccomment'>//!     let path = Path::new(&amp;env::var(&quot;OUT_DIR&quot;).unwrap()).join(&quot;codegen.rs&quot;);</span>
 <span class='doccomment'>//!     let mut file = BufWriter::new(File::create(&amp;path).unwrap());</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//!     write!(&amp;mut file, &quot;static KEYWORDS: phf::Map&lt;&amp;&#39;static str, Keyword&gt; = &quot;).unwrap();</span>
@@ -616,37 +618,44 @@
     <section class="footer"></section>
 
     <div id="help" class="hidden">
-        <div class="shortcuts">
-            <h1>Keyboard shortcuts</h1>
-            <dl>
-                <dt>?</dt>
-                <dd>Show this help dialog</dd>
-                <dt>S</dt>
-                <dd>Focus the search field</dd>
-                <dt>&larrb;</dt>
-                <dd>Move up in search results</dd>
-                <dt>&rarrb;</dt>
-                <dd>Move down in search results</dd>
-                <dt>&#9166;</dt>
-                <dd>Go to active search result</dd>
-            </dl>
-        </div>
-        <div class="infos">
-            <h1>Search tricks</h1>
-            <p>
-                Prefix searches with a type followed by a colon (e.g.
-                <code>fn:</code>) to restrict the search to a given type.
-            </p>
-            <p>
-                Accepted types are: <code>fn</code>, <code>mod</code>,
-                <code>struct</code>, <code>enum</code>,
-                <code>trait</code>, <code>typedef</code> (or
-                <code>tdef</code>).
-            </p>
-            <p>
-                Search functions by type signature (e.g.
-                <code>vec -> usize</code>)
-            </p>
+        <div>
+            <div class="shortcuts">
+                <h1>Keyboard Shortcuts</h1>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h1>Search Tricks</h1>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>typedef</code> (or
+                    <code>tdef</code>).
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
         </div>
     </div>
 

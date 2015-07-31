@@ -4,6 +4,7 @@ extern crate rand;
 
 use phf_shared::PhfHash;
 use rand::{SeedableRng, XorShiftRng, Rng};
+use std::hash::{Hasher, SipHasher};
 
 const DEFAULT_LAMBDA: usize = 5;
 
@@ -37,9 +38,12 @@ fn try_generate_hash<H: PhfHash>(entries: &[H], rng: &mut XorShiftRng) -> Option
     }
 
     let key = rng.gen();
+    let hasher = SipHasher::new_with_keys(0, key);
 
     let hashes: Vec<_> = entries.iter().map(|entry| {
-        let (g, f1, f2) = entry.phf_hash(key);
+        let mut hasher = hasher.clone();
+        entry.phf_hash(&mut hasher);
+        let (g, f1, f2) = phf_shared::split(hasher.finish());
         Hashes {
             g: g,
             f1: f1,

@@ -47,20 +47,20 @@ impl Hash for Key {
 }
 
 impl PhfHash for Key {
-    fn phf_hash(&self, key: u64) -> (u32, u32, u32) {
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
         match *self {
-            Key::Str(ref s) => s.phf_hash(key),
-            Key::Binary(ref b) => b.phf_hash(key),
-            Key::Char(c) => c.phf_hash(key),
-            Key::U8(b) => b.phf_hash(key),
-            Key::I8(b) => b.phf_hash(key),
-            Key::U16(b) => b.phf_hash(key),
-            Key::I16(b) => b.phf_hash(key),
-            Key::U32(b) => b.phf_hash(key),
-            Key::I32(b) => b.phf_hash(key),
-            Key::U64(b) => b.phf_hash(key),
-            Key::I64(b) => b.phf_hash(key),
-            Key::Bool(b) => b.phf_hash(key),
+            Key::Str(ref s) => s.phf_hash(state),
+            Key::Binary(ref b) => b.phf_hash(state),
+            Key::Char(c) => c.phf_hash(state),
+            Key::U8(b) => b.phf_hash(state),
+            Key::I8(b) => b.phf_hash(state),
+            Key::U16(b) => b.phf_hash(state),
+            Key::I16(b) => b.phf_hash(state),
+            Key::U32(b) => b.phf_hash(state),
+            Key::I32(b) => b.phf_hash(state),
+            Key::U64(b) => b.phf_hash(state),
+            Key::I64(b) => b.phf_hash(state),
+            Key::Bool(b) => b.phf_hash(state),
         }
     }
 }
@@ -72,8 +72,8 @@ pub struct Entry {
 }
 
 impl PhfHash for Entry {
-    fn phf_hash(&self, key: u64) -> (u32, u32, u32) {
-        self.key_contents.phf_hash(key)
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        self.key_contents.phf_hash(state)
     }
 }
 

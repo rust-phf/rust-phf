@@ -1,6 +1,6 @@
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
 
-use std::hash::{Hasher, Hash, SipHasher};
+use std::hash::{Hasher, Hash};
 
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
@@ -8,7 +8,7 @@ pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 }
 
 #[inline]
-fn split(hash: u64) -> (u32, u32, u32) {
+pub fn split(hash: u64) -> (u32, u32, u32) {
     const BITS: u32 = 21;
     const MASK: u64 = (1 << BITS) - 1;
 
@@ -17,39 +17,48 @@ fn split(hash: u64) -> (u32, u32, u32) {
      ((hash >> (2 * BITS)) & MASK) as u32)
 }
 
-/// A trait implemented by types which can be used in PHF data structures
+/// A trait implemented by types which can be used in PHF data structures.
+///
+/// This differs from the standard library's `Hash` trait in that `PhfHash`'s
+/// results must be architecture independent so that hashes will be consistent
+/// between the host and target when cross compiling.
 pub trait PhfHash {
-    /// Hashes the value of `self`, factoring in a seed
-    fn phf_hash(&self, seed: u64) -> (u32, u32, u32);
+    /// Feeds the value into the state given, updating the hasher as necessary.
+    fn phf_hash<H: Hasher>(&self, state: &mut H);
+
+    /// Feeds a slice of this type into the state provided.
+    fn phf_hash_slice<H: Hasher>(data: &[Self], state: &mut H) where Self: Sized {
+        for piece in data {
+            piece.phf_hash(state);
+        }
+    }
 }
 
 impl<'a> PhfHash for &'a str {
     #[inline]
-    fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        self.as_bytes().phf_hash(seed)
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        self.as_bytes().phf_hash(state)
     }
 }
 
 impl<'a> PhfHash for &'a [u8] {
     #[inline]
-    fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        (*self).phf_hash(seed)
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        (*self).phf_hash(state)
     }
 }
 
 impl PhfHash for str {
     #[inline]
-    fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        self.as_bytes().phf_hash(seed)
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        self.as_bytes().phf_hash(state)
     }
 }
 
 impl PhfHash for [u8] {
     #[inline]
-    fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        let mut state = SipHasher::new_with_keys(seed, 0);
-        Hasher::write(&mut state, self);
-        split(state.finish())
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        state.write(self);
     }
 }
 
@@ -58,20 +67,16 @@ macro_rules! sip_impl(
     (le $t:ty) => (
         impl PhfHash for $t {
             #[inline]
-            fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-                let mut hasher = SipHasher::new_with_keys(seed, 0);
-                self.to_le().hash(&mut hasher);
-                split(hasher.finish())
+            fn phf_hash<H: Hasher>(&self, state: &mut H) {
+                self.to_le().hash(state);
             }
         }
     );
     ($t:ty) => (
         impl PhfHash for $t {
             #[inline]
-            fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-                let mut hasher = SipHasher::new_with_keys(seed, 0);
-                self.hash(&mut hasher);
-                split(hasher.finish())
+            fn phf_hash<H: Hasher>(&self, state: &mut H) {
+                self.hash(state);
             }
         }
     )
@@ -89,8 +94,8 @@ sip_impl!(bool);
 
 impl PhfHash for char {
     #[inline]
-    fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-        (*self as u32).phf_hash(seed)
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        (*self as u32).phf_hash(state)
     }
 }
 
@@ -98,10 +103,8 @@ macro_rules! array_impl(
     ($t:ty, $n:expr) => (
         impl PhfHash for [$t; $n] {
             #[inline]
-            fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
-                let mut hasher = SipHasher::new_with_keys(seed, 0);
-                Hasher::write(&mut hasher, self);
-                split(hasher.finish())
+            fn phf_hash<H: Hasher>(&self, state: &mut H) {
+                state.write(self);
             }
         }
     )

@@ -1,6 +1,7 @@
 //! An order-preserving immutable map constructed at compile time.
 use debug_builders::DebugMap;
 use std::borrow::Borrow;
+use std::hash::{Hasher, SipHasher};
 use std::iter::IntoIterator;
 use std::ops::Index;
 use std::fmt;
@@ -94,7 +95,10 @@ impl<K, V> OrderedMap<K, V> {
 
     fn get_internal<T: ?Sized>(&self, key: &T) -> Option<(usize, (&K, &V))>
             where T: Eq + PhfHash, K: Borrow<T> {
-        let (g, f1, f2) = key.phf_hash(self.key);
+        let mut hasher = SipHasher::new_with_keys(0, self.key);
+        key.phf_hash(&mut hasher);
+        let (g, f1, f2) = phf_shared::split(hasher.finish());
+
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as usize];
         let idx = self.idxs[(phf_shared::displace(f1, f2, d1, d2) % (self.idxs.len() as u32)) as usize];
         let entry = &self.entries[idx];

@@ -2,6 +2,7 @@
 use debug_builders::DebugMap;
 use std::borrow::Borrow;
 use std::ops::Index;
+use std::hash::{Hasher, SipHasher};
 use std::slice;
 use std::fmt;
 use std::iter::IntoIterator;
@@ -70,7 +71,10 @@ impl<K, V> Map<K, V> {
     /// Like `get`, but returns both the key and the value.
     pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
             where T: Eq + PhfHash, K: Borrow<T> {
-        let (g, f1, f2) = key.phf_hash(self.key);
+        let mut hasher = SipHasher::new_with_keys(0, self.key);
+        key.phf_hash(&mut hasher);
+        let (g, f1, f2) = phf_shared::split(hasher.finish());
+
         let (d1, d2) = self.disps[(g % (self.disps.len() as u32)) as usize];
         let entry = &self.entries[(phf_shared::displace(f1, f2, d1, d2) % (self.entries.len() as u32))
                                   as usize];

@@ -165,6 +165,22 @@
 <span id="123">123</span>
 <span id="124">124</span>
 <span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
 </pre><pre class='rust '>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>doc</span>(<span class='ident'>html_root_url</span><span class='op'>=</span><span class='string'>&quot;http://sfackler.github.io/rust-phf/doc&quot;</span>)]</span>
 
@@ -223,6 +239,16 @@
 
 
 <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>sip_impl</span>(
+    (<span class='ident'>le</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t</span>:<span class='ident'>ty</span>) <span class='op'>=&gt;</span> (
+        <span class='kw'>impl</span> <span class='ident'>PhfHash</span> <span class='kw'>for</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t</span> {
+            <span class='attribute'>#[<span class='ident'>inline</span>]</span>
+            <span class='kw'>fn</span> <span class='ident'>phf_hash</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>seed</span>: <span class='ident'>u64</span>) <span class='op'>-&gt;</span> (<span class='ident'>u32</span>, <span class='ident'>u32</span>, <span class='ident'>u32</span>) {
+                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>hasher</span> <span class='op'>=</span> <span class='ident'>SipHasher</span>::<span class='ident'>new_with_keys</span>(<span class='ident'>seed</span>, <span class='number'>0</span>);
+                <span class='self'>self</span>.<span class='ident'>to_le</span>().<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>hasher</span>);
+                <span class='ident'>split</span>(<span class='ident'>hasher</span>.<span class='ident'>finish</span>())
+            }
+        }
+    );
     (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t</span>:<span class='ident'>ty</span>) <span class='op'>=&gt;</span> (
         <span class='kw'>impl</span> <span class='ident'>PhfHash</span> <span class='kw'>for</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t</span> {
             <span class='attribute'>#[<span class='ident'>inline</span>]</span>
@@ -237,14 +263,20 @@
 
 <span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>u8</span>);
 <span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>i8</span>);
-<span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>u16</span>);
-<span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>i16</span>);
-<span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>u32</span>);
-<span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>i32</span>);
-<span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>u64</span>);
-<span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>i64</span>);
-<span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>char</span>);
+<span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>le</span> <span class='ident'>u16</span>);
+<span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>le</span> <span class='ident'>i16</span>);
+<span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>le</span> <span class='ident'>u32</span>);
+<span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>le</span> <span class='ident'>i32</span>);
+<span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>le</span> <span class='ident'>u64</span>);
+<span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>le</span> <span class='ident'>i64</span>);
 <span class='macro'>sip_impl</span><span class='macro'>!</span>(<span class='ident'>bool</span>);
+
+<span class='kw'>impl</span> <span class='ident'>PhfHash</span> <span class='kw'>for</span> <span class='ident'>char</span> {
+    <span class='attribute'>#[<span class='ident'>inline</span>]</span>
+    <span class='kw'>fn</span> <span class='ident'>phf_hash</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>seed</span>: <span class='ident'>u64</span>) <span class='op'>-&gt;</span> (<span class='ident'>u32</span>, <span class='ident'>u32</span>, <span class='ident'>u32</span>) {
+        (<span class='op'>*</span><span class='self'>self</span> <span class='kw'>as</span> <span class='ident'>u32</span>).<span class='ident'>phf_hash</span>(<span class='ident'>seed</span>)
+    }
+}
 
 <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>array_impl</span>(
     (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t</span>:<span class='ident'>ty</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>n</span>:<span class='ident'>expr</span>) <span class='op'>=&gt;</span> (

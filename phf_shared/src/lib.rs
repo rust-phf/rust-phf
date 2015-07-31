@@ -55,6 +55,16 @@ impl PhfHash for [u8] {
 
 
 macro_rules! sip_impl(
+    (le $t:ty) => (
+        impl PhfHash for $t {
+            #[inline]
+            fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
+                let mut hasher = SipHasher::new_with_keys(seed, 0);
+                self.to_le().hash(&mut hasher);
+                split(hasher.finish())
+            }
+        }
+    );
     ($t:ty) => (
         impl PhfHash for $t {
             #[inline]
@@ -69,14 +79,20 @@ macro_rules! sip_impl(
 
 sip_impl!(u8);
 sip_impl!(i8);
-sip_impl!(u16);
-sip_impl!(i16);
-sip_impl!(u32);
-sip_impl!(i32);
-sip_impl!(u64);
-sip_impl!(i64);
-sip_impl!(char);
+sip_impl!(le u16);
+sip_impl!(le i16);
+sip_impl!(le u32);
+sip_impl!(le i32);
+sip_impl!(le u64);
+sip_impl!(le i64);
 sip_impl!(bool);
+
+impl PhfHash for char {
+    #[inline]
+    fn phf_hash(&self, seed: u64) -> (u32, u32, u32) {
+        (*self as u32).phf_hash(seed)
+    }
+}
 
 macro_rules! array_impl(
     ($t:ty, $n:expr) => (

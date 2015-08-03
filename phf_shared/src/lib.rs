@@ -1,6 +1,6 @@
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
 
-use std::hash::{Hasher, Hash};
+use std::hash::{Hasher, Hash, SipHasher};
 
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
@@ -15,6 +15,26 @@ pub fn split(hash: u64) -> (u32, u32, u32) {
     ((hash & MASK) as u32,
      ((hash >> BITS) & MASK) as u32,
      ((hash >> (2 * BITS)) & MASK) as u32)
+}
+
+/// `key` is from `phf_generator::HashState::key`.
+#[inline]
+pub fn hash<T: ?Sized + PhfHash>(x: &T, key: u64) -> u64 {
+    let mut hasher = SipHasher::new_with_keys(0, key);
+    x.phf_hash(&mut hasher);
+    hasher.finish()
+}
+
+/// Return an index into `phf_generator::HashState::map`.
+///
+/// * `hash` is from `hash()` in this crate.
+/// * `disps` is from `phf_generator::HashState::disps`.
+/// * `len` is the length of `phf_generator::HashState::map`.
+#[inline]
+pub fn get_index(hash: u64, disps: &[(u32, u32)], len: usize) -> u32 {
+    let (g, f1, f2) = split(hash);
+    let (d1, d2) = disps[(g % (disps.len() as u32)) as usize];
+    displace(f1, f2, d1, d2) % (len as u32)
 }
 
 /// A trait implemented by types which can be used in PHF data structures.

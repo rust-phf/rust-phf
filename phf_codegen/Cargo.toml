@@ -1,16 +1,16 @@
 [package]
 name = "phf_codegen"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.7.3"
+version = "0.7.4"
 license = "MIT"
 description = "Codegen library for PHF types"
 repository = "https://github.com/sfackler/rust-phf"
-documentation = "https://sfackler.github.io/rust-phf/doc/phf_codegen"
+documentation = "https://sfackler.github.io/rust-phf/doc/v0.7.4/phf_codegen"
 
 [dependencies.phf_generator]
 path = "../phf_generator"
-version = "=0.7.3"
+version = "=0.7.4"
 
 [dependencies.phf_shared]
 path = "../phf_shared"
-version = "=0.7.3"
+version = "=0.7.4"

@@ -3,6 +3,7 @@ Rust-PHF
 
 [![Build Status](https://travis-ci.org/sfackler/rust-phf.png?branch=master)](https://travis-ci.org/sfackler/rust-phf) [![Latest Version](https://img.shields.io/crates/v/phf.svg)](https://crates.io/crates/phf)
 
+[Documentation](https://sfackler.github.io/rust-phf/doc/v0.7.4/phf)
 
 Rust-PHF is a library to generate efficient lookup tables at compile time using
 [perfect hash functions](http://en.wikipedia.org/wiki/Perfect_hash_function).
@@ -14,8 +15,6 @@ produced, but if you use the `phf_mac` crate with the `stats` feature enabled
 (writing `phf_macros/stats` in the `[dependencies]` section of your
 `Cargo.toml` instead of `phf_macros`) and set the environment variable
 `PHF_STATS` it will issue a compiler note about how long it took.
-
-Documentation is available at https://sfackler.github.io/rust-phf/doc/phf
 
 Usage
 =====

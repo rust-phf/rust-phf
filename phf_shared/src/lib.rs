@@ -1,4 +1,4 @@
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.4")]
 
 use std::hash::{Hasher, Hash, SipHasher};
 

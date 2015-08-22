@@ -54,80 +54,121 @@ mod map {
         "zucchini" => 25,
     }
 
-    #[bench]
-    fn bench_match_some(b: &mut Bencher) {
-        b.iter(|| {
-            assert_eq!(match_get("zucchini").unwrap(), 25);
-        })
+    fn get_matching_items() -> Vec<(&'static str, usize)> {
+        MAP.entries()
+            .map(|(key, value)| (*key, *value))
+            .collect()
     }
 
-    #[bench]
-    fn bench_match_none(b: &mut Bencher) {
-        b.iter(|| {
-            assert_eq!(match_get("potato"), None);
-        })
+    fn get_non_matching_items() -> Vec<String> {
+        MAP.entries()
+            .map(|(key, _)| (format!("{}0", key)))
+            .collect()
     }
 
-    #[bench]
-    fn bench_btreemap_some(b: &mut Bencher) {
+    fn get_btreemap() -> BTreeMap<&'static str, usize> {
         let mut map = BTreeMap::new();
         for (key, value) in MAP.entries() {
             map.insert(*key, *value);
         }
 
-        b.iter(|| {
-            assert_eq!(map.get("zucchini").unwrap(), &25);
-        })
+        map
     }
 
-    #[bench]
-    fn bench_hashmap_some(b: &mut Bencher) {
+    fn get_hashmap() -> HashMap<&'static str, usize> {
         let mut map = HashMap::new();
         for (key, value) in MAP.entries() {
             map.insert(*key, *value);
         }
 
+        map
+    }
+
+    fn check_match<F: Fn(&str) -> Option<usize>>(items: &[(&str, usize)], f: F) {
+        for &(key, value) in items.iter() {
+            assert_eq!((f)(key), Some(value));
+        }
+    }
+
+    fn check_not_match<F: Fn(&str) -> Option<usize>>(items: &[String], f: F) {
+        for key in items.iter() {
+            assert_eq!((f)(&key), None);
+        }
+    }
+
+    #[bench]
+    fn bench_match_some(b: &mut Bencher) {
+        let items = get_matching_items();
+
         b.iter(|| {
-            assert_eq!(map.get("zucchini").unwrap(), &25);
+            check_match(&items, match_get)
         })
     }
 
     #[bench]
-    fn bench_phf_some(b: &mut Bencher) {
+    fn bench_match_none(b: &mut Bencher) {
+        let items = get_non_matching_items();
+
         b.iter(|| {
-            assert_eq!(MAP.get("zucchini").unwrap(), &25);
+            check_not_match(&items, match_get);
+        })
+    }
+
+    #[bench]
+    fn bench_btreemap_some(b: &mut Bencher) {
+        let items = get_matching_items();
+        let map = get_btreemap();
+
+        b.iter(|| {
+            check_match(&items, |key| map.get(key).map(|value| *value));
         })
     }
 
     #[bench]
     fn bench_btreemap_none(b: &mut Bencher) {
-        let mut map = BTreeMap::new();
-        for (key, value) in MAP.entries() {
-            map.insert(*key, *value);
-        }
+        let items = get_non_matching_items();
+        let map = get_btreemap();
 
         b.iter(|| {
-            assert_eq!(map.get("potato"), None);
+            check_not_match(&items, |key| map.get(key).map(|value| *value));
         })
     }
 
+    #[bench]
+    fn bench_hashmap_some(b: &mut Bencher) {
+        let items = get_matching_items();
+        let map = get_hashmap();
+
+        b.iter(|| {
+            check_match(&items, |key| map.get(key).map(|value| *value));
+        })
+    }
 
     #[bench]
     fn bench_hashmap_none(b: &mut Bencher) {
-        let mut map = BTreeMap::new();
-        for (key, value) in MAP.entries() {
-            map.insert(*key, *value);
-        }
+        let items = get_non_matching_items();
+        let map = get_hashmap();
 
         b.iter(|| {
-            assert_eq!(map.get("potato"), None);
+            check_not_match(&items, |key| map.get(key).map(|value| *value));
+        })
+    }
+
+    #[bench]
+    fn bench_phf_some(b: &mut Bencher) {
+        let items = get_matching_items();
+
+        b.iter(|| {
+            check_match(&items, |key| MAP.get(key).map(|value| *value));
         })
     }
 
     #[bench]
     fn bench_phf_none(b: &mut Bencher) {
+        let items = get_non_matching_items();
+
         b.iter(|| {
-            assert_eq!(MAP.get("potato"), None);
+            check_not_match(&items, |key| MAP.get(key).map(|value| *value));
         })
     }
 }

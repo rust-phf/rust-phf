@@ -10,7 +10,22 @@ mod map {
 
     use phf;
 
-    static MAP: phf::Map<&'static str, isize> = phf_map!(
+    macro_rules! map_and_match {
+        ($map:ident, $f:ident, $($key:expr => $value:expr,)+) => {
+            static $map: phf::Map<&'static str, usize> = phf_map! {
+                $($key => $value),+
+            };
+
+            fn $f(key: &str) -> Option<usize> {
+                match key {
+                    $($key => Some($value),)+
+                    _ => None
+                }
+            }
+        }
+    }
+
+    map_and_match! { MAP, match_get,
         "apple" => 0,
         "banana" => 1,
         "carrot" => 2,
@@ -37,38 +52,6 @@ mod map {
         "xinomavro grapes" => 23,
         "yogurt" => 24,
         "zucchini" => 25,
-    );
-
-    fn match_get(key: &str) -> Option<usize> {
-        match key {
-            "apple" => Some(0),
-            "banana" => Some(1),
-            "carrot" => Some(2),
-            "doughnut" => Some(3),
-            "eggplant" => Some(4),
-            "frankincene" => Some(5),
-            "grapes" => Some(6),
-            "haggis" => Some(7),
-            "ice cream" => Some(8),
-            "jelly beans" => Some(9),
-            "kaffir lime leaves" => Some(10),
-            "lemonade" => Some(11),
-            "mashmallows" => Some(12),
-            "nectarines" => Some(13),
-            "oranges" => Some(14),
-            "pineapples" => Some(15),
-            "quinoa" => Some(16),
-            "rosemary" => Some(17),
-            "sourdough" => Some(18),
-            "tomatoes" => Some(19),
-            "unleavened bread" => Some(20),
-            "vanilla" => Some(21),
-            "watermelon" => Some(22),
-            "xinomavro grapes" => Some(23),
-            "yogurt" => Some(24),
-            "zucchini" => Some(25),
-            _ => None
-        }
     }
 
     #[bench]

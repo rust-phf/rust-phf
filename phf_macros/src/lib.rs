@@ -257,11 +257,13 @@ fn parse_match(cx: &mut ExtCtxt, tts: &[TokenTree])
     let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(), tts.to_vec());
 
     let discriminant = try!(parser.parse_expr_res(parser::Restrictions::RESTRICTION_NO_STRUCT_LITERAL));
+    let discriminant = cx.expander().fold_expr(discriminant);
+
     try!(parser.commit_expr_expecting(&*discriminant, OpenDelim(Brace)));
 
     let mut arms: Vec<Arm> = Vec::new();
     while parser.token != CloseDelim(Brace) {
-        arms.push(try!(parser.parse_arm_nopanic()));
+        arms.push(cx.expander().fold_arm(try!(parser.parse_arm_nopanic())));
     }
 
     let mut entries = Vec::new();
@@ -303,7 +305,7 @@ fn parse_match(cx: &mut ExtCtxt, tts: &[TokenTree])
                         wild = Some(arm.clone());
                     }
                     _ => {
-                        return Err(parser.fatal("unsupported pattern"));
+                        return Err(parser.fatal(&format!("unsupported pattern: {:?}", pat)));
                     }
                 }
             }

@@ -11,12 +11,10 @@ mod map {
 
     use phf;
 
-    macro_rules! map_and_match {
-        ($map:ident, $match_get:ident, $phf_match_get:ident, $($key:expr => $value:expr,)+) => {
-            static $map: phf::Map<&'static str, usize> = phf_map! {
-                $($key => $value),+
-            };
-
+    // FIXME: Factored out from map_and_match because rust isn't able to expand a macro
+    // `expr` to a pattern: https://github.com/rust-lang/rust/issues/27967
+    macro_rules! match_fns {
+        ($match_get:ident, $phf_match_get:ident, $($key:pat => $value:expr,)+) => {
             fn $match_get(key: &str) -> Option<usize> {
                 match key {
                     $($key => Some($value),)+
@@ -33,7 +31,27 @@ mod map {
         }
     }
 
-    map_and_match! { MAP, match_get, phf_match_get,
+    macro_rules! map_and_match {
+        ($map:ident, $match_get:ident, $phf_match_get:ident, $prefix:expr, $($key:expr => $value:expr,)+) => {
+            static $map: phf::Map<&'static str, usize> = phf_map! {
+                $(concat!($prefix, $key, "0") => $value),+,
+                $(concat!($prefix, $key, "1") => $value),+,
+                $(concat!($prefix, $key, "2") => $value),+,
+                $(concat!($prefix, $key, "3") => $value),+,
+                $(concat!($prefix, $key, "4") => $value),+,
+            };
+
+            match_fns!($match_get, $phf_match_get,
+                $(concat!($prefix, $key, "0") => $value),+,
+                $(concat!($prefix, $key, "1") => $value),+,
+                $(concat!($prefix, $key, "2") => $value),+,
+                $(concat!($prefix, $key, "3") => $value),+,
+                $(concat!($prefix, $key, "4") => $value),+,
+            );
+        }
+    }
+
+    map_and_match! { MAP, match_get, phf_match_get, "My favorite food is ",
         "apple" => 0,
         "banana" => 1,
         "carrot" => 2,

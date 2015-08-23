@@ -2,6 +2,7 @@
 #![plugin(phf_macros)]
 
 extern crate phf;
+extern crate phf_shared;
 
 mod map {
     use std::collections::{HashMap, HashSet};
@@ -493,5 +494,38 @@ mod ordered_set {
         for e in &SET {
             assert_eq!(&"foo", e);
         }
+    }
+}
+
+mod match_ {
+    #[test]
+    fn test_zero() {
+        assert_eq!(phf_match!("foo" { _ => 0 }), 0);
+        assert_eq!(phf_match!("bar" { _ => 0 }), 0);
+
+        assert_eq!(phf_match!("foo" { _ => 0, }), 0);
+        assert_eq!(phf_match!("foo" { _ => { 0 } }), 0);
+        assert_eq!(phf_match!("foo" { _ => { 0 }, }), 0);
+    }
+
+    #[test]
+    fn test_one() {
+        assert_eq!(phf_match!("foo" { "foo" => 0, _ => 1 }), 0);
+        assert_eq!(phf_match!("bar" { "foo" => 0, _ => 1 }), 1);
+    }
+
+    #[test]
+    fn test_two() {
+        assert_eq!(phf_match!("foo" { "foo" => 0, "bar" => 1, _ => 2 }), 0);
+        assert_eq!(phf_match!("bar" { "foo" => 0, "bar" => 1, _ => 2 }), 1);
+        assert_eq!(phf_match!("baz" { "foo" => 0, "bar" => 1, _ => 2 }), 2);
+    }
+
+    #[test]
+    fn test_three() {
+        assert_eq!(phf_match!("foo" { "foo" => 0, "bar" => 1, "baz" => 2, _ => 3 }), 0);
+        assert_eq!(phf_match!("bar" { "foo" => 0, "bar" => 1, "baz" => 2, _ => 3 }), 1);
+        assert_eq!(phf_match!("baz" { "foo" => 0, "bar" => 1, "baz" => 2, _ => 3 }), 2);
+        assert_eq!(phf_match!("boo" { "foo" => 0, "bar" => 1, "baz" => 2, _ => 3 }), 3);
     }
 }

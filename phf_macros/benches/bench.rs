@@ -3,6 +3,7 @@
 
 extern crate test;
 extern crate phf;
+extern crate phf_shared;
 
 mod map {
     use std::collections::{BTreeMap, HashMap};
@@ -11,21 +12,28 @@ mod map {
     use phf;
 
     macro_rules! map_and_match {
-        ($map:ident, $f:ident, $($key:expr => $value:expr,)+) => {
+        ($map:ident, $match_get:ident, $phf_match_get:ident, $($key:expr => $value:expr,)+) => {
             static $map: phf::Map<&'static str, usize> = phf_map! {
                 $($key => $value),+
             };
 
-            fn $f(key: &str) -> Option<usize> {
+            fn $match_get(key: &str) -> Option<usize> {
                 match key {
                     $($key => Some($value),)+
                     _ => None
                 }
             }
+
+            fn $phf_match_get(key: &str) -> Option<usize> {
+                phf_match!(key {
+                    $($key => Some($value),)+
+                    _ => None
+                })
+            }
         }
     }
 
-    map_and_match! { MAP, match_get,
+    map_and_match! { MAP, match_get, phf_match_get,
         "apple" => 0,
         "banana" => 1,
         "carrot" => 2,
@@ -111,6 +119,24 @@ mod map {
 
         b.iter(|| {
             check_not_match(&items, match_get);
+        })
+    }
+
+    #[bench]
+    fn bench_phf_match_some(b: &mut Bencher) {
+        let items = get_matching_items();
+
+        b.iter(|| {
+            check_match(&items, phf_match_get)
+        })
+    }
+
+    #[bench]
+    fn bench_phf_match_none(b: &mut Bencher) {
+        let items = get_non_matching_items();
+
+        b.iter(|| {
+            check_not_match(&items, phf_match_get);
         })
     }
 

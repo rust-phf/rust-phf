@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use std::hash::{Hash, Hasher};
 
-use syntax::ast::Expr;
+use syntax::ast::{Arm, Expr};
 use syntax::codemap::Span;
 use syntax::ext::base::{ExtCtxt, MacResult, MacEager};
 use syntax::ext::build::AstBuilder;
@@ -132,4 +132,57 @@ pub fn create_ordered_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state
                           -> Box<MacResult+'static> {
     let map = create_ordered_map(cx, sp, entries, state).make_expr().unwrap();
     MacEager::expr(quote_expr!(cx, ::phf::OrderedSet { map: $map }))
+}
+
+pub fn create_match(cx: &mut ExtCtxt,
+                    sp: Span,
+                    discriminant: P<Expr>,
+                    entries: Vec<Entry>,
+                    wild: Option<Arm>,
+                    state: HashState)
+                  -> Box<MacResult+'static> {
+    let len = entries.len();
+
+    // Don't bother generating a hash for 2 items or less.
+    if len <= 2 {
+        let mut arms: Vec<Arm> = state.map.iter().map(|&idx| {
+            let &Entry { ref key, ref value, .. } = &entries[idx];
+            quote_arm!(&*cx, $key => $value,)
+        }).collect();
+
+        match wild {
+            Some(wild) => { arms.push(wild); }
+            None => {}
+        }
+
+        MacEager::expr(quote_expr!(cx,
+            match $discriminant {
+                $arms
+            }
+        ))
+    } else {
+        let disps = state.disps.iter().map(|&(d1, d2)| {
+            quote_expr!(&*cx, ($d1, $d2))
+        }).collect();
+        let disps = cx.expr_vec(sp, disps);
+
+        let mut arms: Vec<Arm> = state.map.iter().enumerate().map(|(i, &idx)| {
+            let i = i as u32;
+            let &Entry { ref key, ref value, .. } = &entries[idx];
+            quote_arm!(&*cx, $i if $discriminant == $key => $value,)
+        }).collect();
+
+        match wild {
+            Some(wild) => { arms.push(wild); }
+            None => {}
+        }
+
+        let key = state.key;
+
+        MacEager::expr(quote_expr!(cx,
+            match ::phf_shared::get_index(::phf_shared::hash($discriminant, $key), &$disps, $len) {
+                $arms
+            }
+        ))
+    }
 }

@@ -42,21 +42,40 @@ extern crate phf_generator;
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
-use syntax::ast::{self, TokenTree, LitStr, LitBinary, LitByte, LitChar, Expr, ExprLit, ExprVec};
+use syntax::ast::{self,
+                  Arm,
+                  Expr,
+                  ExprLit,
+                  ExprVec,
+                  LitStr,
+                  LitBinary,
+                  LitByte,
+                  LitChar,
+                  PatLit,
+                  PatWild,
+                  TokenTree};
 use syntax::codemap::{Span, Spanned};
 use syntax::ext::base::{DummyResult,
                         ExtCtxt,
                         MacResult};
 use syntax::fold::Folder;
 use syntax::parse;
-use syntax::parse::token::{InternedString, Comma, Eof, FatArrow};
+use syntax::parse::parser;
+use syntax::parse::token::{Brace,
+                           CloseDelim,
+                           Comma,
+                           Eof,
+                           FatArrow,
+                           InternedString,
+                           OpenDelim};
 use syntax::print::pprust;
+use syntax::ptr::P;
 use rustc::plugin::Registry;
 use phf_generator::HashState;
 use std::env;
 
 use util::{Entry, Key};
-use util::{create_map, create_set, create_ordered_map, create_ordered_set};
+use util::{create_map, create_set, create_ordered_map, create_ordered_set, create_match};
 
 pub mod util;
 mod macros;
@@ -68,6 +87,7 @@ pub fn macro_registrar(reg: &mut Registry) {
     reg.register_macro("phf_set", expand_phf_set);
     reg.register_macro("phf_ordered_map", expand_phf_ordered_map);
     reg.register_macro("phf_ordered_set", expand_phf_ordered_set);
+    reg.register_macro("phf_match", expand_phf_match);
 }
 
 fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
@@ -147,6 +167,21 @@ fn expand_phf_ordered_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<
     create_ordered_set(cx, sp, entries, state)
 }
 
+fn expand_phf_match(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult+'static> {
+    let (expr, entries, wild) = match parse_match(cx, tts) {
+        Ok((expr, entries, wild)) => (expr, entries, wild),
+        Err(_) => return DummyResult::expr(sp)
+    };
+
+    if has_duplicates(cx, sp, &*entries) {
+        return DummyResult::expr(sp);
+    }
+
+    let state = generate_hash(cx, sp, &*entries);
+
+    create_match(cx, sp, expr, entries, wild, state)
+}
+
 fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(), tts.to_vec());
     let mut entries = Vec::new();
@@ -215,6 +250,70 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     }
 
     Some(entries)
+}
+
+fn parse_match(cx: &mut ExtCtxt, tts: &[TokenTree])
+               -> parse::PResult<(P<Expr>, Vec<Entry>, Option<Arm>)> {
+    let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg(), tts.to_vec());
+
+    let discriminant = try!(parser.parse_expr_res(parser::Restrictions::RESTRICTION_NO_STRUCT_LITERAL));
+    try!(parser.commit_expr_expecting(&*discriminant, OpenDelim(Brace)));
+
+    let mut arms: Vec<Arm> = Vec::new();
+    while parser.token != CloseDelim(Brace) {
+        arms.push(try!(parser.parse_arm_nopanic()));
+    }
+
+    let mut entries = Vec::new();
+    let mut wild = None;
+
+    for arm in arms {
+        if arm.guard.is_some() {
+            return Err(parser.fatal("`phf_match` does not support guards"));
+        }
+
+        if arm.pats.len() > 1 {
+            return Err(parser.fatal("`phf_match` does not support multiple patterns"));
+        }
+
+        match arm.pats.first() {
+            Some(pat) => {
+                match pat.node {
+                    PatLit(ref expr) => {
+                        let key = cx.expander().fold_expr(expr.clone());
+
+                        let key_contents = match parse_key(cx, &*key) {
+                            Some(key_contents) => key_contents,
+                            None => {
+                                return Err(parser.fatal(""));
+                            }
+                        };
+
+                        entries.push(Entry {
+                            key_contents: key_contents,
+                            key: key,
+                            value: arm.body,
+                        });
+                    }
+                    PatWild(_) => {
+                        if wild.is_some() {
+                            return Err(parser.fatal("`phf_match` has multiple wild patterns"));
+                        }
+
+                        wild = Some(arm.clone());
+                    }
+                    _ => {
+                        return Err(parser.fatal("unsupported pattern"));
+                    }
+                }
+            }
+            None => {
+                return Err(parser.fatal("`phf_match` does not have any patterns?"));
+            }
+        }
+    }
+
+    Ok((discriminant, entries, wild))
 }
 
 fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {

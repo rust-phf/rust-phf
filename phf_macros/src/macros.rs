@@ -85,3 +85,26 @@ macro_rules! phf_ordered_map {
 macro_rules! phf_ordered_set {
     ($($entry:expr),*) => {/* ... */}
 }
+
+/// Constructs a match expression that uses PHF to index into the match arms.
+///
+/// # Examples
+///
+/// ```rust
+/// #![feature(plugin)]
+/// #![plugin(phf_macros)]
+///
+/// extern crate phf;
+/// extern crate phf_shared;
+///
+/// fn lookup(key: &str) -> String {
+///     phf_match!(key,
+///         "hello" => String::from("first"),
+///         "world" => String::from("second"),
+///         _ => String::from("rest"),
+///     )
+/// }
+/// ```
+macro_rules! phf_match {
+    ($expr:expr, $($key:expr => $value:expr,)*) => {/* ... */}
+}

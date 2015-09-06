@@ -42,7 +42,7 @@ extern crate phf_generator;
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
-use syntax::ast::{self, TokenTree, LitStr, LitBinary, LitByte, LitChar, Expr, ExprLit, ExprVec};
+use syntax::ast::{self, TokenTree, LitStr, LitByteStr, LitByte, LitChar, Expr, ExprLit, ExprVec};
 use syntax::codemap::{Span, Spanned};
 use syntax::ext::base::{DummyResult,
                         ExtCtxt,
@@ -222,7 +222,7 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
         ExprLit(ref lit) => {
             match lit.node {
                 ast::LitStr(ref s, _) => Some(Key::Str(s.clone())),
-                ast::LitBinary(ref b) => Some(Key::Binary(b.clone())),
+                ast::LitByteStr(ref b) => Some(Key::Binary(b.clone())),
                 ast::LitByte(b) => Some(Key::U8(b)),
                 ast::LitChar(c) => Some(Key::Char(c)),
                 ast::LitInt(i, ast::SignedIntLit(ast::TyI8, ast::Plus)) => Some(Key::I8(i as i8)),

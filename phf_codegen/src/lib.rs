@@ -77,7 +77,7 @@
 //! builder.entry("world", "2");
 //! // ...
 //! ```
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.4")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.5")]
 extern crate phf_shared;
 extern crate phf_generator;
 
@@ -97,6 +97,16 @@ pub struct Map<K> {
 impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
     /// Creates a new `phf::Map` builder.
     pub fn new() -> Map<K> {
+        // FIXME rust#27438
+        //
+        // On Windows/MSVC there are major problems with the handling of dllimport.
+        // Here, because downstream build scripts only invoke generics from phf_codegen,
+        // the linker ends up throwing a way a bunch of static symbols we actually need.
+        // This works around the problem, assuming that all clients call `Map::new` by
+        // calling a non-generic function.
+        fn noop_fix_for_27438() { }
+        noop_fix_for_27438();
+
         Map {
             keys: vec![],
             values: vec![],

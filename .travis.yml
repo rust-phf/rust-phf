@@ -7,5 +7,6 @@ rust:
 script:
 - (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_macros && cargo test))
 - (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_macros && cargo test --features stats))
+- (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_macros && cargo bench))
 - (cd phf_codegen && cargo test)
 - (cd phf_codegen/test && cargo test)

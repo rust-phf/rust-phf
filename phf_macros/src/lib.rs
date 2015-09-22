@@ -30,7 +30,7 @@
 //! }
 //! # fn main() {}
 //! ```
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.4")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.5")]
 #![feature(plugin_registrar, quote, rustc_private)]
 
 extern crate syntax;

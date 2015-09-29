@@ -24,6 +24,8 @@ PHF data structures can be constucted via either the compiler plugins in the
 Compiler plugins are not a stable part of Rust at the moment, so `phf_macros`
 can only be used with nightlies.
 
+The `phf/core` feature will compile the `phf` crate with a dependency on libcore instead of libstd, enabling use in environments where libstd will not work.
+
 phf_macros
 ===========
 

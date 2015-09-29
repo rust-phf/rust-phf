@@ -5,9 +5,19 @@
 //! the documentation of those crates for more details.
 #![doc(html_root_url="https://sfackler.github.io/rust-phf/doc/v0.7.5")]
 #![warn(missing_docs)]
+#![cfg_attr(feature = "core", feature(no_std))]
+#![cfg_attr(feature = "core", no_std)]
 
 extern crate debug_builders;
 extern crate phf_shared;
+
+#[cfg(feature = "core")]
+mod std {
+    pub use core::{borrow, fmt, iter, option, ops, slice};
+    pub mod prelude {
+        pub use core::prelude as v1;
+    }
+}
 
 pub use phf_shared::PhfHash;
 #[doc(inline)]

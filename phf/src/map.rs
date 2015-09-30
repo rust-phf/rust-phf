@@ -1,10 +1,10 @@
 //! An immutable map constructed at compile time.
 use debug_builders::DebugMap;
-use std::borrow::Borrow;
-use std::ops::Index;
-use std::slice;
-use std::fmt;
-use std::iter::IntoIterator;
+use core::borrow::Borrow;
+use core::ops::Index;
+use core::slice;
+use core::fmt;
+use core::iter::IntoIterator;
 use PhfHash;
 use phf_shared;
 

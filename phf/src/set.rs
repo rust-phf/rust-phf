@@ -1,8 +1,8 @@
 //! An immutable set constructed at compile time.
 use debug_builders::DebugSet;
-use std::borrow::Borrow;
-use std::iter::IntoIterator;
-use std::fmt;
+use core::borrow::Borrow;
+use core::iter::IntoIterator;
+use core::fmt;
 
 use PhfHash;
 use map;

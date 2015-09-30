@@ -1,10 +1,10 @@
 //! An order-preserving immutable map constructed at compile time.
 use debug_builders::DebugMap;
-use std::borrow::Borrow;
-use std::iter::IntoIterator;
-use std::ops::Index;
-use std::fmt;
-use std::slice;
+use core::borrow::Borrow;
+use core::iter::IntoIterator;
+use core::ops::Index;
+use core::fmt;
+use core::slice;
 
 use PhfHash;
 use phf_shared;

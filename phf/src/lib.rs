@@ -8,16 +8,11 @@
 #![cfg_attr(feature = "core", feature(no_std))]
 #![cfg_attr(feature = "core", no_std)]
 
+#[cfg(not(feature = "core"))]
+extern crate std as core;
+
 extern crate debug_builders;
 extern crate phf_shared;
-
-#[cfg(feature = "core")]
-mod std {
-    pub use core::{borrow, fmt, iter, option, ops, slice};
-    pub mod prelude {
-        pub use core::prelude as v1;
-    }
-}
 
 pub use phf_shared::PhfHash;
 #[doc(inline)]

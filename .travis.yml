@@ -3,7 +3,7 @@ sudo: false
 rust:
 - nightly
 - beta
-- stable
+- 1.2.0
 script:
 - (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_macros && cargo test))
 - (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_macros && cargo test --features stats))

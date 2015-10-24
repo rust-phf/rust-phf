@@ -1,5 +1,4 @@
 //! An immutable set constructed at compile time.
-use debug_builders::DebugSet;
 use core::borrow::Borrow;
 use core::iter::IntoIterator;
 use core::fmt;
@@ -22,7 +21,7 @@ pub struct Set<T:'static> {
 
 impl<T> fmt::Debug for Set<T> where T: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        self.iter().fold(DebugSet::new(fmt), |b, e| b.entry(e)).finish()
+        fmt.debug_set().entries(self).finish()
     }
 }
 

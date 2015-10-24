@@ -16,5 +16,4 @@ test = false
 core = ["phf_shared/core"]
 
 [dependencies]
-debug-builders = "0.1"
 phf_shared = { version = "=0.7.5", path = "../phf_shared" }

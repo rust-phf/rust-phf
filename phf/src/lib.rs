@@ -11,7 +11,6 @@
 #[cfg(not(feature = "core"))]
 extern crate std as core;
 
-extern crate debug_builders;
 extern crate phf_shared;
 
 pub use phf_shared::PhfHash;

@@ -1,8 +1,7 @@
 //! An order-preserving immutable set constructed at compile time.
-use debug_builders::DebugSet;
-use std::borrow::Borrow;
-use std::iter::IntoIterator;
-use std::fmt;
+use core::borrow::Borrow;
+use core::iter::IntoIterator;
+use core::fmt;
 use ordered_map;
 use {PhfHash, OrderedMap};
 
@@ -23,7 +22,7 @@ pub struct OrderedSet<T:'static> {
 
 impl<T> fmt::Debug for OrderedSet<T> where T: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        self.iter().fold(DebugSet::new(fmt), |b, e| b.entry(e)).finish()
+        fmt.debug_set().entries(self).finish()
     }
 }
 

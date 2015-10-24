@@ -3,7 +3,7 @@ Rust-PHF
 
 [![Build Status](https://travis-ci.org/sfackler/rust-phf.png?branch=master)](https://travis-ci.org/sfackler/rust-phf) [![Latest Version](https://img.shields.io/crates/v/phf.svg)](https://crates.io/crates/phf)
 
-[Documentation](https://sfackler.github.io/rust-phf/doc/v0.7.5/phf)
+[Documentation](https://sfackler.github.io/rust-phf/doc/v0.7.6/phf)
 
 Rust-PHF is a library to generate efficient lookup tables at compile time using
 [perfect hash functions](http://en.wikipedia.org/wiki/Perfect_hash_function).
@@ -23,6 +23,8 @@ PHF data structures can be constucted via either the compiler plugins in the
 `phf_macros` crate or code generation supported by the `phf_codegen` crate.
 Compiler plugins are not a stable part of Rust at the moment, so `phf_macros`
 can only be used with nightlies.
+
+The `phf/core` feature will compile the `phf` crate with a dependency on libcore instead of libstd, enabling use in environments where libstd will not work.
 
 phf_macros
 ===========

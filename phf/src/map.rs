@@ -1,10 +1,9 @@
 //! An immutable map constructed at compile time.
-use debug_builders::DebugMap;
-use std::borrow::Borrow;
-use std::ops::Index;
-use std::slice;
-use std::fmt;
-use std::iter::IntoIterator;
+use core::borrow::Borrow;
+use core::ops::Index;
+use core::slice;
+use core::fmt;
+use core::iter::IntoIterator;
 use PhfHash;
 use phf_shared;
 
@@ -26,7 +25,7 @@ pub struct Map<K:'static, V:'static> {
 
 impl<K, V> fmt::Debug for Map<K, V> where K: fmt::Debug, V: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        self.entries().fold(DebugMap::new(fmt), |b, (k, v)| b.entry(k, v)).finish()
+        fmt.debug_map().entries(self.entries()).finish()
     }
 }
 

@@ -1,10 +1,9 @@
 //! An order-preserving immutable map constructed at compile time.
-use debug_builders::DebugMap;
-use std::borrow::Borrow;
-use std::iter::IntoIterator;
-use std::ops::Index;
-use std::fmt;
-use std::slice;
+use core::borrow::Borrow;
+use core::iter::IntoIterator;
+use core::ops::Index;
+use core::fmt;
+use core::slice;
 
 use PhfHash;
 use phf_shared;
@@ -32,7 +31,7 @@ pub struct OrderedMap<K:'static, V:'static> {
 
 impl<K, V> fmt::Debug for OrderedMap<K, V> where K: fmt::Debug, V: fmt::Debug {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        self.entries().fold(DebugMap::new(fmt), |b, (k, v)| b.entry(k, v)).finish()
+        fmt.debug_map().entries(self.entries()).finish()
     }
 }
 

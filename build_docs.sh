@@ -1,7 +1,9 @@
 #!/bin/bash
-
 set -e
 
-for crate in $(echo phf_shared phf_macros phf phf_codegen phf_generator); do
-    (cd $crate && rm -f Cargo.lock && CARGO_TARGET_DIR=../target cargo doc --no-deps)
+export CARGO_TARGET_DIR=target
+
+for toml in $(find . -name "Cargo.toml"); do
+    cargo update --manifest-path $toml
+    cargo doc --no-deps --manifest-path $toml
 done

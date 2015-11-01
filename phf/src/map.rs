@@ -14,7 +14,7 @@ use phf_shared;
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_map!` macro and code generation. They are subject to change at any
 /// time and should never be accessed directly.
-pub struct Map<K:'static, V:'static> {
+pub struct Map<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub key: u64,
     #[doc(hidden)]
@@ -49,12 +49,18 @@ impl<K, V> Map<K, V> {
     }
 
     /// Determines if `key` is in the `Map`.
-    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool where T: Eq + PhfHash, K: Borrow<T> {
+    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool
+        where T: Eq + PhfHash,
+              K: Borrow<T>
+    {
         self.get(key).is_some()
     }
 
     /// Returns a reference to the value that `key` maps to.
-    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V> where T: Eq + PhfHash, K: Borrow<T> {
+    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V>
+        where T: Eq + PhfHash,
+              K: Borrow<T>
+    {
         self.get_entry(key).map(|e| e.1)
     }
 
@@ -62,13 +68,18 @@ impl<K, V> Map<K, V> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash, K: Borrow<T> {
+    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K>
+        where T: Eq + PhfHash,
+              K: Borrow<T>
+    {
         self.get_entry(key).map(|e| e.0)
     }
 
     /// Like `get`, but returns both the key and the value.
     pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
-            where T: Eq + PhfHash, K: Borrow<T> {
+        where T: Eq + PhfHash,
+              K: Borrow<T>
+    {
         let hash = phf_shared::hash(key, self.key);
         let index = phf_shared::get_index(hash, self.disps, self.entries.len());
         let entry = &self.entries[index as usize];
@@ -112,7 +123,7 @@ impl<'a, K, V> IntoIterator for &'a Map<K, V> {
 }
 
 /// An iterator over the key/value pairs in a `Map`.
-pub struct Entries<'a, K:'a, V:'a> {
+pub struct Entries<'a, K: 'a, V: 'a> {
     iter: slice::Iter<'a, (K, V)>,
 }
 
@@ -137,7 +148,7 @@ impl<'a, K, V> DoubleEndedIterator for Entries<'a, K, V> {
 impl<'a, K, V> ExactSizeIterator for Entries<'a, K, V> {}
 
 /// An iterator over the keys in a `Map`.
-pub struct Keys<'a, K:'a, V:'a> {
+pub struct Keys<'a, K: 'a, V: 'a> {
     iter: Entries<'a, K, V>,
 }
 
@@ -162,7 +173,7 @@ impl<'a, K, V> DoubleEndedIterator for Keys<'a, K, V> {
 impl<'a, K, V> ExactSizeIterator for Keys<'a, K, V> {}
 
 /// An iterator over the values in a `Map`.
-pub struct Values<'a, K:'a, V:'a> {
+pub struct Values<'a, K: 'a, V: 'a> {
     iter: Entries<'a, K, V>,
 }
 

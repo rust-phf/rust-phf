@@ -44,9 +44,7 @@ use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use syntax::ast::{self, TokenTree, LitStr, LitByteStr, LitByte, LitChar, Expr, ExprLit, ExprVec};
 use syntax::codemap::{Span, Spanned};
-use syntax::ext::base::{DummyResult,
-                        ExtCtxt,
-                        MacResult};
+use syntax::ext::base::{DummyResult, ExtCtxt, MacResult};
 use syntax::fold::Folder;
 use syntax::parse;
 use syntax::parse::token::{InternedString, Comma, Eof, FatArrow};
@@ -74,7 +72,9 @@ fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
     #[cfg(feature = "stats")]
     use time::precise_time_s;
     #[cfg(not(feature = "stats"))]
-    fn precise_time_s() -> f64 { 0. }
+    fn precise_time_s() -> f64 {
+        0.
+    }
 
     let start = precise_time_s();
     let state = phf_generator::generate_hash(entries);
@@ -87,10 +87,10 @@ fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
     state
 }
 
-fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult+'static> {
+fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult + 'static> {
     let entries = match parse_map(cx, tts) {
         Some(entries) => entries,
-        None => return DummyResult::expr(sp)
+        None => return DummyResult::expr(sp),
     };
 
     if has_duplicates(cx, sp, &*entries) {
@@ -102,10 +102,10 @@ fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResul
     create_map(cx, sp, entries, state)
 }
 
-fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult+'static> {
+fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult + 'static> {
     let entries = match parse_set(cx, tts) {
         Some(entries) => entries,
-        None => return DummyResult::expr(sp)
+        None => return DummyResult::expr(sp),
     };
 
     if has_duplicates(cx, sp, &*entries) {
@@ -117,7 +117,10 @@ fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResul
     create_set(cx, sp, entries, state)
 }
 
-fn expand_phf_ordered_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult+'static> {
+fn expand_phf_ordered_map(cx: &mut ExtCtxt,
+                          sp: Span,
+                          tts: &[TokenTree])
+                          -> Box<MacResult + 'static> {
     let entries = match parse_map(cx, tts) {
         Some(entries) => entries,
         None => return DummyResult::expr(sp),
@@ -132,10 +135,13 @@ fn expand_phf_ordered_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<
     create_ordered_map(cx, sp, entries, state)
 }
 
-fn expand_phf_ordered_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult+'static> {
+fn expand_phf_ordered_set(cx: &mut ExtCtxt,
+                          sp: Span,
+                          tts: &[TokenTree])
+                          -> Box<MacResult + 'static> {
     let entries = match parse_set(cx, tts) {
         Some(entries) => entries,
-        None => return DummyResult::expr(sp)
+        None => return DummyResult::expr(sp),
     };
 
     if has_duplicates(cx, sp, &*entries) {
@@ -169,7 +175,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
         entries.push(Entry {
             key_contents: key_contents,
             key: key,
-            value: value
+            value: value,
         });
 
         if !parser.eat(&Comma).ok().unwrap() && parser.token != Eof {
@@ -226,13 +232,20 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
                 ast::LitByte(b) => Some(Key::U8(b)),
                 ast::LitChar(c) => Some(Key::Char(c)),
                 ast::LitInt(i, ast::SignedIntLit(ast::TyI8, ast::Plus)) => Some(Key::I8(i as i8)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI8, ast::Minus)) => Some(Key::I8(-(i as i8))),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI16, ast::Plus)) => Some(Key::I16(i as i16)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI16, ast::Minus)) => Some(Key::I16(-(i as i16))),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI32, ast::Plus)) => Some(Key::I32(i as i32)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI32, ast::Minus)) => Some(Key::I32(-(i as i32))),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI64, ast::Plus)) => Some(Key::I64(i as i64)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI64, ast::Minus)) => Some(Key::I64(-(i as i64))),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI8, ast::Minus)) =>
+                    Some(Key::I8(-(i as i8))),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI16, ast::Plus)) =>
+                    Some(Key::I16(i as i16)),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI16, ast::Minus)) =>
+                    Some(Key::I16(-(i as i16))),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI32, ast::Plus)) =>
+                    Some(Key::I32(i as i32)),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI32, ast::Minus)) =>
+                    Some(Key::I32(-(i as i32))),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI64, ast::Plus)) =>
+                    Some(Key::I64(i as i64)),
+                ast::LitInt(i, ast::SignedIntLit(ast::TyI64, ast::Minus)) =>
+                    Some(Key::I64(-(i as i64))),
                 ast::LitInt(i, ast::UnsignedIntLit(ast::TyU8)) => Some(Key::U8(i as u8)),
                 ast::LitInt(i, ast::UnsignedIntLit(ast::TyU16)) => Some(Key::U16(i as u16)),
                 ast::LitInt(i, ast::UnsignedIntLit(ast::TyU32)) => Some(Key::U32(i as u32)),
@@ -258,7 +271,8 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
             if bytes.iter().all(|x| x.is_some()) {
                 Some(Key::Binary(std::rc::Rc::new(bytes.iter().map(|x| x.unwrap()).collect())))
             } else {
-                cx.span_err(e.span, "not all elements of an expected u8 array literal were u8 literals");
+                cx.span_err(e.span,
+                            "not all elements of an expected u8 array literal were u8 literals");
                 None
             }
         }
@@ -286,7 +300,8 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
         }
 
         dups = true;
-        cx.span_err(sp, &*format!("duplicate key {}", pprust::expr_to_string(&**key)));
+        cx.span_err(sp,
+                    &*format!("duplicate key {}", pprust::expr_to_string(&**key)));
         for span in spans.iter() {
             cx.span_note(*span, "one occurrence here");
         }

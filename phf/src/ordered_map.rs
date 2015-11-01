@@ -18,7 +18,7 @@ use phf_shared;
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_ordered_map!` macro and code generation. They are subject to change at
 /// any time and should never be accessed directly.
-pub struct OrderedMap<K:'static, V:'static> {
+pub struct OrderedMap<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub key: u64,
     #[doc(hidden)]
@@ -55,7 +55,10 @@ impl<K, V> OrderedMap<K, V> {
     }
 
     /// Returns a reference to the value that `key` maps to.
-    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V> where T: Eq + PhfHash, K: Borrow<T> {
+    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V>
+        where T: Eq + PhfHash,
+              K: Borrow<T>
+    {
         self.get_entry(key).map(|e| e.1)
     }
 
@@ -63,19 +66,27 @@ impl<K, V> OrderedMap<K, V> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K> where T: Eq + PhfHash, K: Borrow<T> {
+    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K>
+        where T: Eq + PhfHash,
+              K: Borrow<T>
+    {
         self.get_entry(key).map(|e| e.0)
     }
 
     /// Determines if `key` is in the `Map`.
-    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool where T: Eq + PhfHash, K: Borrow<T> {
+    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool
+        where T: Eq + PhfHash,
+              K: Borrow<T>
+    {
         self.get(key).is_some()
     }
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered map.
     pub fn get_index<T: ?Sized>(&self, key: &T) -> Option<usize>
-            where T: Eq + PhfHash, K: Borrow<T> {
+        where T: Eq + PhfHash,
+              K: Borrow<T>
+    {
         self.get_internal(key).map(|(i, _)| i)
     }
 
@@ -87,12 +98,16 @@ impl<K, V> OrderedMap<K, V> {
 
     /// Like `get`, but returns both the key and the value.
     pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
-            where T: Eq + PhfHash, K: Borrow<T> {
+        where T: Eq + PhfHash,
+              K: Borrow<T>
+    {
         self.get_internal(key).map(|(_, e)| e)
     }
 
     fn get_internal<T: ?Sized>(&self, key: &T) -> Option<(usize, (&K, &V))>
-            where T: Eq + PhfHash, K: Borrow<T> {
+        where T: Eq + PhfHash,
+              K: Borrow<T>
+    {
         let hash = phf_shared::hash(key, self.key);
         let idx_index = phf_shared::get_index(hash, self.disps, self.idxs.len());
         let idx = self.idxs[idx_index as usize];
@@ -138,7 +153,7 @@ impl<'a, K, V> IntoIterator for &'a OrderedMap<K, V> {
 }
 
 /// An iterator over the entries in a `OrderedMap`.
-pub struct Entries<'a, K:'a, V:'a> {
+pub struct Entries<'a, K: 'a, V: 'a> {
     iter: slice::Iter<'a, (K, V)>,
 }
 
@@ -163,7 +178,7 @@ impl<'a, K, V> DoubleEndedIterator for Entries<'a, K, V> {
 impl<'a, K, V> ExactSizeIterator for Entries<'a, K, V> {}
 
 /// An iterator over the keys in a `OrderedMap`.
-pub struct Keys<'a, K:'a, V:'a> {
+pub struct Keys<'a, K: 'a, V: 'a> {
     iter: Entries<'a, K, V>,
 }
 
@@ -188,7 +203,7 @@ impl<'a, K, V> DoubleEndedIterator for Keys<'a, K, V> {
 impl<'a, K, V> ExactSizeIterator for Keys<'a, K, V> {}
 
 /// An iterator over the values in a `OrderedMap`.
-pub struct Values<'a, K:'a, V:'a> {
+pub struct Values<'a, K: 'a, V: 'a> {
     iter: Entries<'a, K, V>,
 }
 

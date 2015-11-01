@@ -51,7 +51,9 @@ pub trait PhfHash {
     fn phf_hash<H: Hasher>(&self, state: &mut H);
 
     /// Feeds a slice of this type into the state provided.
-    fn phf_hash_slice<H: Hasher>(data: &[Self], state: &mut H) where Self: Sized {
+    fn phf_hash_slice<H: Hasher>(data: &[Self], state: &mut H)
+        where Self: Sized
+    {
         for piece in data {
             piece.phf_hash(state);
         }

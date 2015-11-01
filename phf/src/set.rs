@@ -14,9 +14,9 @@ use Map;
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_set!` macro and code generation. They are subject to change at any
 /// time and should never be accessed directly.
-pub struct Set<T:'static> {
+pub struct Set<T: 'static> {
     #[doc(hidden)]
-    pub map: Map<T, ()>
+    pub map: Map<T, ()>,
 }
 
 impl<T> fmt::Debug for Set<T> where T: fmt::Debug {
@@ -40,12 +40,18 @@ impl<T> Set<T> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash, T: Borrow<U> {
+    pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T>
+        where U: Eq + PhfHash,
+              T: Borrow<U>
+    {
         self.map.get_key(key)
     }
 
     /// Returns true if `value` is in the `Set`.
-    pub fn contains<U: ?Sized>(&self, value: &U) -> bool where U: Eq + PhfHash, T: Borrow<U> {
+    pub fn contains<U: ?Sized>(&self, value: &U) -> bool
+        where U: Eq + PhfHash,
+              T: Borrow<U>
+    {
         self.map.contains_key(value)
     }
 
@@ -84,7 +90,7 @@ impl<'a, T> IntoIterator for &'a Set<T> {
 }
 
 /// An iterator over the values in a `Set`.
-pub struct Iter<'a, T:'static> {
+pub struct Iter<'a, T: 'static> {
     iter: map::Keys<'a, T, ()>,
 }
 

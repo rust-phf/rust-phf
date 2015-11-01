@@ -15,7 +15,7 @@ use {PhfHash, OrderedMap};
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_ordered_set!` macro and code generation. They are subject to change at
 /// any time and should never be accessed directly.
-pub struct OrderedSet<T:'static> {
+pub struct OrderedSet<T: 'static> {
     #[doc(hidden)]
     pub map: OrderedMap<T, ()>,
 }
@@ -41,14 +41,19 @@ impl<T> OrderedSet<T> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T> where U: Eq + PhfHash, T: Borrow<U> {
+    pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T>
+        where U: Eq + PhfHash,
+              T: Borrow<U>
+    {
         self.map.get_key(key)
     }
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered set.
     pub fn get_index<U: ?Sized>(&self, key: &U) -> Option<usize>
-            where U: Eq + PhfHash, T: Borrow<U> {
+        where U: Eq + PhfHash,
+              T: Borrow<U>
+    {
         self.map.get_index(key)
     }
 
@@ -59,7 +64,10 @@ impl<T> OrderedSet<T> {
     }
 
     /// Returns true if `value` is in the `Set`.
-    pub fn contains<U: ?Sized>(&self, value: &U) -> bool where U: Eq + PhfHash, T: Borrow<U> {
+    pub fn contains<U: ?Sized>(&self, value: &U) -> bool
+        where U: Eq + PhfHash,
+              T: Borrow<U>
+    {
         self.map.contains_key(value)
     }
 
@@ -101,7 +109,7 @@ impl<'a, T> IntoIterator for &'a OrderedSet<T> {
 }
 
 /// An iterator over the values in a `OrderedSet`.
-pub struct Iter<'a, T:'a> {
+pub struct Iter<'a, T: 'a> {
     iter: ordered_map::Keys<'a, T, ()>,
 }
 

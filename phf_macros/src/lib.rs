@@ -159,7 +159,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
 
     let mut bad = false;
     while parser.token != Eof {
-        let key = cx.expander().fold_expr(parser.parse_expr());
+        let key = cx.expander().fold_expr(parser.parse_expr_panic());
         let key_contents = parse_key(cx, &*key).unwrap_or_else(|| {
             bad = true;
             Key::Str(InternedString::new(""))
@@ -170,7 +170,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
             return None;
         }
 
-        let value = parser.parse_expr();
+        let value = parser.parse_expr_panic();
 
         entries.push(Entry {
             key_contents: key_contents,
@@ -198,7 +198,7 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
 
     let mut bad = false;
     while parser.token != Eof {
-        let key = cx.expander().fold_expr(parser.parse_expr());
+        let key = cx.expander().fold_expr(parser.parse_expr_panic());
         let key_contents = parse_key(cx, &*key).unwrap_or_else(|| {
             bad = true;
             Key::Str(InternedString::new(""))

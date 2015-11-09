@@ -1,4 +1,4 @@
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.6")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.7")]
 #![cfg_attr(feature = "core", feature(no_std, core_slice_ext, core_str_ext))]
 #![cfg_attr(feature = "core", no_std)]
 #[cfg(not(feature = "core"))]
@@ -51,7 +51,9 @@ pub trait PhfHash {
     fn phf_hash<H: Hasher>(&self, state: &mut H);
 
     /// Feeds a slice of this type into the state provided.
-    fn phf_hash_slice<H: Hasher>(data: &[Self], state: &mut H) where Self: Sized {
+    fn phf_hash_slice<H: Hasher>(data: &[Self], state: &mut H)
+        where Self: Sized
+    {
         for piece in data {
             piece.phf_hash(state);
         }

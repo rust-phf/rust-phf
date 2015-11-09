@@ -1,4 +1,4 @@
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.6")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.7")]
 extern crate phf_shared;
 extern crate rand;
 
@@ -38,20 +38,27 @@ fn try_generate_hash<H: PhfHash>(entries: &[H], rng: &mut XorShiftRng) -> Option
 
     let key = rng.gen();
 
-    let hashes: Vec<_> = entries.iter().map(|entry| {
-        let hash = phf_shared::hash(entry, key);
-        let (g, f1, f2) = phf_shared::split(hash);
-        Hashes {
-            g: g,
-            f1: f1,
-            f2: f2
-        }
-    }).collect();
+    let hashes: Vec<_> = entries.iter()
+                                .map(|entry| {
+                                    let hash = phf_shared::hash(entry, key);
+                                    let (g, f1, f2) = phf_shared::split(hash);
+                                    Hashes {
+                                        g: g,
+                                        f1: f1,
+                                        f2: f2,
+                                    }
+                                })
+                                .collect();
 
     let buckets_len = (entries.len() + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA;
     let mut buckets = (0..buckets_len)
-        .map(|i| Bucket { idx: i, keys: vec![] })
-        .collect::<Vec<_>>();
+                          .map(|i| {
+                              Bucket {
+                                  idx: i,
+                                  keys: vec![],
+                              }
+                          })
+                          .collect::<Vec<_>>();
 
     for (i, hash) in hashes.iter().enumerate() {
         buckets[(hash.g % (buckets_len as u32)) as usize].keys.push(i);
@@ -86,8 +93,8 @@ fn try_generate_hash<H: PhfHash>(entries: &[H], rng: &mut XorShiftRng) -> Option
                 generation += 1;
 
                 for &key in &bucket.keys {
-                    let idx = (phf_shared::displace(hashes[key].f1, hashes[key].f2, d1, d2)
-                               % (table_len as u32)) as usize;
+                    let idx = (phf_shared::displace(hashes[key].f1, hashes[key].f2, d1, d2) %
+                               (table_len as u32)) as usize;
                     if map[idx].is_some() || try_map[idx] == generation {
                         continue 'disps;
                     }
@@ -114,4 +121,3 @@ fn try_generate_hash<H: PhfHash>(entries: &[H], rng: &mut XorShiftRng) -> Option
         map: map.into_iter().map(|i| i.unwrap()).collect(),
     })
 }
-

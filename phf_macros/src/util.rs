@@ -68,7 +68,7 @@ impl PhfHash for Key {
 pub struct Entry {
     pub key_contents: Key,
     pub key: P<Expr>,
-    pub value: P<Expr>
+    pub value: P<Expr>,
 }
 
 impl PhfHash for Entry {
@@ -77,17 +77,24 @@ impl PhfHash for Entry {
     }
 }
 
-pub fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
-                  -> Box<MacResult+'static> {
-    let disps = state.disps.iter().map(|&(d1, d2)| {
-        quote_expr!(&*cx, ($d1, $d2))
-    }).collect();
+pub fn create_map(cx: &mut ExtCtxt,
+                  sp: Span,
+                  entries: Vec<Entry>,
+                  state: HashState)
+                  -> Box<MacResult + 'static> {
+    let disps = state.disps
+                     .iter()
+                     .map(|&(d1, d2)| quote_expr!(&*cx, ($d1, $d2)))
+                     .collect();
     let disps = cx.expr_vec(sp, disps);
 
-    let entries = state.map.iter().map(|&idx| {
-        let &Entry { ref key, ref value, .. } = &entries[idx];
-        quote_expr!(&*cx, ($key, $value))
-    }).collect();
+    let entries = state.map
+                       .iter()
+                       .map(|&idx| {
+                           let &Entry { ref key, ref value, .. } = &entries[idx];
+                           quote_expr!(&*cx, ($key, $value))
+                       })
+                       .collect();
     let entries = cx.expr_vec(sp, entries);
 
     let key = state.key;
@@ -98,25 +105,34 @@ pub fn create_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashSt
     }))
 }
 
-pub fn create_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
-              -> Box<MacResult+'static> {
+pub fn create_set(cx: &mut ExtCtxt,
+                  sp: Span,
+                  entries: Vec<Entry>,
+                  state: HashState)
+                  -> Box<MacResult + 'static> {
     let map = create_map(cx, sp, entries, state).make_expr().unwrap();
     MacEager::expr(quote_expr!(cx, ::phf::Set { map: $map }))
 }
 
-pub fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
-                          -> Box<MacResult+'static> {
-    let disps = state.disps.iter().map(|&(d1, d2)| {
-        quote_expr!(&*cx, ($d1, $d2))
-    }).collect();
+pub fn create_ordered_map(cx: &mut ExtCtxt,
+                          sp: Span,
+                          entries: Vec<Entry>,
+                          state: HashState)
+                          -> Box<MacResult + 'static> {
+    let disps = state.disps
+                     .iter()
+                     .map(|&(d1, d2)| quote_expr!(&*cx, ($d1, $d2)))
+                     .collect();
     let disps = cx.expr_vec(sp, disps);
 
     let idxs = state.map.iter().map(|&idx| quote_expr!(&*cx, $idx)).collect();
     let idxs = cx.expr_vec(sp, idxs);
 
-    let entries = entries.iter().map(|&Entry { ref key, ref value, .. }| {
-        quote_expr!(&*cx, ($key, $value))
-    }).collect();
+    let entries = entries.iter()
+                         .map(|&Entry { ref key, ref value, .. }| {
+                             quote_expr!(&*cx, ($key, $value))
+                         })
+                         .collect();
     let entries = cx.expr_vec(sp, entries);
 
     let key = state.key;
@@ -128,8 +144,11 @@ pub fn create_ordered_map(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state
     }))
 }
 
-pub fn create_ordered_set(cx: &mut ExtCtxt, sp: Span, entries: Vec<Entry>, state: HashState)
-                          -> Box<MacResult+'static> {
+pub fn create_ordered_set(cx: &mut ExtCtxt,
+                          sp: Span,
+                          entries: Vec<Entry>,
+                          state: HashState)
+                          -> Box<MacResult + 'static> {
     let map = create_ordered_map(cx, sp, entries, state).make_expr().unwrap();
     MacEager::expr(quote_expr!(cx, ::phf::OrderedSet { map: $map }))
 }

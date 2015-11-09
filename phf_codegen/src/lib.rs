@@ -21,7 +21,8 @@
 //!     let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
 //!     let mut file = BufWriter::new(File::create(&path).unwrap());
 //!
-//!     write!(&mut file, "static KEYWORDS: phf::Map<&'static str, Keyword> = ").unwrap();
+//! write!(&mut file, "static KEYWORDS: phf::Map<&'static str, Keyword> =
+//! ").unwrap();
 //!     phf_codegen::Map::new()
 //!         .entry("loop", "Keyword::Loop")
 //!         .entry("continue", "Keyword::Continue")
@@ -77,7 +78,7 @@
 //! builder.entry("world", "2");
 //! // ...
 //! ```
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.6")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.7")]
 extern crate phf_shared;
 extern crate phf_generator;
 
@@ -104,7 +105,8 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         // the linker ends up throwing a way a bunch of static symbols we actually need.
         // This works around the problem, assuming that all clients call `Map::new` by
         // calling a non-generic function.
-        fn noop_fix_for_27438() { }
+        fn noop_fix_for_27438() {
+        }
         noop_fix_for_27438();
 
         Map {
@@ -137,24 +139,31 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(w, "::phf::Map {{
+        try!(write!(w,
+                    "::phf::Map {{
     key: {},
     disps: &[",
                     state.key));
         for &(d1, d2) in &state.disps {
-            try!(write!(w, "
+            try!(write!(w,
+                        "
         ({}, {}),",
-                        d1, d2));
+                        d1,
+                        d2));
         }
-        try!(write!(w, "
+        try!(write!(w,
+                    "
     ],
     entries: &["));
         for &idx in &state.map {
-            try!(write!(w, "
+            try!(write!(w,
+                        "
         ({:?}, {}),",
-                        &self.keys[idx], &self.values[idx]));
+                        &self.keys[idx],
+                        &self.values[idx]));
         }
-        write!(w, "
+        write!(w,
+               "
     ]
 }}")
     }
@@ -162,15 +171,13 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
 
 /// A builder for the `phf::Set` type.
 pub struct Set<T> {
-    map: Map<T>
+    map: Map<T>,
 }
 
 impl<T: Hash+PhfHash+Eq+fmt::Debug> Set<T> {
     /// Constructs a new `phf::Set` builder.
     pub fn new() -> Set<T> {
-        Set {
-            map: Map::new()
-        }
+        Set { map: Map::new() }
     }
 
     /// Adds an entry to the builder.
@@ -231,32 +238,41 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(w, "::phf::OrderedMap {{
+        try!(write!(w,
+                    "::phf::OrderedMap {{
     key: {},
     disps: &[",
                     state.key));
         for &(d1, d2) in &state.disps {
-            try!(write!(w, "
+            try!(write!(w,
+                        "
         ({}, {}),",
-                        d1, d2));
+                        d1,
+                        d2));
         }
-        try!(write!(w, "
+        try!(write!(w,
+                    "
     ],
     idxs: &["));
         for &idx in &state.map {
-            try!(write!(w, "
+            try!(write!(w,
+                        "
         {},",
                         idx));
         }
-        try!(write!(w, "
+        try!(write!(w,
+                    "
     ],
     entries: &["));
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
-            try!(write!(w, "
+            try!(write!(w,
+                        "
         ({:?}, {}),",
-                        key, value));
+                        key,
+                        value));
         }
-        write!(w, "
+        write!(w,
+               "
     ]
 }}")
     }
@@ -264,15 +280,13 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
 
 /// A builder for the `phf::OrderedSet` type.
 pub struct OrderedSet<T> {
-    map: OrderedMap<T>
+    map: OrderedMap<T>,
 }
 
 impl<T: Hash+PhfHash+Eq+fmt::Debug> OrderedSet<T> {
     /// Constructs a new `phf::OrderedSet` builder.
     pub fn new() -> OrderedSet<T> {
-        OrderedSet {
-            map: OrderedMap::new()
-        }
+        OrderedSet { map: OrderedMap::new() }
     }
 
     /// Adds an entry to the builder.

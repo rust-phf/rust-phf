@@ -15,9 +15,9 @@ libs=$(find . -name lib.rs)
 release_branch=release-v$new
 git checkout -b $release_branch
 
-sed -i -e "s/version = \"$old\"/version = \"$new\"/g" $tomls
-sed -i -e "s/version = \"=$old\"/version = \"=$new\"/g" $tomls
-sed -i -e "s|doc/v$old|doc/v$new|g" $tomls $libs README.md
+sed -i '' -e "s/version = \"$old\"/version = \"$new\"/g" $tomls
+sed -i '' -e "s/version = \"=$old\"/version = \"=$new\"/g" $tomls
+sed -i '' -e "s|doc/v$old|doc/v$new|g" $tomls $libs README.md
 
 git add .
 git commit -ve -m "Release v$new"

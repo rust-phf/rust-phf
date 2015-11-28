@@ -36,7 +36,7 @@
 extern crate syntax;
 #[cfg(feature = "stats")]
 extern crate time;
-extern crate rustc;
+extern crate rustc_plugin;
 extern crate phf_shared;
 extern crate phf_generator;
 
@@ -49,7 +49,7 @@ use syntax::fold::Folder;
 use syntax::parse;
 use syntax::parse::token::{InternedString, Comma, Eof, FatArrow};
 use syntax::print::pprust;
-use rustc::plugin::Registry;
+use rustc_plugin::Registry;
 use phf_generator::HashState;
 use std::env;
 

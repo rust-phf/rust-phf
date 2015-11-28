@@ -15,9 +15,15 @@ libs=$(find . -name lib.rs)
 release_branch=release-v$new
 git checkout -b $release_branch
 
-sed -i '' -e "s/version = \"$old\"/version = \"$new\"/g" $tomls
-sed -i '' -e "s/version = \"=$old\"/version = \"=$new\"/g" $tomls
-sed -i '' -e "s|doc/v$old|doc/v$new|g" $tomls $libs README.md
+if [ $(uname) -ne "Linux" ]; then
+    sed_flags="-i ''"
+else
+    sed_flags="-i"
+fi
+
+sed $sed_flags -e "s/version = \"$old\"/version = \"$new\"/g" $tomls
+sed $sed_flags -e "s/version = \"=$old\"/version = \"=$new\"/g" $tomls
+sed $sed_flags -e "s|doc/v$old|doc/v$new|g" $tomls $libs README.md
 
 git add .
 git commit -ve -m "Release v$new"

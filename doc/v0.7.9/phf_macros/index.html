@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `phf_macros` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, phf_macros">
+
+    <title>phf_macros - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'phf_macros', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>phf_macros</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-0' class='srclink' href='../src/phf_macros/lib.rs.html#1-311' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Compiler plugin defining macros that create PHF data structures.</p>
+
+<h1 id='example' class='section-header'><a href='#example'>Example</a></h1><pre class='rust rust-example-rendered'>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>plugin</span>, <span class='ident'>core</span>)]</span>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>plugin</span>(<span class='ident'>phf_macros</span>)]</span>
+
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>phf</span>;
+
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>)]</span>
+<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>Keyword</span> {
+    <span class='ident'>Loop</span>,
+    <span class='ident'>Continue</span>,
+    <span class='ident'>Break</span>,
+    <span class='ident'>Fn</span>,
+    <span class='ident'>Extern</span>,
+}
+
+<span class='kw'>static</span> <span class='ident'>KEYWORDS</span>: <span class='ident'>phf</span>::<span class='ident'>Map</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='ident'>Keyword</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='macro'>phf_map</span><span class='macro'>!</span> {
+    <span class='string'>&quot;loop&quot;</span> <span class='op'>=&gt;</span> <span class='ident'>Keyword</span>::<span class='ident'>Loop</span>,
+    <span class='string'>&quot;continue&quot;</span> <span class='op'>=&gt;</span> <span class='ident'>Keyword</span>::<span class='ident'>Continue</span>,
+    <span class='string'>&quot;break&quot;</span> <span class='op'>=&gt;</span> <span class='ident'>Keyword</span>::<span class='ident'>Break</span>,
+    <span class='string'>&quot;fn&quot;</span> <span class='op'>=&gt;</span> <span class='ident'>Keyword</span>::<span class='ident'>Fn</span>,
+    <span class='string'>&quot;extern&quot;</span> <span class='op'>=&gt;</span> <span class='ident'>Keyword</span>::<span class='ident'>Extern</span>,
+};
+
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>parse_keyword</span>(<span class='ident'>keyword</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Keyword</span><span class='op'>&gt;</span> {
+    <span class='ident'>KEYWORDS</span>.<span class='ident'>get</span>(<span class='ident'>keyword</span>).<span class='ident'>cloned</span>()
+}</pre>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='util/index.html'
+                               title='phf_macros::util'>util</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                </table><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.phf_map!.html'
+                               title='phf_macros::phf_map!'>phf_map!</a></td>
+                        <td class='docblock short'>
+                             <p>Constructs a <code>phf::Map</code> at compile time.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.phf_ordered_map!.html'
+                               title='phf_macros::phf_ordered_map!'>phf_ordered_map!</a></td>
+                        <td class='docblock short'>
+                             <p>Constructs a <code>phf::OrderedMap</code> at compile time.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.phf_ordered_set!.html'
+                               title='phf_macros::phf_ordered_set!'>phf_ordered_set!</a></td>
+                        <td class='docblock short'>
+                             <p>Constructs a <code>phf::OrderedSet</code> at compile time.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.phf_set!.html'
+                               title='phf_macros::phf_set!'>phf_set!</a></td>
+                        <td class='docblock short'>
+                             <p>Constructs a <code>phf::Set</code> at compile time.</p>
+
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "phf_macros";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

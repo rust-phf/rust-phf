@@ -30,7 +30,7 @@
 //! }
 //! # fn main() {}
 //! ```
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.9")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.10")]
 #![feature(plugin_registrar, quote, rustc_private)]
 
 extern crate syntax;
@@ -42,7 +42,7 @@ extern crate phf_generator;
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
-use syntax::ast::{self, TokenTree, LitStr, LitByteStr, LitByte, LitChar, Expr, ExprLit, ExprVec};
+use syntax::ast::{self, TokenTree, Expr, ExprLit, ExprVec};
 use syntax::codemap::{Span, Spanned};
 use syntax::ext::base::{DummyResult, ExtCtxt, MacResult};
 use syntax::fold::Folder;
@@ -81,7 +81,7 @@ fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
     let time = precise_time_s() - start;
 
     if cfg!(feature = "stats") && env::var_os("PHF_STATS").is_some() {
-        cx.span_note(sp, &format!("PHF generation took {} seconds", time));
+        cx.span_warn(sp, &format!("PHF generation took {} seconds", time));
     }
 
     state
@@ -300,11 +300,12 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
         }
 
         dups = true;
-        cx.span_err(sp,
-                    &*format!("duplicate key {}", pprust::expr_to_string(&**key)));
+        let mut err = cx.struct_span_err(sp, &*format!("duplicate key {}",
+                                                       pprust::expr_to_string(&**key)));
         for span in spans.iter() {
-            cx.span_note(*span, "one occurrence here");
+            err.span_note(*span, "one occurrence here");
         }
+        err.emit();
     }
 
     dups

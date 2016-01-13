@@ -30,7 +30,7 @@
 //! }
 //! # fn main() {}
 //! ```
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.10")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.11")]
 #![feature(plugin_registrar, quote, rustc_private)]
 
 extern crate syntax;
@@ -81,7 +81,9 @@ fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
     let time = precise_time_s() - start;
 
     if cfg!(feature = "stats") && env::var_os("PHF_STATS").is_some() {
-        cx.span_warn(sp, &format!("PHF generation took {} seconds", time));
+        cx.parse_sess
+          .span_diagnostic
+          .span_note_without_error(sp, &format!("PHF generation took {} seconds", time));
     }
 
     state
@@ -165,7 +167,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
             Key::Str(InternedString::new(""))
         });
 
-        if !parser.eat(&FatArrow).ok().unwrap() {
+        if !parser.eat(&FatArrow) {
             cx.span_err(parser.span, "expected `=>`");
             return None;
         }
@@ -178,7 +180,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
             value: value,
         });
 
-        if !parser.eat(&Comma).ok().unwrap() && parser.token != Eof {
+        if !parser.eat(&Comma) && parser.token != Eof {
             cx.span_err(parser.span, "expected `,`");
             return None;
         }
@@ -210,7 +212,7 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
             value: value.clone(),
         });
 
-        if !parser.eat(&Comma).ok().unwrap() && parser.token != Eof {
+        if !parser.eat(&Comma) && parser.token != Eof {
             cx.span_err(parser.span, "expected `,`");
             return None;
         }

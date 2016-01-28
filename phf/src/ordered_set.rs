@@ -57,8 +57,8 @@ impl<T> OrderedSet<T> {
         self.map.get_index(key)
     }
 
-    /// Returns references to both the key and values at an index
-    /// within the list used to initialize the ordered map. See `.get_index(key)`.
+    /// Returns a reference to the key at an index
+    /// within the list used to initialize the ordered set. See `.get_index(key)`.
     pub fn index(&self, index: usize) -> Option<&T> {
         self.map.index(index).map(|(k, &())| k)
     }

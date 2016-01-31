@@ -17,6 +17,11 @@ mod map {
         "foo" => 10
     );
 
+    #[allow(dead_code)]
+    static BYTE_STRING_KEY: phf::Map<&'static [u8], &'static str> = phf_map!(
+        b"camembert" => "delicious",
+    );
+
     #[test]
     fn test_two() {
         static MAP: phf::Map<&'static str, isize> = phf_map!(

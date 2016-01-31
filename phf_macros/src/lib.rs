@@ -42,13 +42,15 @@ extern crate phf_generator;
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
-use syntax::ast::{self, TokenTree, Expr, ExprLit, ExprVec};
+use syntax::ast::{self, Expr, ExprLit, ExprVec, MutImmutable, TokenTree, TyVec};
 use syntax::codemap::{Span, Spanned};
 use syntax::ext::base::{DummyResult, ExtCtxt, MacResult};
+use syntax::ext::build::AstBuilder;
 use syntax::fold::Folder;
 use syntax::parse;
 use syntax::parse::token::{InternedString, Comma, Eof, FatArrow};
 use syntax::print::pprust;
+use syntax::ptr::P;
 use rustc_plugin::Registry;
 use phf_generator::HashState;
 use std::env;
@@ -166,6 +168,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
             bad = true;
             Key::Str(InternedString::new(""))
         });
+        let key = adjust_key(cx, key);
 
         if !parser.eat(&FatArrow) {
             cx.span_err(parser.span, "expected `=>`");
@@ -205,6 +208,7 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
             bad = true;
             Key::Str(InternedString::new(""))
         });
+        let key = adjust_key(cx, key);
 
         entries.push(Entry {
             key_contents: key_contents,
@@ -282,6 +286,26 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
             cx.span_err(e.span, "expected a literal");
             None
         }
+    }
+}
+
+fn adjust_key(cx: &mut ExtCtxt, e: P<Expr>) -> P<Expr> {
+    let coerce_as_slice = match e.node {
+        ExprLit(ref lit) => {
+            match lit.node {
+                ast::LitByteStr(_) => true,
+                _ => false,
+            }
+        },
+        _ => false,
+    };
+    if coerce_as_slice {
+        let u8_type = cx.ty_path(cx.path_ident(e.span, cx.ident_of("u8")));
+        let array_type = cx.ty(e.span, TyVec(u8_type));
+        let slice_type = cx.ty_rptr(e.span, array_type, None, MutImmutable);
+        cx.expr_cast(e.span, e, slice_type)
+    } else {
+        e
     }
 }
 

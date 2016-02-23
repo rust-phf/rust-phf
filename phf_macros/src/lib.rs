@@ -42,8 +42,8 @@ extern crate phf_generator;
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
-use syntax::ast::{self, Expr, ExprLit, ExprVec, MutImmutable, TokenTree, TyVec};
-use syntax::codemap::{Span, Spanned};
+use syntax::ast::{self, Expr, ExprKind, Mutability, TokenTree, TyKind};
+use syntax::codemap::Span;
 use syntax::ext::base::{DummyResult, ExtCtxt, MacResult};
 use syntax::ext::build::AstBuilder;
 use syntax::fold::Folder;
@@ -231,44 +231,43 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
 
 fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
     match e.node {
-        ExprLit(ref lit) => {
+        ExprKind::Lit(ref lit) => {
             match lit.node {
-                ast::LitStr(ref s, _) => Some(Key::Str(s.clone())),
-                ast::LitByteStr(ref b) => Some(Key::Binary(b.clone())),
-                ast::LitByte(b) => Some(Key::U8(b)),
-                ast::LitChar(c) => Some(Key::Char(c)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI8, ast::Plus)) => Some(Key::I8(i as i8)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI8, ast::Minus)) =>
-                    Some(Key::I8(-(i as i8))),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI16, ast::Plus)) =>
+                ast::LitKind::Str(ref s, _) => Some(Key::Str(s.clone())),
+                ast::LitKind::ByteStr(ref b) => Some(Key::Binary(b.clone())),
+                ast::LitKind::Byte(b) => Some(Key::U8(b)),
+                ast::LitKind::Char(c) => Some(Key::Char(c)),
+                ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I8)) =>
+                    Some(Key::I8(i as i8)),
+                ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I16)) =>
                     Some(Key::I16(i as i16)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI16, ast::Minus)) =>
-                    Some(Key::I16(-(i as i16))),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI32, ast::Plus)) =>
+                ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I32)) =>
                     Some(Key::I32(i as i32)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI32, ast::Minus)) =>
-                    Some(Key::I32(-(i as i32))),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI64, ast::Plus)) =>
+                ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I64)) =>
                     Some(Key::I64(i as i64)),
-                ast::LitInt(i, ast::SignedIntLit(ast::TyI64, ast::Minus)) =>
-                    Some(Key::I64(-(i as i64))),
-                ast::LitInt(i, ast::UnsignedIntLit(ast::TyU8)) => Some(Key::U8(i as u8)),
-                ast::LitInt(i, ast::UnsignedIntLit(ast::TyU16)) => Some(Key::U16(i as u16)),
-                ast::LitInt(i, ast::UnsignedIntLit(ast::TyU32)) => Some(Key::U32(i as u32)),
-                ast::LitInt(i, ast::UnsignedIntLit(ast::TyU64)) => Some(Key::U64(i as u64)),
-                ast::LitBool(b) => Some(Key::Bool(b)),
+                ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U8)) =>
+                    Some(Key::U8(i as u8)),
+                ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U16)) =>
+                    Some(Key::U16(i as u16)),
+                ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U32)) =>
+                    Some(Key::U32(i as u32)),
+                ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U64)) =>
+                    Some(Key::U64(i as u64)),
+                ast::LitKind::Bool(b) => Some(Key::Bool(b)),
                 _ => {
                     cx.span_err(e.span, "unsupported literal type");
                     None
                 }
             }
         }
-        ExprVec(ref v) => {
+        ExprKind::Vec(ref v) => {
             let bytes: Vec<Option<u8>> = v.iter().map(|expr|
-                if let ExprLit(ref p) = expr.node {
-                    match **p {
-                        Spanned {node: ast::LitInt(val, ast::UnsignedIntLit(ast::UintTy::TyU8)), ..} if val < 256 => Some(val as u8),
-                        Spanned {node: ast::LitInt(val, ast::UnsuffixedIntLit(ast::Plus)), ..} if val < 256 => Some(val as u8),
+                if let ExprKind::Lit(ref p) = expr.node {
+                    match p.node {
+                        ast::LitKind::Int(val, ast::LitIntType::Unsigned(ast::UintTy::U8)) if val < 256 =>
+                            Some(val as u8),
+                        ast::LitKind::Int(val, ast::LitIntType::Unsuffixed) if val < 256 =>
+                            Some(val as u8),
                         _ => None,
                     }
                 } else {
@@ -291,9 +290,9 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
 
 fn adjust_key(cx: &mut ExtCtxt, e: P<Expr>) -> P<Expr> {
     let coerce_as_slice = match e.node {
-        ExprLit(ref lit) => {
+        ExprKind::Lit(ref lit) => {
             match lit.node {
-                ast::LitByteStr(_) => true,
+                ast::LitKind::ByteStr(_) => true,
                 _ => false,
             }
         },
@@ -301,8 +300,8 @@ fn adjust_key(cx: &mut ExtCtxt, e: P<Expr>) -> P<Expr> {
     };
     if coerce_as_slice {
         let u8_type = cx.ty_path(cx.path_ident(e.span, cx.ident_of("u8")));
-        let array_type = cx.ty(e.span, TyVec(u8_type));
-        let slice_type = cx.ty_rptr(e.span, array_type, None, MutImmutable);
+        let array_type = cx.ty(e.span, TyKind::Vec(u8_type));
+        let slice_type = cx.ty_rptr(e.span, array_type, None, Mutability::Immutable);
         cx.expr_cast(e.span, e, slice_type)
     } else {
         e

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Iter","An iterator over the values in a `Set`."],["Set","An immutable set constructed at compile time.NoteThe fields of this struct are public so that they may be initialized by the `phf_set!` macro and code generation. They are subject to change at any time and should never be accessed directly."]]});

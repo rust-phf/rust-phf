@@ -1,0 +1,1 @@
+initSidebarItems({"macro":[["phf_map!","Constructs a `phf::Map` at compile time.Examples"],["phf_ordered_map!","Constructs a `phf::OrderedMap` at compile time.Examples"],["phf_ordered_set!","Constructs a `phf::OrderedSet` at compile time.Examples"],["phf_set!","Constructs a `phf::Set` at compile time.Examples"]],"mod":[["util",""]]});

@@ -1,11 +1,11 @@
 [package]
 name = "phf_shared"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.7.12"
+version = "0.7.13"
 license = "MIT"
 description = "Support code shared by PHF libraries"
 repository = "https://github.com/sfackler/rust-phf"
-documentation = "https://sfackler.github.io/rust-phf/doc/v0.7.12/phf_shared"
+documentation = "https://sfackler.github.io/rust-phf/doc/v0.7.13/phf_shared"
 
 [lib]
 name = "phf_shared"

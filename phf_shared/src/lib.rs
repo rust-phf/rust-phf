@@ -1,4 +1,4 @@
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.12")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.13")]
 #![cfg_attr(feature = "core", feature(no_std, core_slice_ext, core_str_ext))]
 #![cfg_attr(feature = "core", no_std)]
 #[cfg(not(feature = "core"))]

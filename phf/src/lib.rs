@@ -13,6 +13,8 @@ extern crate std as core;
 
 extern crate phf_shared;
 
+use core::ops::Deref;
+
 pub use phf_shared::PhfHash;
 #[doc(inline)]
 pub use map::Map;
@@ -27,3 +29,26 @@ pub mod map;
 pub mod set;
 pub mod ordered_map;
 pub mod ordered_set;
+
+// WARNING: this is not considered part of phf's public API and is subject to
+// change at any time.
+//
+// Basically Cow, but with the Owned version conditionally compiled
+#[doc(hidden)]
+pub enum Slice<T: 'static> {
+    Static(&'static [T]),
+    #[cfg(not(feature = "core"))]
+    Dynamic(Vec<T>),
+}
+
+impl<T> Deref for Slice<T> {
+    type Target = [T];
+
+    fn deref(&self) -> &[T] {
+        match *self {
+            Slice::Static(t) => t,
+            #[cfg(not(feature = "core"))]
+            Slice::Dynamic(ref t) => t,
+        }
+    }
+}

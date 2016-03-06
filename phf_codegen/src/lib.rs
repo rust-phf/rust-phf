@@ -142,7 +142,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         try!(write!(w,
                     "::phf::Map {{
     key: {},
-    disps: &[",
+    disps: ::phf::Slice::Static(&[",
                     state.key));
         for &(d1, d2) in &state.disps {
             try!(write!(w,
@@ -153,8 +153,8 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         }
         try!(write!(w,
                     "
-    ],
-    entries: &["));
+    ]),
+    entries: ::phf::Slice::Static(&["));
         for &idx in &state.map {
             try!(write!(w,
                         "
@@ -164,7 +164,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         }
         write!(w,
                "
-    ]
+    ]),
 }}")
     }
 }
@@ -241,7 +241,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         try!(write!(w,
                     "::phf::OrderedMap {{
     key: {},
-    disps: &[",
+    disps: ::phf::Slice::Static(&[",
                     state.key));
         for &(d1, d2) in &state.disps {
             try!(write!(w,
@@ -252,8 +252,8 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         }
         try!(write!(w,
                     "
-    ],
-    idxs: &["));
+    ]),
+    idxs: ::phf::Slice::Static(&["));
         for &idx in &state.map {
             try!(write!(w,
                         "
@@ -262,8 +262,8 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         }
         try!(write!(w,
                     "
-    ],
-    entries: &["));
+    ]),
+    entries: ::phf::Slice::Static(&["));
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
             try!(write!(w,
                         "
@@ -273,7 +273,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         }
         write!(w,
                "
-    ]
+    ]),
 }}")
     }
 }

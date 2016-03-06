@@ -5,7 +5,6 @@
 //! the documentation of those crates for more details.
 #![doc(html_root_url="https://sfackler.github.io/rust-phf/doc/v0.7.13")]
 #![warn(missing_docs)]
-#![cfg_attr(feature = "core", feature(no_std, core_slice_ext))]
 #![cfg_attr(feature = "core", no_std)]
 
 #[cfg(not(feature = "core"))]

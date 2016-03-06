@@ -60,6 +60,7 @@ pub trait PhfHash {
     }
 }
 
+#[cfg(not(feature = "core"))]
 impl PhfHash for String {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
@@ -67,6 +68,7 @@ impl PhfHash for String {
     }
 }
 
+#[cfg(not(feature = "core"))]
 impl PhfHash for Vec<u8> {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {

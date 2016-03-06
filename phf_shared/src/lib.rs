@@ -60,10 +60,24 @@ pub trait PhfHash {
     }
 }
 
+impl PhfHash for String {
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        (**self).phf_hash(state)
+    }
+}
+
+impl PhfHash for Vec<u8> {
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        (**self).phf_hash(state)
+    }
+}
+
 impl<'a> PhfHash for &'a str {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
-        self.as_bytes().phf_hash(state)
+        (*self).phf_hash(state)
     }
 }
 

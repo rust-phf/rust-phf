@@ -45,3 +45,14 @@ fn ordered_set() {
     assert!(!set.contains(&4));
     assert_eq!(&[1, 2, 3][..], &set.iter().cloned().collect::<Vec<_>>()[..]);
 }
+
+#[test]
+fn string_keys() {
+    let mut builder = Set::new();
+    builder.entry("a".to_owned()).entry("b".to_owned()).entry("c".to_owned());
+    let set = builder.build();
+    assert!(set.contains("a"));
+    assert!(set.contains("b"));
+    assert!(set.contains("c"));
+    assert!(!set.contains("d"));
+}

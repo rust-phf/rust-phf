@@ -14,6 +14,7 @@ test = false
 
 [features]
 core = ["phf_shared/core"]
+unicase = ["phf_shared/unicase"]
 
 [dependencies]
 phf_shared = { version = "=0.7.13", path = "../phf_shared" }

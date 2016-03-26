@@ -3,6 +3,9 @@
 #[cfg(not(feature = "core"))]
 extern crate std as core;
 
+#[cfg(feature = "unicase")]
+extern crate unicase;
+
 use core::hash::{Hasher, Hash, SipHasher};
 
 #[inline]
@@ -103,6 +106,14 @@ impl PhfHash for [u8] {
     }
 }
 
+#[cfg(feature = "unicase")]
+impl<S> PhfHash for unicase::UniCase<S>
+where unicase::UniCase<S>: Hash {
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        self.hash(state)
+    }
+}
 
 macro_rules! sip_impl(
     (le $t:ty) => (

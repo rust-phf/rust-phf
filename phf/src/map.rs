@@ -4,8 +4,8 @@ use core::ops::Index;
 use core::slice;
 use core::fmt;
 use core::iter::IntoIterator;
-use PhfHash;
-use phf_shared;
+use phf_shared::{self, PhfHash};
+use Slice;
 
 /// An immutable map constructed at compile time.
 ///
@@ -18,9 +18,9 @@ pub struct Map<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub key: u64,
     #[doc(hidden)]
-    pub disps: &'static [(u32, u32)],
+    pub disps: Slice<(u32, u32)>,
     #[doc(hidden)]
-    pub entries: &'static [(K, V)],
+    pub entries: Slice<(K, V)>,
 }
 
 impl<K, V> fmt::Debug for Map<K, V> where K: fmt::Debug, V: fmt::Debug {
@@ -81,7 +81,7 @@ impl<K, V> Map<K, V> {
               K: Borrow<T>
     {
         let hash = phf_shared::hash(key, self.key);
-        let index = phf_shared::get_index(hash, self.disps, self.entries.len());
+        let index = phf_shared::get_index(hash, &*self.disps, self.entries.len());
         let entry = &self.entries[index as usize];
         let b: &T = entry.0.borrow();
         if b == key {

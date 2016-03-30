@@ -100,8 +100,8 @@ pub fn create_map(cx: &mut ExtCtxt,
     let key = state.key;
     MacEager::expr(quote_expr!(cx, ::phf::Map {
         key: $key,
-        disps: &$disps,
-        entries: &$entries,
+        disps: ::phf::Slice::Static(&$disps),
+        entries: ::phf::Slice::Static(&$entries),
     }))
 }
 
@@ -138,9 +138,9 @@ pub fn create_ordered_map(cx: &mut ExtCtxt,
     let key = state.key;
     MacEager::expr(quote_expr!(cx, ::phf::OrderedMap {
         key: $key,
-        disps: &$disps,
-        idxs: &$idxs,
-        entries: &$entries,
+        disps: ::phf::Slice::Static(&$disps),
+        idxs: ::phf::Slice::Static(&$idxs),
+        entries: ::phf::Slice::Static(&$entries),
     }))
 }
 

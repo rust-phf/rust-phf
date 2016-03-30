@@ -4,9 +4,9 @@ use core::iter::IntoIterator;
 use core::ops::Index;
 use core::fmt;
 use core::slice;
+use phf_shared::{self, PhfHash};
 
-use PhfHash;
-use phf_shared;
+use Slice;
 
 /// An order-preserving immutable map constructed at compile time.
 ///
@@ -22,11 +22,11 @@ pub struct OrderedMap<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub key: u64,
     #[doc(hidden)]
-    pub disps: &'static [(u32, u32)],
+    pub disps: Slice<(u32, u32)>,
     #[doc(hidden)]
-    pub idxs: &'static [usize],
+    pub idxs: Slice<usize>,
     #[doc(hidden)]
-    pub entries: &'static [(K, V)],
+    pub entries: Slice<(K, V)>,
 }
 
 impl<K, V> fmt::Debug for OrderedMap<K, V> where K: fmt::Debug, V: fmt::Debug {
@@ -109,7 +109,7 @@ impl<K, V> OrderedMap<K, V> {
               K: Borrow<T>
     {
         let hash = phf_shared::hash(key, self.key);
-        let idx_index = phf_shared::get_index(hash, self.disps, self.idxs.len());
+        let idx_index = phf_shared::get_index(hash, &*self.disps, self.idxs.len());
         let idx = self.idxs[idx_index as usize];
         let entry = &self.entries[idx];
 

@@ -1,8 +1,10 @@
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.13")]
-#![cfg_attr(feature = "core", feature(no_std, core_slice_ext, core_str_ext))]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.14")]
 #![cfg_attr(feature = "core", no_std)]
 #[cfg(not(feature = "core"))]
 extern crate std as core;
+
+#[cfg(feature = "unicase")]
+extern crate unicase;
 
 use core::hash::{Hasher, Hash, SipHasher};
 
@@ -60,10 +62,26 @@ pub trait PhfHash {
     }
 }
 
+#[cfg(not(feature = "core"))]
+impl PhfHash for String {
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        (**self).phf_hash(state)
+    }
+}
+
+#[cfg(not(feature = "core"))]
+impl PhfHash for Vec<u8> {
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        (**self).phf_hash(state)
+    }
+}
+
 impl<'a> PhfHash for &'a str {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
-        self.as_bytes().phf_hash(state)
+        (*self).phf_hash(state)
     }
 }
 
@@ -88,6 +106,14 @@ impl PhfHash for [u8] {
     }
 }
 
+#[cfg(feature = "unicase")]
+impl<S> PhfHash for unicase::UniCase<S>
+where unicase::UniCase<S>: Hash {
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        self.hash(state)
+    }
+}
 
 macro_rules! sip_impl(
     (le $t:ty) => (

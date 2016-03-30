@@ -4,8 +4,15 @@ authors = ["Steven Fackler <sfackler@gmail.com>"]
 version = "0.0.0"
 build = "build.rs"
 
+[dependencies]
+unicase = "1.1"
+
+[build-dependencies]
+unicase = "1.1"
+
 [build-dependencies.phf_codegen]
 path = ".."
 
 [dependencies.phf]
 path = "../../phf"
+features = ["unicase"]

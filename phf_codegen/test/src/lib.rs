@@ -1,7 +1,10 @@
 extern crate phf;
+extern crate unicase;
 
 #[cfg(test)]
 mod test {
+    use unicase::UniCase;
+
     include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
     #[test]
@@ -43,5 +46,13 @@ mod test {
         assert_eq!(1, STR_KEYS["a"]);
         assert_eq!(2, STR_KEYS["b"]);
         assert_eq!(3, STR_KEYS["c"]);
+    }
+
+    #[test]
+    fn unicase_map() {
+        assert_eq!("a", UNICASE_MAP[&UniCase("AbC")]);
+        assert_eq!("a", UNICASE_MAP[&UniCase("abc")]);
+        assert_eq!("b", UNICASE_MAP[&UniCase("DEf")]);
+        assert!(!UNICASE_MAP.contains_key(&UniCase("XyZ")));
     }
 }

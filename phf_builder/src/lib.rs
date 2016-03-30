@@ -51,7 +51,7 @@ impl<K: Hash + PhfHash + Eq, V> Map<K, V> {
         let mut entries = self.keys
                               .into_iter()
                               .zip(self.values)
-                              .map(Option::Some)
+                              .map(Some)
                               .collect::<Vec<_>>();
         let entries = state.map
                            .iter()

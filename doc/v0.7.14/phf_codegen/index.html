@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `phf_codegen` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, phf_codegen">
+
+    <title>phf_codegen - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'phf_codegen', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>phf_codegen</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-0' class='srclink' href='../src/phf_codegen/phf_codegen/src/lib.rs.html#1-309' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>A set of builders to generate Rust source for PHF data structures at
+compile time.</p>
+
+<p>The provided builders are intended to be used in a Cargo build script to
+generate a Rust source file that will be included in a library at build
+time.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<p>build.rs</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>phf_codegen</span>;
+
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>env</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fs</span>::<span class='ident'>File</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>::{<span class='ident'>BufWriter</span>, <span class='ident'>Write</span>};
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>path</span>::<span class='ident'>Path</span>;
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Path</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='ident'>env</span>::<span class='ident'>var</span>(<span class='string'>&quot;OUT_DIR&quot;</span>).<span class='ident'>unwrap</span>()).<span class='ident'>join</span>(<span class='string'>&quot;codegen.rs&quot;</span>);
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>file</span> <span class='op'>=</span> <span class='ident'>BufWriter</span>::<span class='ident'>new</span>(<span class='ident'>File</span>::<span class='ident'>create</span>(<span class='kw-2'>&amp;</span><span class='ident'>path</span>).<span class='ident'>unwrap</span>());
+
+<span class='macro'>write</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>file</span>, <span class='string'>&quot;static KEYWORDS: phf::Map&lt;&amp;&#39;static str, Keyword&gt; =
+&quot;</span>).<span class='ident'>unwrap</span>();
+    <span class='ident'>phf_codegen</span>::<span class='ident'>Map</span>::<span class='ident'>new</span>()
+        .<span class='ident'>entry</span>(<span class='string'>&quot;loop&quot;</span>, <span class='string'>&quot;Keyword::Loop&quot;</span>)
+        .<span class='ident'>entry</span>(<span class='string'>&quot;continue&quot;</span>, <span class='string'>&quot;Keyword::Continue&quot;</span>)
+        .<span class='ident'>entry</span>(<span class='string'>&quot;break&quot;</span>, <span class='string'>&quot;Keyword::Break&quot;</span>)
+        .<span class='ident'>entry</span>(<span class='string'>&quot;fn&quot;</span>, <span class='string'>&quot;Keyword::Fn&quot;</span>)
+        .<span class='ident'>entry</span>(<span class='string'>&quot;extern&quot;</span>, <span class='string'>&quot;Keyword::Extern&quot;</span>)
+        .<span class='ident'>build</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>file</span>)
+        .<span class='ident'>unwrap</span>();
+    <span class='macro'>write</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>file</span>, <span class='string'>&quot;;\n&quot;</span>).<span class='ident'>unwrap</span>();
+}</pre>
+
+<p>lib.rs</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>phf</span>;
+
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>)]</span>
+<span class='kw'>enum</span> <span class='ident'>Keyword</span> {
+    <span class='ident'>Loop</span>,
+    <span class='ident'>Continue</span>,
+    <span class='ident'>Break</span>,
+    <span class='ident'>Fn</span>,
+    <span class='ident'>Extern</span>,
+}
+
+<span class='macro'>include</span><span class='macro'>!</span>(<span class='macro'>concat</span><span class='macro'>!</span>(<span class='macro'>env</span><span class='macro'>!</span>(<span class='string'>&quot;OUT_DIR&quot;</span>), <span class='string'>&quot;/codegen.rs&quot;</span>));
+
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>parse_keyword</span>(<span class='ident'>keyword</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Keyword</span><span class='op'>&gt;</span> {
+    <span class='ident'>KEYWORDS</span>.<span class='ident'>get</span>(<span class='ident'>keyword</span>).<span class='ident'>cloned</span>()
+}</pre>
+
+<h1 id='note' class='section-header'><a href='#note'>Note</a></h1>
+<p>The compiler&#39;s stack will overflow when processing extremely long method
+chains (500+ calls). When generating large PHF data structures, consider
+looping over the entries or making each call a separate statement:</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>entries</span> <span class='op'>=</span> [(<span class='string'>&quot;hello&quot;</span>, <span class='string'>&quot;1&quot;</span>), (<span class='string'>&quot;world&quot;</span>, <span class='string'>&quot;2&quot;</span>)];
+
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>builder</span> <span class='op'>=</span> <span class='ident'>phf_codegen</span>::<span class='ident'>Map</span>::<span class='ident'>new</span>();
+<span class='kw'>for</span> <span class='kw-2'>&amp;</span>(<span class='ident'>key</span>, <span class='ident'>value</span>) <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='ident'>entries</span> {
+    <span class='ident'>builder</span>.<span class='ident'>entry</span>(<span class='ident'>key</span>, <span class='ident'>value</span>);
+}
+<span class='comment'>// ...</span></pre>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>builder</span> <span class='op'>=</span> <span class='ident'>phf_codegen</span>::<span class='ident'>Map</span>::<span class='ident'>new</span>();
+<span class='ident'>builder</span>.<span class='ident'>entry</span>(<span class='string'>&quot;hello&quot;</span>, <span class='string'>&quot;1&quot;</span>);
+<span class='ident'>builder</span>.<span class='ident'>entry</span>(<span class='string'>&quot;world&quot;</span>, <span class='string'>&quot;2&quot;</span>);
+<span class='comment'>// ...</span></pre>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Map.html'
+                                  title='phf_codegen::Map'>Map</a></td>
+                           <td class='docblock short'>
+                                <p>A builder for the <code>phf::Map</code> type.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OrderedMap.html'
+                                  title='phf_codegen::OrderedMap'>OrderedMap</a></td>
+                           <td class='docblock short'>
+                                <p>A builder for the <code>phf::OrderedMap</code> type.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.OrderedSet.html'
+                                  title='phf_codegen::OrderedSet'>OrderedSet</a></td>
+                           <td class='docblock short'>
+                                <p>A builder for the <code>phf::OrderedSet</code> type.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Set.html'
+                                  title='phf_codegen::Set'>Set</a></td>
+                           <td class='docblock short'>
+                                <p>A builder for the <code>phf::Set</code> type.</p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "phf_codegen";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["displace",""],["get_index","Return an index into `phf_generator::HashState::map`."],["hash","`key` is from `phf_generator::HashState::key`."],["split",""]],"trait":[["PhfHash","A trait implemented by types which can be used in PHF data structures."]]});

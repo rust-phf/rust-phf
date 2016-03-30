@@ -1,4 +1,4 @@
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.13")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.14")]
 extern crate phf;
 extern crate phf_generator;
 

@@ -162,7 +162,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         try!(write!(w,
                     "
     ]),
-    entries: ::phf::Slice::Static(&["));
+    entries: {}::Slice::Static(&[", self.path));
         for &idx in &state.map {
             try!(write!(w,
                         "
@@ -277,7 +277,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         try!(write!(w,
                     "
     ]),
-    idxs: ::phf::Slice::Static(&["));
+    idxs: {}::Slice::Static(&[", self.path));
         for &idx in &state.map {
             try!(write!(w,
                         "
@@ -287,7 +287,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         try!(write!(w,
                     "
     ]),
-    entries: ::phf::Slice::Static(&["));
+    entries: {}::Slice::Static(&[", self.path));
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
             try!(write!(w,
                         "

@@ -78,7 +78,7 @@
 //! builder.entry("world", "2");
 //! // ...
 //! ```
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.14")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.15")]
 extern crate phf_shared;
 extern crate phf_generator;
 
@@ -93,6 +93,7 @@ use std::io::prelude::*;
 pub struct Map<K> {
     keys: Vec<K>,
     values: Vec<String>,
+    path: String,
 }
 
 impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
@@ -112,7 +113,14 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         Map {
             keys: vec![],
             values: vec![],
+            path: String::from("::phf"),
         }
+    }
+
+    /// Set the path to the `phf` crate from the global namespace
+    pub fn phf_path(&mut self, path: &str) -> &mut Map<K> {
+        self.path = path.to_owned();
+        self
     }
 
     /// Adds an entry to the builder.
@@ -120,7 +128,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
     /// `value` will be written exactly as provided in the constructed source.
     pub fn entry(&mut self, key: K, value: &str) -> &mut Map<K> {
         self.keys.push(key);
-        self.values.push(value.to_string());
+        self.values.push(value.to_owned());
         self
     }
 
@@ -140,10 +148,10 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         let state = phf_generator::generate_hash(&self.keys);
 
         try!(write!(w,
-                    "::phf::Map {{
+                    "{}::Map {{
     key: {},
-    disps: ::phf::Slice::Static(&[",
-                    state.key));
+    disps: {}::Slice::Static(&[",
+                    self.path, state.key, self.path));
         for &(d1, d2) in &state.disps {
             try!(write!(w,
                         "
@@ -154,7 +162,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         try!(write!(w,
                     "
     ]),
-    entries: ::phf::Slice::Static(&["));
+    entries: {}::Slice::Static(&[", self.path));
         for &idx in &state.map {
             try!(write!(w,
                         "
@@ -177,7 +185,15 @@ pub struct Set<T> {
 impl<T: Hash+PhfHash+Eq+fmt::Debug> Set<T> {
     /// Constructs a new `phf::Set` builder.
     pub fn new() -> Set<T> {
-        Set { map: Map::new() }
+        Set {
+            map: Map::new(),
+        }
+    }
+
+    /// Set the path to the `phf` crate from the global namespace
+    pub fn phf_path(&mut self, path: &str) -> &mut Set<T> {
+        self.map.phf_path(path);
+        self
     }
 
     /// Adds an entry to the builder.
@@ -192,7 +208,7 @@ impl<T: Hash+PhfHash+Eq+fmt::Debug> Set<T> {
     ///
     /// Panics if there are any duplicate entries.
     pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
-        try!(write!(w, "::phf::Set {{ map: "));
+        try!(write!(w, "{}::Set {{ map: ", self.map.path));
         try!(self.map.build(w));
         write!(w, " }}")
     }
@@ -202,6 +218,7 @@ impl<T: Hash+PhfHash+Eq+fmt::Debug> Set<T> {
 pub struct OrderedMap<K> {
     keys: Vec<K>,
     values: Vec<String>,
+    path: String,
 }
 
 impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
@@ -210,7 +227,14 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         OrderedMap {
             keys: vec![],
             values: vec![],
+            path: String::from("::phf"),
         }
+    }
+
+    /// Set the path to the `phf` crate from the global namespace
+    pub fn phf_path(&mut self, path: &str) -> &mut OrderedMap<K> {
+        self.path = path.to_owned();
+        self
     }
 
     /// Adds an entry to the builder.
@@ -218,7 +242,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
     /// `value` will be written exactly as provided in the constructed source.
     pub fn entry(&mut self, key: K, value: &str) -> &mut OrderedMap<K> {
         self.keys.push(key);
-        self.values.push(value.to_string());
+        self.values.push(value.to_owned());
         self
     }
 
@@ -239,10 +263,10 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         let state = phf_generator::generate_hash(&self.keys);
 
         try!(write!(w,
-                    "::phf::OrderedMap {{
+                    "{}::OrderedMap {{
     key: {},
-    disps: ::phf::Slice::Static(&[",
-                    state.key));
+    disps: {}::Slice::Static(&[",
+                    self.path, state.key, self.path));
         for &(d1, d2) in &state.disps {
             try!(write!(w,
                         "
@@ -253,7 +277,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         try!(write!(w,
                     "
     ]),
-    idxs: ::phf::Slice::Static(&["));
+    idxs: {}::Slice::Static(&[", self.path));
         for &idx in &state.map {
             try!(write!(w,
                         "
@@ -263,7 +287,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         try!(write!(w,
                     "
     ]),
-    entries: ::phf::Slice::Static(&["));
+    entries: {}::Slice::Static(&[", self.path));
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
             try!(write!(w,
                         "
@@ -286,7 +310,15 @@ pub struct OrderedSet<T> {
 impl<T: Hash+PhfHash+Eq+fmt::Debug> OrderedSet<T> {
     /// Constructs a new `phf::OrderedSet` builder.
     pub fn new() -> OrderedSet<T> {
-        OrderedSet { map: OrderedMap::new() }
+        OrderedSet {
+            map: OrderedMap::new(),
+        }
+    }
+
+    /// Set the path to the `phf` crate from the global namespace
+    pub fn phf_path(&mut self, path: &str) -> &mut OrderedSet<T> {
+        self.map.phf_path(path);
+        self
     }
 
     /// Adds an entry to the builder.
@@ -302,7 +334,7 @@ impl<T: Hash+PhfHash+Eq+fmt::Debug> OrderedSet<T> {
     ///
     /// Panics if there are any duplicate entries.
     pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
-        try!(write!(w, "::phf::OrderedSet {{ map: "));
+        try!(write!(w, "{}::OrderedSet {{ map: ", self.map.path));
         try!(self.map.build(w));
         write!(w, " }}")
     }

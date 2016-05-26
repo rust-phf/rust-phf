@@ -1,4 +1,4 @@
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.14")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.15")]
 extern crate phf;
 extern crate phf_generator;
 
@@ -51,7 +51,7 @@ impl<K: Hash + PhfHash + Eq, V> Map<K, V> {
         let mut entries = self.keys
                               .into_iter()
                               .zip(self.values)
-                              .map(Option::Some)
+                              .map(Some)
                               .collect::<Vec<_>>();
         let entries = state.map
                            .iter()

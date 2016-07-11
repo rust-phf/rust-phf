@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Map","A builder for the `phf::Map` type."],["OrderedMap","A builder for the `phf::OrderedMap` type."],["OrderedSet","A builder for the `phf::OrderedSet` type."],["Set","A builder for the `phf::Set` type."]]});

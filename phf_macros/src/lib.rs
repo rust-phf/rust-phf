@@ -30,7 +30,7 @@
 //! }
 //! # fn main() {}
 //! ```
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.15")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.16")]
 #![feature(plugin_registrar, quote, rustc_private)]
 
 extern crate syntax;
@@ -42,7 +42,8 @@ extern crate phf_generator;
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
-use syntax::ast::{self, Expr, ExprKind, Mutability, TokenTree, TyKind};
+use syntax::ast::{self, Expr, ExprKind, Mutability, TyKind};
+use syntax::tokenstream::TokenTree;
 use syntax::codemap::Span;
 use syntax::ext::base::{DummyResult, ExtCtxt, MacResult};
 use syntax::ext::build::AstBuilder;

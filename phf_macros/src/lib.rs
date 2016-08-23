@@ -39,6 +39,8 @@ extern crate time;
 extern crate rustc_plugin;
 extern crate phf_shared;
 extern crate phf_generator;
+#[cfg(feature = "unicase_support")]
+extern crate unicase;
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
@@ -55,6 +57,8 @@ use syntax::ptr::P;
 use rustc_plugin::Registry;
 use phf_generator::HashState;
 use std::env;
+#[cfg(feature = "unicase_support")]
+use unicase::UniCase;
 
 use util::{Entry, Key};
 use util::{create_map, create_set, create_ordered_map, create_ordered_set};
@@ -282,8 +286,30 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
                 None
             }
         }
+        #[cfg(feature = "unicase_support")]
+        ExprKind::Call(ref f, ref args) => {
+            if let ExprKind::Path(_, ref path) = f.node {
+                if path.segments.last().unwrap().identifier.name.as_str() == "UniCase" {
+                    if args.len() == 1 {
+                        if let ExprKind::Lit(ref lit) = args.first().unwrap().node {
+                            if let ast::LitKind::Str(ref s, _) = lit.node {
+                                return Some(Key::UniCase(UniCase(s.to_string())));
+                            } else {
+                                cx.span_err(e.span, "only a str literal is allowed in UniCase");
+                                return None;
+                            }
+                        }
+                    } else {
+                        cx.span_err(e.span, "only one str literal is allowed in UniCase");
+                        return None;
+                    }
+                }
+            }
+            cx.span_err(e.span, "only UniCase is allowed besides literals");
+            None
+        },
         _ => {
-            cx.span_err(e.span, "expected a literal");
+            cx.span_err(e.span, "expected a literal (or a UniCase if the unicase_support feature is enabled)");
             None
         }
     }

@@ -15,6 +15,7 @@ test = false
 
 [features]
 stats = ["time"]
+unicase_support = ["unicase", "phf_shared/unicase"]
 
 [dependencies.phf_generator]
 path = "../phf_generator"
@@ -28,6 +29,13 @@ version = "=0.7.16"
 version = "0.1"
 optional = true
 
+[dependencies.unicase]
+version = "1.4"
+optional = true
+
 [dev-dependencies.phf]
 path = "../phf"
 version = "=0.7.16"
+
+[dev-dependencies.compiletest_rs]
+version = "0.2"

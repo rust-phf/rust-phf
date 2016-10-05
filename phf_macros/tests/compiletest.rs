@@ -8,7 +8,7 @@ fn run_mode(directory: &'static str, mode: &'static str) {
     let cfg_mode = mode.parse().ok().expect("Invalid mode");
 
     config.mode = cfg_mode;
-    config.target_rustcflags = Some("-L target/debug/".to_owned());
+    config.target_rustcflags = Some("-L target/debug/deps".to_owned());
     config.src_base = PathBuf::from(format!("tests/{}", directory));
 
     compiletest::run_tests(&config);

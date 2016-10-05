@@ -327,7 +327,7 @@ fn adjust_key(cx: &mut ExtCtxt, e: P<Expr>) -> P<Expr> {
     };
     if coerce_as_slice {
         let u8_type = cx.ty_path(cx.path_ident(e.span, cx.ident_of("u8")));
-        let array_type = cx.ty(e.span, TyKind::Vec(u8_type));
+        let array_type = cx.ty(e.span, TyKind::Slice(u8_type));
         let slice_type = cx.ty_rptr(e.span, array_type, None, Mutability::Immutable);
         cx.expr_cast(e.span, e, slice_type)
     } else {

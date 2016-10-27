@@ -1,11 +1,11 @@
 [package]
 name = "phf_macros"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.7.17"
+version = "0.7.18"
 license = "MIT"
 description = "Compiler plugin for perfect hash function data structures"
 repository = "https://github.com/sfackler/rust-phf"
-documentation = "https://sfackler.github.io/rust-phf/doc/v0.7.17/phf_macros"
+documentation = "https://sfackler.github.io/rust-phf/doc/v0.7.18/phf_macros"
 
 [lib]
 name = "phf_macros"
@@ -19,11 +19,11 @@ unicase_support = ["unicase", "phf_shared/unicase"]
 
 [dependencies.phf_generator]
 path = "../phf_generator"
-version = "=0.7.17"
+version = "=0.7.18"
 
 [dependencies.phf_shared]
 path = "../phf_shared"
-version = "=0.7.17"
+version = "=0.7.18"
 
 [dependencies.time]
 version = "0.1"
@@ -35,7 +35,7 @@ optional = true
 
 [dev-dependencies.phf]
 path = "../phf"
-version = "=0.7.17"
+version = "=0.7.18"
 
 [dev-dependencies.compiletest_rs]
 version = "0.2"

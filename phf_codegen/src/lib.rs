@@ -78,7 +78,7 @@
 //! builder.entry("world", "2");
 //! // ...
 //! ```
-#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.17")]
+#![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.18")]
 extern crate phf_shared;
 extern crate phf_generator;
 

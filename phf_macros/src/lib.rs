@@ -163,7 +163,7 @@ fn expand_phf_ordered_set(cx: &mut ExtCtxt,
 }
 
 fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
-    let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg().clone(), tts.to_vec());
+    let mut parser = parse::new_parser_from_tts(cx.parse_sess(), tts.to_vec());
     let mut entries = Vec::new();
 
     let mut bad = false;
@@ -202,7 +202,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
 }
 
 fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
-    let mut parser = parse::new_parser_from_tts(cx.parse_sess(), cx.cfg().clone(), tts.to_vec());
+    let mut parser = parse::new_parser_from_tts(cx.parse_sess(), tts.to_vec());
     let mut entries = Vec::new();
     let value = quote_expr!(&*cx, ());
 

@@ -51,9 +51,10 @@ use syntax::ext::base::{DummyResult, ExtCtxt, MacResult};
 use syntax::ext::build::AstBuilder;
 use syntax::fold::Folder;
 use syntax::parse;
-use syntax::parse::token::{InternedString, Comma, Eof, FatArrow};
+use syntax::parse::token::{Comma, Eof, FatArrow};
 use syntax::print::pprust;
 use syntax::ptr::P;
+use syntax::symbol::Symbol;
 use rustc_plugin::Registry;
 use phf_generator::HashState;
 use std::env;
@@ -171,7 +172,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
         let key = cx.expander().fold_expr(parser.parse_expr().unwrap());
         let key_contents = parse_key(cx, &*key).unwrap_or_else(|| {
             bad = true;
-            Key::Str(InternedString::new(""))
+            Key::Str(Symbol::intern("").as_str())
         });
         let key = adjust_key(cx, key);
 
@@ -211,7 +212,7 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
         let key = cx.expander().fold_expr(parser.parse_expr().unwrap());
         let key_contents = parse_key(cx, &*key).unwrap_or_else(|| {
             bad = true;
-            Key::Str(InternedString::new(""))
+            Key::Str(Symbol::intern("").as_str())
         });
         let key = adjust_key(cx, key);
 
@@ -238,7 +239,7 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
     match e.node {
         ExprKind::Lit(ref lit) => {
             match lit.node {
-                ast::LitKind::Str(ref s, _) => Some(Key::Str(s.clone())),
+                ast::LitKind::Str(ref s, _) => Some(Key::Str(s.as_str())),
                 ast::LitKind::ByteStr(ref b) => Some(Key::Binary(b.clone())),
                 ast::LitKind::Byte(b) => Some(Key::U8(b)),
                 ast::LitKind::Char(c) => Some(Key::Char(c)),
@@ -289,7 +290,7 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
         #[cfg(feature = "unicase_support")]
         ExprKind::Call(ref f, ref args) => {
             if let ExprKind::Path(_, ref path) = f.node {
-                if path.segments.last().unwrap().identifier.name.as_str() == "UniCase" {
+                if &*path.segments.last().unwrap().identifier.name.as_str() == "UniCase" {
                     if args.len() == 1 {
                         if let ExprKind::Lit(ref lit) = args.first().unwrap().node {
                             if let ast::LitKind::Str(ref s, _) = lit.node {

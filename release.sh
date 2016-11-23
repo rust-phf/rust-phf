@@ -12,9 +12,6 @@ new=$2
 tomls=$(find . -name Cargo.toml)
 libs=$(find . -name lib.rs)
 
-release_branch=release-v$new
-git checkout -b $release_branch
-
 perl -pi -e "s/version = \"$old\"/version = \"$new\"/g" $tomls
 perl -pi -e "s/version = \"=$old\"/version = \"=$new\"/g" $tomls
 perl -pi -e "s|doc/v$old|doc/v$new|g" $tomls $libs README.md
@@ -22,13 +19,4 @@ perl -pi -e "s|doc/v$old|doc/v$new|g" $tomls $libs README.md
 git add .
 git commit -ve -m "Release v$new"
 
-git checkout release
-git pull
-
-git merge --no-ff $release_branch
 git tag -a v$new
-
-git checkout master
-git pull
-
-git merge --no-ff release

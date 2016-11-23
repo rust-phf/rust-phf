@@ -5,8 +5,8 @@ use syntax::ast::Expr;
 use syntax::codemap::Span;
 use syntax::ext::base::{ExtCtxt, MacResult, MacEager};
 use syntax::ext::build::AstBuilder;
-use syntax::parse::token::InternedString;
 use syntax::ptr::P;
+use syntax::symbol::InternedString;
 
 use phf_shared::PhfHash;
 use phf_generator::HashState;

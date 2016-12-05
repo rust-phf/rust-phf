@@ -17,25 +17,13 @@ test = false
 stats = ["time"]
 unicase_support = ["unicase", "phf_shared/unicase"]
 
-[dependencies.phf_generator]
-path = "../phf_generator"
-version = "=0.7.20"
+[dependencies]
+phf_generator = { version = "=0.7.20", path = "../phf_generator" }
+phf_shared = { version = "=0.7.20", path = "../phf_shared" }
+time = { version = "0.1", optional = true }
+unicase = { version = "1.4", optional = true }
 
-[dependencies.phf_shared]
-path = "../phf_shared"
-version = "=0.7.20"
+[dev-dependencies]
+phf = { version = "0.7.20", path = "../phf" }
+compiletest_rs = "0.2"
 
-[dependencies.time]
-version = "0.1"
-optional = true
-
-[dependencies.unicase]
-version = "1.4"
-optional = true
-
-[dev-dependencies.phf]
-path = "../phf"
-version = "=0.7.20"
-
-[dev-dependencies.compiletest_rs]
-version = "0.2"

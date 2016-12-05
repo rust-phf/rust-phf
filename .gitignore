@@ -1,3 +1,4 @@
-doc/
-target/
+target
 Cargo.lock
+.idea
+*.iml

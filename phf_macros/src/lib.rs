@@ -34,8 +34,6 @@
 #![feature(plugin_registrar, quote, rustc_private)]
 
 extern crate syntax;
-#[cfg(feature = "stats")]
-extern crate time;
 extern crate rustc_plugin;
 extern crate phf_shared;
 extern crate phf_generator;
@@ -44,6 +42,7 @@ extern crate unicase;
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
+use std::time::Instant;
 use syntax::ast::{self, Expr, ExprKind, Mutability, TyKind};
 use syntax::tokenstream::TokenTree;
 use syntax::codemap::Span;
@@ -77,18 +76,12 @@ pub fn macro_registrar(reg: &mut Registry) {
 }
 
 fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
-    #[cfg(feature = "stats")]
-    use time::precise_time_s;
-    #[cfg(not(feature = "stats"))]
-    fn precise_time_s() -> f64 {
-        0.
-    }
-
-    let start = precise_time_s();
+    let start = Instant::now();
     let state = phf_generator::generate_hash(entries);
-    let time = precise_time_s() - start;
+    let time = Instant::now() - start;
 
-    if cfg!(feature = "stats") && env::var_os("PHF_STATS").is_some() {
+    if env::var_os("PHF_STATS").is_some() {
+        let time = time.as_secs() as f64 + (time.subsec_nanos() as f64 / 1_000_000_000.);
         cx.parse_sess
           .span_diagnostic
           .span_note_without_error(sp, &format!("PHF generation took {} seconds", time));

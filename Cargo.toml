@@ -1,0 +1,2 @@
+[workspace]
+members = ["phf", "phf_builder", "phf_codegen", "phf_generator", "phf_macros", "phf_shared"]

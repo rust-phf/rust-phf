@@ -6,10 +6,9 @@ rust:
 - beta
 - 1.11.0
 script:
-- (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_macros && cargo test))
-- (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_macros && cargo test --features unicase_support))
-- (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_macros && cargo bench))
-- (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_shared && cargo build --features core))
-- (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf && cargo build --features core))
-- (cd phf_codegen && cargo test)
-- (cd phf_codegen/test && cargo test)
+- (test $TRAVIS_RUST_VERSION != "nightly" || cargo test --manifest-path phf_macros/Cargo.toml)
+- (test $TRAVIS_RUST_VERSION != "nightly" || cargo test --manifest-path phf_macros/Cargo.toml --features unicase_support)
+- (test $TRAVIS_RUST_VERSION != "nightly" || cargo bench --manifest-path phf_macros/Cargo.toml)
+- (test $TRAVIS_RUST_VERSION != "nightly" || cargo build --manifest-path phf/Cargo.toml --features core)
+- cargo test --manifest-path phf_codegen/Cargo.toml
+- cargo test --manifest-path phf_codegen/test/Cargo.toml

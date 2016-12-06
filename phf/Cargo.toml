@@ -5,7 +5,7 @@ version = "0.7.20"
 license = "MIT"
 description = "Runtime support for perfect hash function data structures"
 repository = "https://github.com/sfackler/rust-phf"
-documentation = "https://sfackler.github.io/rust-phf/doc/v0.7.20/phf"
+documentation = "https://docs.rs/phf/0.7.20/phf"
 
 [lib]
 name = "phf"

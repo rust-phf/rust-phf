@@ -3,7 +3,7 @@
 //! PHF data structures can be generated via the syntax extensions in the
 //! `phf_macros` crate or via code generation in the `phf_codegen` crate. See
 //! the documentation of those crates for more details.
-#![doc(html_root_url="https://sfackler.github.io/rust-phf/doc/v0.7.20")]
+#![doc(html_root_url="https://docs.rs/phf/0.7.20")]
 #![warn(missing_docs)]
 #![cfg_attr(feature = "core", no_std)]
 

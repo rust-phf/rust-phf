@@ -4,7 +4,7 @@ cache: cargo
 rust:
 - nightly
 - beta
-- 1.11.0
+- 1.12.0
 script:
 - cargo clean
 - (test $TRAVIS_RUST_VERSION != "nightly" || cargo test --manifest-path phf_macros/Cargo.toml --features unicase_support)

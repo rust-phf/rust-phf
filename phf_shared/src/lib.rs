@@ -1,12 +1,16 @@
 #![doc(html_root_url="http://sfackler.github.io/rust-phf/doc/v0.7.20")]
 #![cfg_attr(feature = "core", no_std)]
+
 #[cfg(not(feature = "core"))]
 extern crate std as core;
+
+extern crate siphasher;
 
 #[cfg(feature = "unicase")]
 extern crate unicase;
 
-use core::hash::{Hasher, Hash, SipHasher};
+use core::hash::{Hasher, Hash};
+use siphasher::sip::SipHasher13;
 
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
@@ -26,7 +30,7 @@ pub fn split(hash: u64) -> (u32, u32, u32) {
 /// `key` is from `phf_generator::HashState::key`.
 #[inline]
 pub fn hash<T: ?Sized + PhfHash>(x: &T, key: u64) -> u64 {
-    let mut hasher = SipHasher::new_with_keys(0, key);
+    let mut hasher = SipHasher13::new_with_keys(0, key);
     x.phf_hash(&mut hasher);
     hasher.finish()
 }

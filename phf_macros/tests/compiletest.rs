@@ -9,8 +9,7 @@ fn run_mode(directory: &'static str, mode: &'static str) {
 
     config.mode = cfg_mode;
     let dir = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let flags = format!("-L {}", dir.join("../target/debug/deps").display());
-    config.target_rustcflags = Some(flags);
+    config.target_rustcflags = Some(format!("-L {}", dir.join("../target/debug/deps").display()));
     config.src_base = dir.join("tests").join(directory);
 
     compiletest::run_tests(&config);

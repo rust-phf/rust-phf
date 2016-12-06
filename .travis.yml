@@ -1,13 +1,13 @@
 language: rust
 sudo: false
+cache: cargo
 rust:
 - nightly
 - beta
-- 1.6.0
+- 1.11.0
 script:
 - (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_macros && cargo test))
 - (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_macros && cargo test --features unicase_support))
-- (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_macros && cargo test --features stats))
 - (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_macros && cargo bench))
 - (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf_shared && cargo build --features core))
 - (test $TRAVIS_RUST_VERSION != "nightly" || (cd phf && cargo build --features core))

@@ -33,6 +33,7 @@
 #![doc(html_root_url="https://docs.rs/phf_macros/0.7.20")]
 #![feature(plugin_registrar, quote, rustc_private)]
 
+#[macro_use]
 extern crate syntax;
 extern crate rustc_plugin;
 extern crate phf_shared;
@@ -65,6 +66,10 @@ use util::{create_map, create_set, create_ordered_map, create_ordered_set};
 
 pub mod util;
 mod macros;
+
+mod errors {
+    pub use syntax::errors::*;
+}
 
 #[plugin_registrar]
 #[doc(hidden)]
@@ -162,7 +167,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
 
     let mut bad = false;
     while parser.token != Eof {
-        let key = cx.expander().fold_expr(parser.parse_expr().unwrap());
+        let key = cx.expander().fold_expr(panictry!(parser.parse_expr()));
         let key_contents = parse_key(cx, &*key).unwrap_or_else(|| {
             bad = true;
             Key::Str(Symbol::intern("").as_str())
@@ -174,7 +179,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
             return None;
         }
 
-        let value = parser.parse_expr().unwrap();
+        let value = panictry!(parser.parse_expr());
 
         entries.push(Entry {
             key_contents: key_contents,
@@ -202,7 +207,7 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
 
     let mut bad = false;
     while parser.token != Eof {
-        let key = cx.expander().fold_expr(parser.parse_expr().unwrap());
+        let key = cx.expander().fold_expr(panictry!(parser.parse_expr()));
         let key_contents = parse_key(cx, &*key).unwrap_or_else(|| {
             bad = true;
             Key::Str(Symbol::intern("").as_str())

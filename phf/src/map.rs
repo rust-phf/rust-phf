@@ -93,7 +93,7 @@ impl<K, V> Map<K, V> {
 
     /// Returns an iterator over the key/value pairs in the map.
     ///
-    /// Entries are retuned in an arbitrary but fixed order.
+    /// Entries are returned in an arbitrary but fixed order.
     pub fn entries<'a>(&'a self) -> Entries<'a, K, V> {
         Entries { iter: self.entries.iter() }
     }

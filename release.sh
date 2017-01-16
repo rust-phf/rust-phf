@@ -14,7 +14,7 @@ libs=$(find . -name lib.rs)
 
 perl -pi -e "s/version = \"$old\"/version = \"$new\"/g" $tomls
 perl -pi -e "s/version = \"=$old\"/version = \"=$new\"/g" $tomls
-perl -pi -e "s|doc/v$old|doc/v$new|g" $tomls $libs README.md
+perl -pi -e "s|/$old/|/$new/|g" $tomls $libs README.md
 
 git add .
 git commit -ve -m "Release v$new"

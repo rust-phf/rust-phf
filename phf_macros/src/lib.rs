@@ -264,7 +264,7 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
                 }
             }
         }
-        ExprKind::Vec(ref v) => {
+        ExprKind::Array(ref v) => {
             let bytes: Vec<Option<u8>> = v.iter().map(|expr|
                 if let ExprKind::Lit(ref p) = expr.node {
                     match p.node {

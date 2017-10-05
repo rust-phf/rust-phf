@@ -27,4 +27,5 @@ unicase = { version = "1.4", optional = true }
 [dev-dependencies]
 phf = { version = "0.7.21", path = "../phf" }
 compiletest_rs = "0.2"
+fnv = "1.0.3"
 

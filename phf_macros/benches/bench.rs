@@ -2,10 +2,13 @@
 #![plugin(phf_macros)]
 
 extern crate test;
+extern crate fnv;
 extern crate phf;
 
 mod map {
     use std::collections::{BTreeMap, HashMap};
+    use fnv::FnvHashMap;
+    use test;
     use test::Bencher;
 
     use phf;
@@ -57,14 +60,14 @@ mod map {
     #[bench]
     fn bench_match_some(b: &mut Bencher) {
         b.iter(|| {
-            assert_eq!(match_get("zucchini").unwrap(), 25);
+            assert_eq!(match_get(test::black_box("zucchini")).unwrap(), 25);
         })
     }
 
     #[bench]
     fn bench_match_none(b: &mut Bencher) {
         b.iter(|| {
-            assert_eq!(match_get("potato"), None);
+            assert_eq!(test::black_box(match_get("potato")), None);
         })
     }
 
@@ -93,6 +96,18 @@ mod map {
     }
 
     #[bench]
+    fn bench_hashmap_fnv_some(b: &mut Bencher) {
+        let mut map = FnvHashMap::default();
+        for (key, value) in MAP.entries() {
+            map.insert(*key, *value);
+        }
+
+        b.iter(|| {
+            assert_eq!(map.get("zucchini").unwrap(), &25);
+        })
+    }
+
+    #[bench]
     fn bench_phf_some(b: &mut Bencher) {
         b.iter(|| {
             assert_eq!(MAP.get("zucchini").unwrap(), &25);
@@ -111,10 +126,21 @@ mod map {
         })
     }
 
-
     #[bench]
     fn bench_hashmap_none(b: &mut Bencher) {
-        let mut map = BTreeMap::new();
+        let mut map = HashMap::new();
+        for (key, value) in MAP.entries() {
+            map.insert(*key, *value);
+        }
+
+        b.iter(|| {
+            assert_eq!(map.get("potato"), None);
+        })
+    }
+
+    #[bench]
+    fn bench_hashmap_fnv_none(b: &mut Bencher) {
+        let mut map = FnvHashMap::default();
         for (key, value) in MAP.entries() {
             map.insert(*key, *value);
         }

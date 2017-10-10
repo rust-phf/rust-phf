@@ -166,8 +166,8 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         for &idx in &state.map {
             try!(write!(w,
                         "
-        ({:?}, {}),",
-                        &self.keys[idx],
+        ({}, {}),",
+                        &self.keys[idx].as_expression(),
                         &self.values[idx]));
         }
         write!(w,

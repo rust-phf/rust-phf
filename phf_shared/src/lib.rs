@@ -64,6 +64,12 @@ pub trait PhfHash {
             piece.phf_hash(state);
         }
     }
+
+    // Used for codegen
+    #[cfg(not(feature = "core"))]
+    fn as_expression(&self) -> String where Self: core::fmt::Debug {
+        format!("{:?}", self)
+    }
 }
 
 #[cfg(not(feature = "core"))]
@@ -113,6 +119,23 @@ impl PhfHash for [u8] {
 #[cfg(feature = "unicase")]
 impl<S> PhfHash for unicase::UniCase<S>
 where unicase::UniCase<S>: Hash {
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        self.hash(state)
+    }
+
+    #[cfg(not(feature = "core"))]
+    fn as_expression(&self) -> String where Self: core::fmt::Debug {
+        panic!("Can't use UniCase for phf_codegen as only const functions can \
+                be called in statics (const functions are unstable). Maybe try \
+                unicase::Ascii?");
+        // format!("::unicase::UniCase::new({:?})", self)
+    }
+}
+
+#[cfg(feature = "unicase")]
+impl<S> PhfHash for unicase::Ascii<S>
+where unicase::Ascii<S>: Hash {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
         self.hash(state)

@@ -27,6 +27,8 @@ pub enum Key {
     Bool(bool),
     #[cfg(feature = "unicase_support")]
     UniCase(::unicase::UniCase<String>),
+    #[cfg(feature = "unicase_support")]
+    UniCaseAscii(::unicase::Ascii<String>),
 }
 
 impl Hash for Key {
@@ -46,6 +48,8 @@ impl Hash for Key {
             Key::Bool(b) => b.hash(state),
             #[cfg(feature = "unicase_support")]
             Key::UniCase(ref u) => u.hash(state),
+            #[cfg(feature = "unicase_support")]
+            Key::UniCaseAscii(ref u) => u.hash(state),
         }
     }
 }
@@ -67,6 +71,8 @@ impl PhfHash for Key {
             Key::Bool(b) => b.phf_hash(state),
             #[cfg(feature = "unicase_support")]
             Key::UniCase(ref u) => u.phf_hash(state),
+            #[cfg(feature = "unicase_support")]
+            Key::UniCaseAscii(ref u) => u.phf_hash(state),
         }
     }
 }

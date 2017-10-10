@@ -2,9 +2,11 @@ extern crate compiletest_rs as compiletest;
 
 use std::path::Path;
 
+use compiletest::Config;
+
 #[allow(dead_code)]
 fn run_mode(directory: &'static str, mode: &'static str) {
-    let mut config = compiletest::default_config();
+    let mut config = Config::default();
     let cfg_mode = mode.parse().ok().expect("Invalid mode");
 
     config.mode = cfg_mode;

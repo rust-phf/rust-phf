@@ -31,7 +31,7 @@
 //! # fn main() {}
 //! ```
 #![doc(html_root_url="https://docs.rs/phf_macros/0.7.20")]
-#![feature(plugin_registrar, quote, rustc_private)]
+#![feature(plugin_registrar, quote, rustc_private, const_fn)]
 
 #[macro_use]
 extern crate syntax;
@@ -58,8 +58,6 @@ use syntax::symbol::Symbol;
 use rustc_plugin::Registry;
 use phf_generator::HashState;
 use std::env;
-#[cfg(feature = "unicase_support")]
-use unicase::UniCase;
 
 use util::{Entry, Key};
 use util::{create_map, create_set, create_ordered_map, create_ordered_set};
@@ -203,7 +201,7 @@ fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
 fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
     let mut parser = parse::new_parser_from_tts(cx.parse_sess(), tts.to_vec());
     let mut entries = Vec::new();
-    let value = quote_expr!(&*cx, ());
+    let value = quote_expr!(cx, ());
 
     let mut bad = false;
     while parser.token != Eof {
@@ -287,28 +285,52 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
         }
         #[cfg(feature = "unicase_support")]
         ExprKind::Call(ref f, ref args) => {
+            use unicase::{UniCase, Ascii};
+
             if let ExprKind::Path(_, ref path) = f.node {
-                if &*path.segments.last().unwrap().identifier.name.as_str() == "UniCase" {
+                let path_segments = &path.segments;
+                let path_length = path_segments.len();
+                let mut is_ascii = path_segments.last().unwrap().identifier.name.as_str() == "Ascii";
+                is_ascii |= path_length >= 2 &&
+                    path_segments[path_length - 2].identifier.name.as_str() == "Ascii" &&
+                    path_segments[path_length - 1].identifier.name.as_str() == "new";
+                if is_ascii {
                     if args.len() == 1 {
                         if let ExprKind::Lit(ref lit) = args.first().unwrap().node {
                             if let ast::LitKind::Str(ref s, _) = lit.node {
-                                return Some(Key::UniCase(UniCase(s.to_string())));
+                                return Some(Key::UniCaseAscii(Ascii::new(s.to_string())));
                             } else {
-                                cx.span_err(e.span, "only a str literal is allowed in UniCase");
+                                cx.span_err(e.span, "only a str literal is allowed in Ascii");
                                 return None;
                             }
                         }
                     } else {
-                        cx.span_err(e.span, "only one str literal is allowed in UniCase");
+                        cx.span_err(e.span, "only one str literal is allowed in Ascii");
+                        return None;
+                    }
+                } else if path_length >= 2 &&
+                    path_segments[path_length - 2].identifier.name.as_str() == "UniCase" &&
+                    path_segments[path_length - 1].identifier.name.as_str() == "unicode" {
+                    if args.len() == 1 {
+                        if let ExprKind::Lit(ref lit) = args.first().unwrap().node {
+                            if let ast::LitKind::Str(ref s, _) = lit.node {
+                                return Some(Key::UniCase(UniCase::unicode(s.to_string())));
+                            } else {
+                                cx.span_err(e.span, "only a str literal is allowed in UniCase::unicode");
+                                return None;
+                            }
+                        }
+                    } else {
+                        cx.span_err(e.span, "only one str literal is allowed in UniCase::unicode");
                         return None;
                     }
                 }
             }
-            cx.span_err(e.span, "only UniCase is allowed besides literals");
+            cx.span_err(e.span, "only UniCase::unicode or Ascii is allowed besides literals");
             None
         },
         _ => {
-            cx.span_err(e.span, "expected a literal (or a UniCase if the unicase_support feature is enabled)");
+            cx.span_err(e.span, "expected a literal (or a UniCase/Ascii if the unicase_support feature is enabled)");
             None
         }
     }

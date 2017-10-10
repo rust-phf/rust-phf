@@ -239,25 +239,41 @@ mod map {
     fn test_unicase() {
         use unicase::UniCase;
         static MAP: phf::Map<UniCase<&'static str>, isize> = phf_map!(
-            UniCase("FOO") => 10,
-            UniCase("Bar") => 11,
+            UniCase::unicode("Maße") => 10,
+            UniCase::unicode("Grüße") => 11,
         );
-        assert!(Some(&10) == MAP.get(&UniCase("FOo")));
-        assert!(Some(&11) == MAP.get(&UniCase("bar")));
-        assert_eq!(None, MAP.get(&UniCase("asdf")));
+        assert!(Some(&10) == MAP.get(&UniCase::unicode("MASSE")));
+        assert!(Some(&11) == MAP.get(&UniCase::unicode("gRÜSSE")));
+        assert_eq!(None, MAP.get(&UniCase::unicode("asdf")));
     }
 
     #[cfg(feature = "unicase_support")]
     #[test]
-    fn test_unicase_alt() {
-        use unicase;
-        static MAP: phf::Map<unicase::UniCase<&'static str>, isize> = phf_map!(
-            unicase::UniCase("FOO") => 10,
-            unicase::UniCase("Bar") => 11,
+    fn test_unicase_ascii() {
+        use unicase::Ascii;
+        static MAP: phf::Map<Ascii<&'static str>, isize> = phf_map!(
+            Ascii("FOO") => 10,
+            Ascii("Bar") => 11,
         );
-        assert!(Some(&10) == MAP.get(&unicase::UniCase("FOo")));
-        assert!(Some(&11) == MAP.get(&unicase::UniCase("bar")));
-        assert_eq!(None, MAP.get(&unicase::UniCase("asdf")));
+        assert!(Some(&10) == MAP.get(&Ascii("FOo")));
+        assert!(Some(&11) == MAP.get(&Ascii("bar")));
+        assert_eq!(None, MAP.get(&Ascii("asdf")));
+    }
+
+    #[cfg(feature = "unicase_support")]
+    #[test]
+    fn test_unicase_different_syntaxes() {
+        use unicase::{self, Ascii};
+        static MAP: phf::Map<Ascii<&'static str>, isize> = phf_map!(
+            Ascii::new("FOO") => 10,
+            unicase::Ascii::new("Bar") => 11,
+            Ascii("baZ") => 13,
+            unicase::Ascii("qUx") => 14,
+        );
+        assert!(Some(&10) == MAP.get(&Ascii("FOo")));
+        assert!(Some(&11) == MAP.get(&Ascii("bar")));
+        assert!(Some(&13) == MAP.get(&Ascii("baz")));
+        assert!(Some(&14) == MAP.get(&Ascii("qux")));
     }
 }
 

@@ -3,7 +3,7 @@ extern crate unicase;
 
 #[cfg(test)]
 mod test {
-    use unicase::UniCase;
+    use unicase::Ascii;
 
     include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
@@ -50,9 +50,9 @@ mod test {
 
     #[test]
     fn unicase_map() {
-        assert_eq!("a", UNICASE_MAP[&UniCase("AbC")]);
-        assert_eq!("a", UNICASE_MAP[&UniCase("abc")]);
-        assert_eq!("b", UNICASE_MAP[&UniCase("DEf")]);
-        assert!(!UNICASE_MAP.contains_key(&UniCase("XyZ")));
+        assert_eq!("a", UNICASE_MAP[&Ascii::new("AbC")]);
+        assert_eq!("a", UNICASE_MAP[&Ascii::new("abc")]);
+        assert_eq!("b", UNICASE_MAP[&Ascii::new("DEf")]);
+        assert!(!UNICASE_MAP.contains_key(&Ascii::new("XyZ")));
     }
 }

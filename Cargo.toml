@@ -1,2 +1,5 @@
 [workspace]
 members = ["phf", "phf_builder", "phf_codegen", "phf_codegen/test", "phf_generator", "phf_macros", "phf_shared"]
+
+[replace]
+"unicase:2.0.0" = { git = 'https://github.com/Bobo1239/unicase.git' }

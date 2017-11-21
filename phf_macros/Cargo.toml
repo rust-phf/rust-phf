@@ -13,16 +13,12 @@ path = "src/lib.rs"
 plugin = true
 test = false
 
-[features]
-unicase_support = ["unicase", "phf_shared/unicase"]
-
 # Deprecated
 stats = []
 
 [dependencies]
 phf_generator = { version = "=0.7.21", path = "../phf_generator" }
 phf_shared = { version = "=0.7.21", path = "../phf_shared" }
-unicase = { version = "1.4", optional = true }
 
 [dev-dependencies]
 phf = { version = "0.7.21", path = "../phf" }

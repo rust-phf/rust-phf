@@ -17,4 +17,3 @@ core = []
 
 [dependencies]
 siphasher = "0.2"
-unicase = { version = "1.4", optional = true }

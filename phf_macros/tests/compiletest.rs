@@ -15,12 +15,6 @@ fn run_mode(directory: &'static str, mode: &'static str) {
     compiletest::run_tests(&config);
 }
 
-#[cfg(feature = "unicase_support")]
-#[test]
-fn compile_test_unicase() {
-    run_mode("compile-fail-unicase", "compile-fail");
-}
-
 #[test]
 fn compile_fail() {
     run_mode("compile-fail", "compile-fail");

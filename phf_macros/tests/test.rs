@@ -2,8 +2,6 @@
 #![plugin(phf_macros)]
 
 extern crate phf;
-#[cfg(feature = "unicase_support")]
-extern crate unicase;
 
 mod map {
     use std::collections::{HashMap, HashSet};
@@ -232,32 +230,6 @@ mod map {
             assert_eq!(&"foo", k);
             assert_eq!(&10, v)
         }
-    }
-
-    #[cfg(feature = "unicase_support")]
-    #[test]
-    fn test_unicase() {
-        use unicase::UniCase;
-        static MAP: phf::Map<UniCase<&'static str>, isize> = phf_map!(
-            UniCase("FOO") => 10,
-            UniCase("Bar") => 11,
-        );
-        assert!(Some(&10) == MAP.get(&UniCase("FOo")));
-        assert!(Some(&11) == MAP.get(&UniCase("bar")));
-        assert_eq!(None, MAP.get(&UniCase("asdf")));
-    }
-
-    #[cfg(feature = "unicase_support")]
-    #[test]
-    fn test_unicase_alt() {
-        use unicase;
-        static MAP: phf::Map<unicase::UniCase<&'static str>, isize> = phf_map!(
-            unicase::UniCase("FOO") => 10,
-            unicase::UniCase("Bar") => 11,
-        );
-        assert!(Some(&10) == MAP.get(&unicase::UniCase("FOo")));
-        assert!(Some(&11) == MAP.get(&unicase::UniCase("bar")));
-        assert_eq!(None, MAP.get(&unicase::UniCase("asdf")));
     }
 }
 

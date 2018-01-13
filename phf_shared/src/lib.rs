@@ -208,6 +208,7 @@ macro_rules! tuple_impl(
     );
     ($($name:ident)+) => (
         impl<$($name: PhfHash),*> PhfHash for ($($name,)*) {
+            #[allow(non_snake_case)]
             #[inline]
             fn phf_hash<S: Hasher>(&self, state: &mut S) {
                 let &($(ref $name,)*) = self;

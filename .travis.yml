@@ -8,6 +8,7 @@ rust:
 script:
 - cargo clean
 - (test $TRAVIS_RUST_VERSION != "nightly" || cargo test --manifest-path phf_macros/Cargo.toml --features unicase_support)
+- cargo clean
 - (test $TRAVIS_RUST_VERSION != "nightly" || cargo test --manifest-path phf_macros/Cargo.toml)
 - (test $TRAVIS_RUST_VERSION != "nightly" || cargo bench --manifest-path phf_macros/Cargo.toml)
 - (test $TRAVIS_RUST_VERSION != "nightly" || cargo build --manifest-path phf/Cargo.toml --features core)

@@ -25,8 +25,6 @@ pub enum Key {
     U64(u64),
     I64(i64),
     Bool(bool),
-    #[cfg(feature = "unicase_support")]
-    UniCase(::unicase::UniCase<String>),
 }
 
 impl Hash for Key {
@@ -44,8 +42,6 @@ impl Hash for Key {
             Key::U64(b) => b.hash(state),
             Key::I64(b) => b.hash(state),
             Key::Bool(b) => b.hash(state),
-            #[cfg(feature = "unicase_support")]
-            Key::UniCase(ref u) => u.hash(state),
         }
     }
 }
@@ -65,8 +61,6 @@ impl PhfHash for Key {
             Key::U64(b) => b.phf_hash(state),
             Key::I64(b) => b.phf_hash(state),
             Key::Bool(b) => b.phf_hash(state),
-            #[cfg(feature = "unicase_support")]
-            Key::UniCase(ref u) => u.phf_hash(state),
         }
     }
 }

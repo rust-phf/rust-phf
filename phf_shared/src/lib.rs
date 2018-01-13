@@ -198,3 +198,36 @@ array_impl!(u8, 29);
 array_impl!(u8, 30);
 array_impl!(u8, 31);
 array_impl!(u8, 32);
+
+macro_rules! tuple_impl(
+    () => (
+        impl PhfHash for () {
+            #[inline]
+            fn phf_hash<S: Hasher>(&self, _state: &mut S) {}
+        }
+    );
+    ($($name:ident)+) => (
+        impl<$($name: PhfHash),*> PhfHash for ($($name,)*) {
+            #[allow(non_snake_case)]
+            #[inline]
+            fn phf_hash<S: Hasher>(&self, state: &mut S) {
+                let &($(ref $name,)*) = self;
+                $($name.phf_hash(state);)*
+            }
+        }
+    );
+);
+
+tuple_impl! {}
+tuple_impl! {A}
+tuple_impl! {A B}
+tuple_impl! {A B C}
+tuple_impl! {A B C D}
+tuple_impl! {A B C D E}
+tuple_impl! {A B C D E F}
+tuple_impl! {A B C D E F G}
+tuple_impl! {A B C D E F G H}
+tuple_impl! {A B C D E F G H I}
+tuple_impl! {A B C D E F G H I J}
+tuple_impl! {A B C D E F G H I J K}
+tuple_impl! {A B C D E F G H I J K L}

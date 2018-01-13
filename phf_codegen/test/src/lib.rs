@@ -44,4 +44,10 @@ mod test {
         assert_eq!(2, STR_KEYS["b"]);
         assert_eq!(3, STR_KEYS["c"]);
     }
+
+    #[test]
+    fn empty_map() {
+        // Check we not crash on empty map.
+        assert_eq!(None, EMPTY.get(&()));
+    }
 }

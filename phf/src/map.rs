@@ -80,6 +80,7 @@ impl<K, V> Map<K, V> {
         where T: Eq + PhfHash,
               K: Borrow<T>
     {
+        if 0 == self.disps.len() { return None; }
         let hash = phf_shared::hash(key, self.key);
         let index = phf_shared::get_index(hash, &*self.disps, self.entries.len());
         let entry = &self.entries[index as usize];

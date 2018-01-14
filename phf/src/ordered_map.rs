@@ -108,6 +108,7 @@ impl<K, V> OrderedMap<K, V> {
         where T: Eq + PhfHash,
               K: Borrow<T>
     {
+        if 0 == self.disps.len() { return None; }
         let hash = phf_shared::hash(key, self.key);
         let idx_index = phf_shared::get_index(hash, &*self.disps, self.idxs.len());
         let idx = self.idxs[idx_index as usize];

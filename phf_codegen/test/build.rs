@@ -53,4 +53,8 @@ fn main() {
         .build(&mut file)
         .unwrap();
     write!(&mut file, ";\n").unwrap();
+
+    write!(&mut file, "static EMPTY: ::phf::Map<(), &'static str> = ").unwrap();
+    phf_codegen::Map::<()>::new().build(&mut file).unwrap();
+    write!(&mut file, ";\n").unwrap();
 }

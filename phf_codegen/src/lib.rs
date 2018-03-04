@@ -107,7 +107,9 @@ impl Source for str {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.write_str("\"")?;
         for raw in self.chars() {
-            write!(fmt, "{}", raw.escape_default())?;
+            for escaped in raw.escape_default() {
+                fmt.write_char(escaped as char)?;
+            }
         }
         fmt.write_str("\"")
     }

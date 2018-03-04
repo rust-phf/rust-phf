@@ -123,7 +123,7 @@ impl Source for [u8] {
                 fmt.write_char(escaped as char)?;
             }
         }
-        fmt.write_str("\"")
+        fmt.write_str("\" as _")
     }
 }
 

@@ -78,16 +78,63 @@
 //! builder.entry("world", "2");
 //! // ...
 //! ```
-#![doc(html_root_url="https://docs.rs/phf_codegen/0.7.20")]
-extern crate phf_shared;
+#![doc(html_root_url = "https://docs.rs/phf_codegen/0.7.20")]
 extern crate phf_generator;
+extern crate phf_shared;
 
 use phf_shared::PhfHash;
+use std::ascii;
 use std::collections::HashSet;
-use std::fmt;
+use std::fmt::{self, Write as FmtWrite};
 use std::hash::Hash;
 use std::io;
 use std::io::prelude::*;
+
+pub trait Source {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result;
+}
+
+impl<'a, T> Source for &'a T
+where
+    T: ?Sized + Source,
+{
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        (**self).fmt(fmt)
+    }
+}
+
+impl Source for str {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.write_str("\"")?;
+        for raw in self.chars() {
+            write!(fmt, "{}", raw.escape_default())?;
+        }
+        fmt.write_str("\"")
+    }
+}
+
+impl Source for [u8] {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.write_str("b\"")?;
+        for raw in self {
+            for escaped in ascii::escape_default(*raw) {
+                fmt.write_char(escaped as char)?;
+            }
+        }
+        fmt.write_str("\"")
+    }
+}
+
+struct Displayify<T>(T);
+
+impl<T> fmt::Display for Displayify<T>
+where
+    T: Source,
+{
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        Source::fmt(&self.0, fmt)
+    }
+}
 
 /// A builder for the `phf::Map` type.
 pub struct Map<K> {
@@ -96,24 +143,13 @@ pub struct Map<K> {
     path: String,
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
+impl<K: Hash + PhfHash + Eq + Source> Map<K> {
     /// Creates a new `phf::Map` builder.
     pub fn new() -> Map<K> {
-        // FIXME rust#27438
-        //
-        // On Windows/MSVC there are major problems with the handling of dllimport.
-        // Here, because downstream build scripts only invoke generics from phf_codegen,
-        // the linker ends up throwing a way a bunch of static symbols we actually need.
-        // This works around the problem, assuming that all clients call `Map::new` by
-        // calling a non-generic function.
-        fn noop_fix_for_27438() {
-        }
-        noop_fix_for_27438();
-
         Map {
             keys: vec![],
             values: vec![],
-            path: String::from("::phf"),
+            path: "::phf".to_string(),
         }
     }
 
@@ -141,39 +177,49 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
-                panic!("duplicate key `{:?}`", key);
+                panic!("duplicate key `{}`", Displayify(key));
             }
         }
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(w,
-                    "{}::Map {{
+        try!(write!(
+            w,
+            "{}::Map {{
     key: {},
     disps: {}::Slice::Static(&[",
-                    self.path, state.key, self.path));
+            self.path, state.key, self.path
+        ));
         for &(d1, d2) in &state.disps {
-            try!(write!(w,
-                        "
+            try!(write!(
+                w,
+                "
         ({}, {}),",
-                        d1,
-                        d2));
+                d1, d2
+            ));
         }
-        try!(write!(w,
-                    "
+        try!(write!(
+            w,
+            "
     ]),
-    entries: {}::Slice::Static(&[", self.path));
+    entries: {}::Slice::Static(&[",
+            self.path
+        ));
         for &idx in &state.map {
-            try!(write!(w,
-                        "
-        ({:?}, {}),",
-                        &self.keys[idx],
-                        &self.values[idx]));
+            try!(write!(
+                w,
+                "
+        ({}, {}),",
+                Displayify(&self.keys[idx]),
+                &self.values[idx]
+            ));
         }
-        write!(w,
-               "
+        write!(
+            w,
+            "
     ]),
-}}")
+}}"
+        )
     }
 }
 
@@ -182,12 +228,10 @@ pub struct Set<T> {
     map: Map<T>,
 }
 
-impl<T: Hash+PhfHash+Eq+fmt::Debug> Set<T> {
+impl<T: Hash + PhfHash + Eq + Source> Set<T> {
     /// Constructs a new `phf::Set` builder.
     pub fn new() -> Set<T> {
-        Set {
-            map: Map::new(),
-        }
+        Set { map: Map::new() }
     }
 
     /// Set the path to the `phf` crate from the global namespace
@@ -221,13 +265,13 @@ pub struct OrderedMap<K> {
     path: String,
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
+impl<K: Hash + PhfHash + Eq + Source> OrderedMap<K> {
     /// Constructs a enw `phf::OrderedMap` builder.
     pub fn new() -> OrderedMap<K> {
         OrderedMap {
             keys: vec![],
             values: vec![],
-            path: String::from("::phf"),
+            path: "::phf".to_string(),
         }
     }
 
@@ -256,49 +300,64 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
-                panic!("duplicate key `{:?}`", key);
+                panic!("duplicate key `{}`", Displayify(key));
             }
         }
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(w,
-                    "{}::OrderedMap {{
+        try!(write!(
+            w,
+            "{}::OrderedMap {{
     key: {},
     disps: {}::Slice::Static(&[",
-                    self.path, state.key, self.path));
+            self.path, state.key, self.path
+        ));
         for &(d1, d2) in &state.disps {
-            try!(write!(w,
-                        "
+            try!(write!(
+                w,
+                "
         ({}, {}),",
-                        d1,
-                        d2));
+                d1, d2
+            ));
         }
-        try!(write!(w,
-                    "
+        try!(write!(
+            w,
+            "
     ]),
-    idxs: {}::Slice::Static(&[", self.path));
+    idxs: {}::Slice::Static(&[",
+            self.path
+        ));
         for &idx in &state.map {
-            try!(write!(w,
-                        "
+            try!(write!(
+                w,
+                "
         {},",
-                        idx));
+                idx
+            ));
         }
-        try!(write!(w,
-                    "
+        try!(write!(
+            w,
+            "
     ]),
-    entries: {}::Slice::Static(&[", self.path));
+    entries: {}::Slice::Static(&[",
+            self.path
+        ));
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
-            try!(write!(w,
-                        "
-        ({:?}, {}),",
-                        key,
-                        value));
+            try!(write!(
+                w,
+                "
+        ({}, {}),",
+                Displayify(key),
+                value
+            ));
         }
-        write!(w,
-               "
+        write!(
+            w,
+            "
     ]),
-}}")
+}}"
+        )
     }
 }
 
@@ -307,7 +366,7 @@ pub struct OrderedSet<T> {
     map: OrderedMap<T>,
 }
 
-impl<T: Hash+PhfHash+Eq+fmt::Debug> OrderedSet<T> {
+impl<T: Hash + PhfHash + Eq + Source> OrderedSet<T> {
     /// Constructs a new `phf::OrderedSet` builder.
     pub fn new() -> OrderedSet<T> {
         OrderedSet {

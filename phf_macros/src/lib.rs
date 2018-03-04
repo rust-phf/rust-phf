@@ -235,25 +235,6 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
             match lit.node {
                 ast::LitKind::Str(ref s, _) => Some(Key::Str(s.as_str())),
                 ast::LitKind::ByteStr(ref b) => Some(Key::Binary(b.clone())),
-                ast::LitKind::Byte(b) => Some(Key::U8(b)),
-                ast::LitKind::Char(c) => Some(Key::Char(c)),
-                ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I8)) =>
-                    Some(Key::I8(i as i8)),
-                ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I16)) =>
-                    Some(Key::I16(i as i16)),
-                ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I32)) =>
-                    Some(Key::I32(i as i32)),
-                ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I64)) =>
-                    Some(Key::I64(i as i64)),
-                ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U8)) =>
-                    Some(Key::U8(i as u8)),
-                ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U16)) =>
-                    Some(Key::U16(i as u16)),
-                ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U32)) =>
-                    Some(Key::U32(i as u32)),
-                ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U64)) =>
-                    Some(Key::U64(i as u64)),
-                ast::LitKind::Bool(b) => Some(Key::Bool(b)),
                 _ => {
                     cx.span_err(e.span, "unsupported literal type");
                     None

@@ -166,61 +166,6 @@ mod map {
     }
 
     #[test]
-    fn test_byte_keys() {
-        test_key_type!(u8, b'a' => 0, b'b' => 1);
-    }
-
-    #[test]
-    fn test_char_keys() {
-        test_key_type!(char, 'a' => 0, 'b' => 1);
-    }
-
-    #[test]
-    fn test_i8_keys() {
-        test_key_type!(i8, 0i8 => 0, 1i8 => 1);
-    }
-
-    #[test]
-    fn test_i16_keys() {
-        test_key_type!(i16, 0i16 => 0, 1i16 => 1);
-    }
-
-    #[test]
-    fn test_i32_keys() {
-        test_key_type!(i32, 0i32 => 0, 1i32 => 1);
-    }
-
-    #[test]
-    fn test_i64_keys() {
-        test_key_type!(i64, 0i64 => 0, 1i64 => 1);
-    }
-
-    #[test]
-    fn test_u8_keys() {
-        test_key_type!(u8, 0u8 => 0, 1u8 => 1);
-    }
-
-    #[test]
-    fn test_u16_keys() {
-        test_key_type!(u16, 0u16 => 0, 1u16 => 1);
-    }
-
-    #[test]
-    fn test_u32_keys() {
-        test_key_type!(u32, 0u32 => 0, 1u32 => 1);
-    }
-
-    #[test]
-    fn test_u64_keys() {
-        test_key_type!(u64, 0u64 => 0, 1u64 => 1);
-    }
-
-    #[test]
-    fn test_bool_keys() {
-        test_key_type!(bool, false => 0, true => 1);
-    }
-
-    #[test]
     fn test_into_iterator() {
         static MAP: phf::Map<&'static str, isize> = phf_map!(
             "foo" => 10,

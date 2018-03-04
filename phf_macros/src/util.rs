@@ -15,16 +15,6 @@ use phf_generator::HashState;
 pub enum Key {
     Str(InternedString),
     Binary(Rc<Vec<u8>>),
-    Char(char),
-    U8(u8),
-    I8(i8),
-    U16(u16),
-    I16(i16),
-    U32(u32),
-    I32(i32),
-    U64(u64),
-    I64(i64),
-    Bool(bool),
 }
 
 impl Hash for Key {
@@ -32,16 +22,6 @@ impl Hash for Key {
         match *self {
             Key::Str(ref s) => s.hash(state),
             Key::Binary(ref b) => b.hash(state),
-            Key::Char(c) => c.hash(state),
-            Key::U8(b) => b.hash(state),
-            Key::I8(b) => b.hash(state),
-            Key::U16(b) => b.hash(state),
-            Key::I16(b) => b.hash(state),
-            Key::U32(b) => b.hash(state),
-            Key::I32(b) => b.hash(state),
-            Key::U64(b) => b.hash(state),
-            Key::I64(b) => b.hash(state),
-            Key::Bool(b) => b.hash(state),
         }
     }
 }
@@ -51,16 +31,6 @@ impl PhfHash for Key {
         match *self {
             Key::Str(ref s) => s.phf_hash(state),
             Key::Binary(ref b) => b.phf_hash(state),
-            Key::Char(c) => c.phf_hash(state),
-            Key::U8(b) => b.phf_hash(state),
-            Key::I8(b) => b.phf_hash(state),
-            Key::U16(b) => b.phf_hash(state),
-            Key::I16(b) => b.phf_hash(state),
-            Key::U32(b) => b.phf_hash(state),
-            Key::I32(b) => b.phf_hash(state),
-            Key::U64(b) => b.phf_hash(state),
-            Key::I64(b) => b.phf_hash(state),
-            Key::Bool(b) => b.phf_hash(state),
         }
     }
 }

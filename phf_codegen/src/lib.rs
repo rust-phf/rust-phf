@@ -123,7 +123,7 @@ impl Source for [u8] {
                 fmt.write_char(escaped as char)?;
             }
         }
-        fmt.write_str("\" as _")
+        fmt.write_str("\" as &[u8]")
     }
 }
 

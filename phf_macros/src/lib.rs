@@ -30,22 +30,24 @@
 //! }
 //! # fn main() {}
 //! ```
-#![doc(html_root_url="https://docs.rs/phf_macros/0.7.20")]
+#![doc(html_root_url = "https://docs.rs/phf_macros/0.7.20")]
 #![feature(plugin_registrar, quote, rustc_private)]
 
 #[macro_use]
 extern crate syntax;
-extern crate rustc_plugin;
-extern crate phf_shared;
 extern crate phf_generator;
+extern crate phf_shared;
+extern crate rustc_plugin;
 #[cfg(feature = "unicase_support")]
 extern crate unicase;
 
-use std::collections::HashMap;
+use phf_generator::HashState;
+use rustc_plugin::Registry;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
+use std::collections::HashMap;
+use std::env;
 use std::time::Instant;
 use syntax::ast::{self, Expr, ExprKind, Mutability, TyKind};
-use syntax::tokenstream::TokenTree;
 use syntax::codemap::Span;
 use syntax::ext::base::{DummyResult, ExtCtxt, MacResult};
 use syntax::ext::build::AstBuilder;
@@ -55,17 +57,15 @@ use syntax::parse::token::{Comma, Eof, FatArrow};
 use syntax::print::pprust;
 use syntax::ptr::P;
 use syntax::symbol::Symbol;
-use rustc_plugin::Registry;
-use phf_generator::HashState;
-use std::env;
+use syntax::tokenstream::TokenTree;
 #[cfg(feature = "unicase_support")]
 use unicase::UniCase;
 
+use util::{create_map, create_ordered_map, create_ordered_set, create_set};
 use util::{Entry, Key};
-use util::{create_map, create_set, create_ordered_map, create_ordered_set};
 
-pub mod util;
 mod macros;
+pub mod util;
 
 mod errors {
     pub use syntax::errors::*;
@@ -88,8 +88,8 @@ fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
     if env::var_os("PHF_STATS").is_some() {
         let time = time.as_secs() as f64 + (time.subsec_nanos() as f64 / 1_000_000_000.);
         cx.parse_sess
-          .span_diagnostic
-          .span_note_without_error(sp, &format!("PHF generation took {} seconds", time));
+            .span_diagnostic
+            .span_note_without_error(sp, &format!("PHF generation took {} seconds", time));
     }
 
     state
@@ -125,10 +125,11 @@ fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResul
     create_set(cx, sp, entries, state)
 }
 
-fn expand_phf_ordered_map(cx: &mut ExtCtxt,
-                          sp: Span,
-                          tts: &[TokenTree])
-                          -> Box<MacResult + 'static> {
+fn expand_phf_ordered_map(
+    cx: &mut ExtCtxt,
+    sp: Span,
+    tts: &[TokenTree],
+) -> Box<MacResult + 'static> {
     let entries = match parse_map(cx, tts) {
         Some(entries) => entries,
         None => return DummyResult::expr(sp),
@@ -143,10 +144,11 @@ fn expand_phf_ordered_map(cx: &mut ExtCtxt,
     create_ordered_map(cx, sp, entries, state)
 }
 
-fn expand_phf_ordered_set(cx: &mut ExtCtxt,
-                          sp: Span,
-                          tts: &[TokenTree])
-                          -> Box<MacResult + 'static> {
+fn expand_phf_ordered_set(
+    cx: &mut ExtCtxt,
+    sp: Span,
+    tts: &[TokenTree],
+) -> Box<MacResult + 'static> {
     let entries = match parse_set(cx, tts) {
         Some(entries) => entries,
         None => return DummyResult::expr(sp),
@@ -235,60 +237,75 @@ fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
 
 fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
     match e.node {
-        ExprKind::Lit(ref lit) => {
-            match lit.node {
-                ast::LitKind::Str(ref s, _) => Some(Key::Str(s.as_str())),
-                ast::LitKind::ByteStr(ref b) => Some(Key::Binary(b.clone())),
-                ast::LitKind::Byte(b) => Some(Key::U8(b)),
-                ast::LitKind::Char(c) => Some(Key::Char(c)),
-                ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I8)) =>
-                    Some(Key::I8(i as i8)),
-                ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I16)) =>
-                    Some(Key::I16(i as i16)),
-                ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I32)) =>
-                    Some(Key::I32(i as i32)),
-                ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I64)) =>
-                    Some(Key::I64(i as i64)),
-                ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U8)) =>
-                    Some(Key::U8(i as u8)),
-                ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U16)) =>
-                    Some(Key::U16(i as u16)),
-                ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U32)) =>
-                    Some(Key::U32(i as u32)),
-                ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U64)) =>
-                    Some(Key::U64(i as u64)),
-                ast::LitKind::Bool(b) => Some(Key::Bool(b)),
-                _ => {
-                    cx.span_err(e.span, "unsupported literal type");
-                    None
-                }
+        ExprKind::Lit(ref lit) => match lit.node {
+            ast::LitKind::Str(ref s, _) => Some(Key::Str(s.as_str())),
+            ast::LitKind::ByteStr(ref b) => Some(Key::Binary(b.clone())),
+            ast::LitKind::Byte(b) => Some(Key::U8(b)),
+            ast::LitKind::Char(c) => Some(Key::Char(c)),
+            ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I8)) => Some(Key::I8(i as i8)),
+            ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I16)) => {
+                Some(Key::I16(i as i16))
             }
-        }
+            ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I32)) => {
+                Some(Key::I32(i as i32))
+            }
+            ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I64)) => {
+                Some(Key::I64(i as i64))
+            }
+            ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U8)) => {
+                Some(Key::U8(i as u8))
+            }
+            ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U16)) => {
+                Some(Key::U16(i as u16))
+            }
+            ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U32)) => {
+                Some(Key::U32(i as u32))
+            }
+            ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U64)) => {
+                Some(Key::U64(i as u64))
+            }
+            ast::LitKind::Bool(b) => Some(Key::Bool(b)),
+            _ => {
+                cx.span_err(e.span, "unsupported literal type");
+                None
+            }
+        },
         ExprKind::Array(ref v) => {
-            let bytes: Vec<Option<u8>> = v.iter().map(|expr|
-                if let ExprKind::Lit(ref p) = expr.node {
-                    match p.node {
-                        ast::LitKind::Int(val, ast::LitIntType::Unsigned(ast::UintTy::U8)) if val < 256 =>
-                            Some(val as u8),
-                        ast::LitKind::Int(val, ast::LitIntType::Unsuffixed) if val < 256 =>
-                            Some(val as u8),
-                        _ => None,
+            let bytes: Vec<Option<u8>> = v.iter()
+                .map(|expr| {
+                    if let ExprKind::Lit(ref p) = expr.node {
+                        match p.node {
+                            ast::LitKind::Int(val, ast::LitIntType::Unsigned(ast::UintTy::U8))
+                                if val < 256 =>
+                            {
+                                Some(val as u8)
+                            }
+                            ast::LitKind::Int(val, ast::LitIntType::Unsuffixed) if val < 256 => {
+                                Some(val as u8)
+                            }
+                            _ => None,
+                        }
+                    } else {
+                        None
                     }
-                } else {
-                    None
-            }).collect();
+                })
+                .collect();
             if bytes.iter().all(|x| x.is_some()) {
-                Some(Key::Binary(std::rc::Rc::new(bytes.iter().map(|x| x.unwrap()).collect())))
+                Some(Key::Binary(std::rc::Rc::new(
+                    bytes.iter().map(|x| x.unwrap()).collect(),
+                )))
             } else {
-                cx.span_err(e.span,
-                            "not all elements of an expected u8 array literal were u8 literals");
+                cx.span_err(
+                    e.span,
+                    "not all elements of an expected u8 array literal were u8 literals",
+                );
                 None
             }
         }
         #[cfg(feature = "unicase_support")]
         ExprKind::Call(ref f, ref args) => {
             if let ExprKind::Path(_, ref path) = f.node {
-                if &*path.segments.last().unwrap().identifier.name.as_str() == "UniCase" {
+                if &*path.segments.last().unwrap().ident.name.as_str() == "UniCase" {
                     if args.len() == 1 {
                         if let ExprKind::Lit(ref lit) = args.first().unwrap().node {
                             if let ast::LitKind::Str(ref s, _) = lit.node {
@@ -306,9 +323,12 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
             }
             cx.span_err(e.span, "only UniCase is allowed besides literals");
             None
-        },
+        }
         _ => {
-            cx.span_err(e.span, "expected a literal (or a UniCase if the unicase_support feature is enabled)");
+            cx.span_err(
+                e.span,
+                "expected a literal (or a UniCase if the unicase_support feature is enabled)",
+            );
             None
         }
     }
@@ -316,11 +336,9 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
 
 fn adjust_key(cx: &mut ExtCtxt, e: P<Expr>) -> P<Expr> {
     let coerce_as_slice = match e.node {
-        ExprKind::Lit(ref lit) => {
-            match lit.node {
-                ast::LitKind::ByteStr(_) => true,
-                _ => false,
-            }
+        ExprKind::Lit(ref lit) => match lit.node {
+            ast::LitKind::ByteStr(_) => true,
+            _ => false,
         },
         _ => false,
     };
@@ -351,8 +369,10 @@ fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
         }
 
         dups = true;
-        let mut err = cx.struct_span_err(sp, &*format!("duplicate key {}",
-                                                       pprust::expr_to_string(&**key)));
+        let mut err = cx.struct_span_err(
+            sp,
+            &*format!("duplicate key {}", pprust::expr_to_string(&**key)),
+        );
         for span in spans.iter() {
             err.span_note(*span, "one occurrence here");
         }

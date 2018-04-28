@@ -6,14 +6,14 @@ use syntax::codemap::Span;
 use syntax::ext::base::{ExtCtxt, MacResult, MacEager};
 use syntax::ext::build::AstBuilder;
 use syntax::ptr::P;
-use syntax::symbol::InternedString;
+use syntax::symbol::LocalInternedString;
 
 use phf_shared::PhfHash;
 use phf_generator::HashState;
 
 #[derive(PartialEq, Eq, Clone)]
 pub enum Key {
-    Str(InternedString),
+    Str(LocalInternedString),
     Binary(Rc<Vec<u8>>),
     Char(char),
     U8(u8),

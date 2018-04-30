@@ -82,7 +82,6 @@
 extern crate phf_generator;
 extern crate phf_shared;
 
-use phf_shared::PhfHash;
 use std::ascii;
 use std::collections::HashSet;
 use std::fmt::{self, Write as FmtWrite};
@@ -145,7 +144,7 @@ pub struct Map<K> {
     path: String,
 }
 
-impl<K: Hash + PhfHash + Eq + Source> Map<K> {
+impl<K: AsRef<[u8]> + Hash + Eq + Source> Map<K> {
     /// Creates a new `phf::Map` builder.
     pub fn new() -> Map<K> {
         Map {
@@ -189,8 +188,8 @@ impl<K: Hash + PhfHash + Eq + Source> Map<K> {
             w,
             "{}::Map {{
     key: {},
-    disps: {}::Slice::Static(&[",
-            self.path, state.key, self.path
+    disps: &[",
+            self.path, state.key
         ));
         for &(d1, d2) in &state.disps {
             try!(write!(
@@ -203,9 +202,8 @@ impl<K: Hash + PhfHash + Eq + Source> Map<K> {
         try!(write!(
             w,
             "
-    ]),
-    entries: {}::Slice::Static(&[",
-            self.path
+    ],
+    entries: &[",
         ));
         for &idx in &state.map {
             try!(write!(
@@ -219,7 +217,7 @@ impl<K: Hash + PhfHash + Eq + Source> Map<K> {
         write!(
             w,
             "
-    ]),
+    ],
 }}"
         )
     }
@@ -230,7 +228,7 @@ pub struct Set<T> {
     map: Map<T>,
 }
 
-impl<T: Hash + PhfHash + Eq + Source> Set<T> {
+impl<T: AsRef<[u8]> + Hash + Eq + Source> Set<T> {
     /// Constructs a new `phf::Set` builder.
     pub fn new() -> Set<T> {
         Set { map: Map::new() }
@@ -267,7 +265,7 @@ pub struct OrderedMap<K> {
     path: String,
 }
 
-impl<K: Hash + PhfHash + Eq + Source> OrderedMap<K> {
+impl<K: AsRef<[u8]> + Hash + Eq + Source> OrderedMap<K> {
     /// Constructs a enw `phf::OrderedMap` builder.
     pub fn new() -> OrderedMap<K> {
         OrderedMap {
@@ -312,8 +310,8 @@ impl<K: Hash + PhfHash + Eq + Source> OrderedMap<K> {
             w,
             "{}::OrderedMap {{
     key: {},
-    disps: {}::Slice::Static(&[",
-            self.path, state.key, self.path
+    disps: &[",
+            self.path, state.key
         ));
         for &(d1, d2) in &state.disps {
             try!(write!(
@@ -326,9 +324,8 @@ impl<K: Hash + PhfHash + Eq + Source> OrderedMap<K> {
         try!(write!(
             w,
             "
-    ]),
-    idxs: {}::Slice::Static(&[",
-            self.path
+    ],
+    idxs: &[",
         ));
         for &idx in &state.map {
             try!(write!(
@@ -341,9 +338,8 @@ impl<K: Hash + PhfHash + Eq + Source> OrderedMap<K> {
         try!(write!(
             w,
             "
-    ]),
-    entries: {}::Slice::Static(&[",
-            self.path
+    ],
+    entries: &[",
         ));
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
             try!(write!(
@@ -357,7 +353,7 @@ impl<K: Hash + PhfHash + Eq + Source> OrderedMap<K> {
         write!(
             w,
             "
-    ]),
+    ],
 }}"
         )
     }
@@ -368,7 +364,7 @@ pub struct OrderedSet<T> {
     map: OrderedMap<T>,
 }
 
-impl<T: Hash + PhfHash + Eq + Source> OrderedSet<T> {
+impl<T: AsRef<[u8]> + Hash + Eq + Source> OrderedSet<T> {
     /// Constructs a new `phf::OrderedSet` builder.
     pub fn new() -> OrderedSet<T> {
         OrderedSet {

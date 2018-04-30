@@ -8,5 +8,5 @@ repository = "https://github.com/sfackler/rust-phf"
 documentation = "https://docs.rs/phf_codegen/0.7.21/phf_codegen"
 
 [dependencies]
-phf_generator = { version = "=0.7.21", path = "../phf_generator" }
-phf_shared = { version = "=0.7.21", path = "../phf_shared" }
+phf_generator = { version = "0.7.21", path = "../phf_generator" }
+phf_shared = { version = "0.7.21", path = "../phf_shared" }

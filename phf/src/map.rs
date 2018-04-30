@@ -1,11 +1,10 @@
 //! An immutable map constructed at compile time.
 use core::borrow::Borrow;
-use core::ops::Index;
-use core::slice;
 use core::fmt;
 use core::iter::IntoIterator;
-use phf_shared::{self, PhfHash};
-use Slice;
+use core::ops::Index;
+use core::slice;
+use phf_shared;
 
 /// An immutable map constructed at compile time.
 ///
@@ -18,18 +17,26 @@ pub struct Map<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub key: u64,
     #[doc(hidden)]
-    pub disps: Slice<(u32, u32)>,
+    pub disps: &'static [(u32, u32)],
     #[doc(hidden)]
-    pub entries: Slice<(K, V)>,
+    pub entries: &'static [(K, V)],
 }
 
-impl<K, V> fmt::Debug for Map<K, V> where K: fmt::Debug, V: fmt::Debug {
+impl<K, V> fmt::Debug for Map<K, V>
+where
+    K: fmt::Debug,
+    V: fmt::Debug,
+{
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_map().entries(self.entries()).finish()
     }
 }
 
-impl<'a, K, V, T: ?Sized> Index<&'a T> for Map<K, V> where T: Eq + PhfHash, K: Borrow<T> {
+impl<'a, K, V, T: ?Sized> Index<&'a T> for Map<K, V>
+where
+    T: AsRef<[u8]>,
+    K: Borrow<T>,
+{
     type Output = V;
 
     fn index(&self, k: &'a T) -> &V {
@@ -50,16 +57,18 @@ impl<K, V> Map<K, V> {
 
     /// Determines if `key` is in the `Map`.
     pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool
-        where T: Eq + PhfHash,
-              K: Borrow<T>
+    where
+        T: AsRef<[u8]>,
+        K: Borrow<T>,
     {
         self.get(key).is_some()
     }
 
     /// Returns a reference to the value that `key` maps to.
     pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V>
-        where T: Eq + PhfHash,
-              K: Borrow<T>
+    where
+        T: AsRef<[u8]>,
+        K: Borrow<T>,
     {
         self.get_entry(key).map(|e| e.1)
     }
@@ -69,23 +78,27 @@ impl<K, V> Map<K, V> {
     ///
     /// This can be useful for interning schemes.
     pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K>
-        where T: Eq + PhfHash,
-              K: Borrow<T>
+    where
+        T: AsRef<[u8]>,
+        K: Borrow<T>,
     {
         self.get_entry(key).map(|e| e.0)
     }
 
     /// Like `get`, but returns both the key and the value.
     pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
-        where T: Eq + PhfHash,
-              K: Borrow<T>
+    where
+        T: AsRef<[u8]>,
+        K: Borrow<T>,
     {
-        if 0 == self.disps.len() { return None; }
+        if 0 == self.disps.len() {
+            return None;
+        }
         let hash = phf_shared::hash(key, self.key);
         let index = phf_shared::get_index(hash, &*self.disps, self.entries.len());
         let entry = &self.entries[index as usize];
         let b: &T = entry.0.borrow();
-        if b == key {
+        if b.as_ref() == key.as_ref() {
             Some((&entry.0, &entry.1))
         } else {
             None
@@ -96,21 +109,27 @@ impl<K, V> Map<K, V> {
     ///
     /// Entries are returned in an arbitrary but fixed order.
     pub fn entries<'a>(&'a self) -> Entries<'a, K, V> {
-        Entries { iter: self.entries.iter() }
+        Entries {
+            iter: self.entries.iter(),
+        }
     }
 
     /// Returns an iterator over the keys in the map.
     ///
     /// Keys are returned in an arbitrary but fixed order.
     pub fn keys<'a>(&'a self) -> Keys<'a, K, V> {
-        Keys { iter: self.entries() }
+        Keys {
+            iter: self.entries(),
+        }
     }
 
     /// Returns an iterator over the values in the map.
     ///
     /// Values are returned in an arbitrary but fixed order.
     pub fn values<'a>(&'a self) -> Values<'a, K, V> {
-        Values { iter: self.entries() }
+        Values {
+            iter: self.entries(),
+        }
     }
 }
 

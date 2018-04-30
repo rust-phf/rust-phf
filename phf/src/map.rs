@@ -1,5 +1,4 @@
 //! An immutable map constructed at compile time.
-use core::borrow::Borrow;
 use core::fmt;
 use core::iter::IntoIterator;
 use core::ops::Index;
@@ -24,7 +23,7 @@ pub struct Map<K: 'static, V: 'static> {
 
 impl<K, V> fmt::Debug for Map<K, V>
 where
-    K: fmt::Debug,
+    K: AsRef<[u8]> + fmt::Debug,
     V: fmt::Debug,
 {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -34,8 +33,8 @@ where
 
 impl<'a, K, V, T: ?Sized> Index<&'a T> for Map<K, V>
 where
+    K: AsRef<[u8]>,
     T: AsRef<[u8]>,
-    K: Borrow<T>,
 {
     type Output = V;
 
@@ -44,7 +43,10 @@ where
     }
 }
 
-impl<K, V> Map<K, V> {
+impl<K, V> Map<K, V>
+where
+    K: AsRef<[u8]>,
+{
     /// Returns true if the `Map` is empty.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
@@ -59,7 +61,6 @@ impl<K, V> Map<K, V> {
     pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool
     where
         T: AsRef<[u8]>,
-        K: Borrow<T>,
     {
         self.get(key).is_some()
     }
@@ -68,7 +69,6 @@ impl<K, V> Map<K, V> {
     pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V>
     where
         T: AsRef<[u8]>,
-        K: Borrow<T>,
     {
         self.get_entry(key).map(|e| e.1)
     }
@@ -80,7 +80,6 @@ impl<K, V> Map<K, V> {
     pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K>
     where
         T: AsRef<[u8]>,
-        K: Borrow<T>,
     {
         self.get_entry(key).map(|e| e.0)
     }
@@ -89,7 +88,6 @@ impl<K, V> Map<K, V> {
     pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
     where
         T: AsRef<[u8]>,
-        K: Borrow<T>,
     {
         if 0 == self.disps.len() {
             return None;
@@ -97,8 +95,7 @@ impl<K, V> Map<K, V> {
         let hash = phf_shared::hash(key, self.key);
         let index = phf_shared::get_index(hash, &*self.disps, self.entries.len());
         let entry = &self.entries[index as usize];
-        let b: &T = entry.0.borrow();
-        if b.as_ref() == key.as_ref() {
+        if entry.0.as_ref() == key.as_ref() {
             Some((&entry.0, &entry.1))
         } else {
             None
@@ -133,7 +130,10 @@ impl<K, V> Map<K, V> {
     }
 }
 
-impl<'a, K, V> IntoIterator for &'a Map<K, V> {
+impl<'a, K, V> IntoIterator for &'a Map<K, V>
+where
+    K: AsRef<[u8]>,
+{
     type Item = (&'a K, &'a V);
     type IntoIter = Entries<'a, K, V>;
 

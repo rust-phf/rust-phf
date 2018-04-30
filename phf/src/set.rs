@@ -1,5 +1,4 @@
 //! An immutable set constructed at compile time.
-use core::borrow::Borrow;
 use core::fmt;
 use core::iter::IntoIterator;
 
@@ -20,14 +19,17 @@ pub struct Set<T: 'static> {
 
 impl<T> fmt::Debug for Set<T>
 where
-    T: fmt::Debug,
+    T: fmt::Debug + AsRef<[u8]>,
 {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_set().entries(self).finish()
     }
 }
 
-impl<T> Set<T> {
+impl<T> Set<T>
+where
+    T: AsRef<[u8]>,
+{
     /// Returns the number of elements in the `Set`.
     pub fn len(&self) -> usize {
         self.map.len()
@@ -45,7 +47,6 @@ impl<T> Set<T> {
     pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T>
     where
         U: AsRef<[u8]>,
-        T: Borrow<U>,
     {
         self.map.get_key(key)
     }
@@ -54,7 +55,6 @@ impl<T> Set<T> {
     pub fn contains<U: ?Sized>(&self, value: &U) -> bool
     where
         U: AsRef<[u8]>,
-        T: Borrow<U>,
     {
         self.map.contains_key(value)
     }
@@ -89,7 +89,10 @@ where
     }
 }
 
-impl<'a, T> IntoIterator for &'a Set<T> {
+impl<'a, T> IntoIterator for &'a Set<T>
+where
+    T: AsRef<[u8]>,
+{
     type Item = &'a T;
     type IntoIter = Iter<'a, T>;
 

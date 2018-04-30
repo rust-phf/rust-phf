@@ -12,13 +12,7 @@ extern crate phf_shared;
 #[doc(inline)]
 pub use map::Map;
 #[doc(inline)]
-pub use ordered_map::OrderedMap;
-#[doc(inline)]
-pub use ordered_set::OrderedSet;
-#[doc(inline)]
 pub use set::Set;
 
 pub mod map;
-pub mod ordered_map;
-pub mod ordered_set;
 pub mod set;

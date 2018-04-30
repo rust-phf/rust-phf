@@ -4,8 +4,8 @@
 extern crate phf;
 
 mod map {
-    use std::collections::{HashMap, HashSet};
     use phf;
+    use std::collections::{HashMap, HashSet};
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::Map<&'static str, isize> = phf_map!(
@@ -40,7 +40,9 @@ mod map {
             "foo" => 10,
             "bar" => 11,
         );
-        let hash = MAP.entries().map(|(&k, &v)| (k, v)).collect::<HashMap<_, isize>>();
+        let hash = MAP.entries()
+            .map(|(&k, &v)| (k, v))
+            .collect::<HashMap<_, isize>>();
         assert!(Some(&10) == hash.get(&("foo")));
         assert!(Some(&11) == hash.get(&("bar")));
         assert_eq!(2, hash.len());
@@ -136,17 +138,6 @@ mod map {
         MAP["b"];
     }
 
-    macro_rules! test_key_type(
-        ($t:ty, $($k:expr => $v:expr),+) => ({
-            static MAP: phf::Map<$t, isize> = phf_map! {
-                $($k => $v),+
-            };
-            $(
-                assert_eq!(Some(&$v), MAP.get(&$k));
-            )+
-        })
-    );
-
     #[test]
     fn test_array_vals() {
         static MAP: phf::Map<&'static str, [u8; 3]> = phf_map!(
@@ -179,8 +170,8 @@ mod map {
 }
 
 mod set {
-    use std::collections::HashSet;
     use phf;
+    use std::collections::HashSet;
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::Set<&'static str> = phf_set! {
@@ -297,7 +288,7 @@ mod ordered_map {
             "baz" => 12,
         );
         let vec = MAP.entries().map(|(&k, &v)| (k, v)).collect::<Vec<_>>();
-        assert_eq!(vec, vec!(("foo", 10), ("bar", 11), ("baz", 12)));
+        assert_eq!(vec, vec![("foo", 10), ("bar", 11), ("baz", 12)]);
     }
 
     #[test]
@@ -308,7 +299,7 @@ mod ordered_map {
             "baz" => 12,
         );
         let vec = MAP.keys().map(|&e| e).collect::<Vec<_>>();
-        assert_eq!(vec, vec!("foo", "bar", "baz"));
+        assert_eq!(vec, vec!["foo", "bar", "baz"]);
     }
 
     #[test]
@@ -319,7 +310,7 @@ mod ordered_map {
             "baz" => 12,
         );
         let vec = MAP.values().map(|&v| v).collect::<Vec<_>>();
-        assert_eq!(vec, vec!(10, 11, 12));
+        assert_eq!(vec, vec![10, 11, 12]);
     }
 
     #[test]
@@ -405,10 +396,7 @@ mod ordered_set {
 
     #[test]
     fn test_index() {
-        static MAP: phf::OrderedSet<&'static str> = phf_ordered_set!(
-            "foo",
-            "bar",
-        );
+        static MAP: phf::OrderedSet<&'static str> = phf_ordered_set!("foo", "bar",);
         assert_eq!(Some(&"foo"), MAP.index(0));
         assert_eq!(Some(&"bar"), MAP.index(1));
         assert_eq!(None, MAP.index(2));
@@ -422,7 +410,7 @@ mod ordered_set {
             "world",
         };
         let vec = SET.iter().map(|&e| e).collect::<Vec<_>>();
-        assert_eq!(vec, vec!("hello", "there", "world"));
+        assert_eq!(vec, vec!["hello", "there", "world"]);
     }
 
     #[test]
@@ -436,9 +424,7 @@ mod ordered_set {
 
     #[test]
     fn test_into_iterator() {
-        static SET: phf::OrderedSet<&'static str> = phf_ordered_set!(
-            "foo",
-        );
+        static SET: phf::OrderedSet<&'static str> = phf_ordered_set!("foo",);
 
         for e in &SET {
             assert_eq!(&"foo", e);

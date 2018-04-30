@@ -13,10 +13,6 @@ path = "src/lib.rs"
 plugin = true
 test = false
 
-[features]
-# Deprecated
-stats = []
-
 [dependencies]
 phf_generator = { version = "=0.7.21", path = "../phf_generator" }
 phf_shared = { version = "=0.7.21", path = "../phf_shared" }
@@ -25,4 +21,3 @@ phf_shared = { version = "=0.7.21", path = "../phf_shared" }
 phf = { version = "0.7.21", path = "../phf" }
 compiletest_rs = "0.3"
 fnv = "1.0.3"
-

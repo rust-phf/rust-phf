@@ -21,24 +21,6 @@ mod test {
     }
 
     #[test]
-    fn ordered_map() {
-        assert_eq!(1, ORDERED_MAP["a"]);
-        assert_eq!(2, ORDERED_MAP["b"]);
-        assert_eq!(3, ORDERED_MAP["c❤️"]);
-        assert!(!ORDERED_MAP.contains_key("d"));
-        assert_eq!(&[1, 2, 3][..], &ORDERED_MAP.values().cloned().collect::<Vec<_>>()[..]);
-    }
-
-    #[test]
-    fn ordered_set() {
-        assert!(ORDERED_SET.contains("a"));
-        assert!(ORDERED_SET.contains("b"));
-        assert!(ORDERED_SET.contains("c❤️"));
-        assert!(!ORDERED_SET.contains("d"));
-        assert_eq!(&["a", "b", "c❤️"][..], &ORDERED_SET.iter().cloned().collect::<Vec<_>>()[..]);
-    }
-
-    #[test]
     fn slice_keys() {
         assert_eq!(1, SLICE_KEYS[&b"a"[..]]);
         assert_eq!(2, SLICE_KEYS[&b"b"[..]]);

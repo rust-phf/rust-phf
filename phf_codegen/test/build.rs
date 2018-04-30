@@ -29,30 +29,6 @@ fn main() {
 
     write!(
         &mut file,
-        "static ORDERED_MAP: ::phf::OrderedMap<&'static str, u32> = "
-    ).unwrap();
-    phf_codegen::OrderedMap::new()
-        .entry("a", "1")
-        .entry("b", "2")
-        .entry("c❤️", "3")
-        .build(&mut file)
-        .unwrap();
-    write!(&mut file, ";\n").unwrap();
-
-    write!(
-        &mut file,
-        "static ORDERED_SET: ::phf::OrderedSet<&'static str> = "
-    ).unwrap();
-    phf_codegen::OrderedSet::new()
-        .entry("a")
-        .entry("b")
-        .entry("c❤️")
-        .build(&mut file)
-        .unwrap();
-    write!(&mut file, ";\n").unwrap();
-
-    write!(
-        &mut file,
         "static SLICE_KEYS: ::phf::Map<&'static [u8], u32> = "
     ).unwrap();
     phf_codegen::Map::new()

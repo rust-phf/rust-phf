@@ -1,9 +1,9 @@
 //! An order-preserving immutable set constructed at compile time.
 use core::borrow::Borrow;
-use core::iter::IntoIterator;
 use core::fmt;
+use core::iter::IntoIterator;
 use ordered_map;
-use {PhfHash, OrderedMap};
+use OrderedMap;
 
 /// An order-preserving immutable set constructed at compile time.
 ///
@@ -20,7 +20,10 @@ pub struct OrderedSet<T: 'static> {
     pub map: OrderedMap<T, ()>,
 }
 
-impl<T> fmt::Debug for OrderedSet<T> where T: fmt::Debug {
+impl<T> fmt::Debug for OrderedSet<T>
+where
+    T: fmt::Debug,
+{
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_set().entries(self).finish()
     }
@@ -42,8 +45,9 @@ impl<T> OrderedSet<T> {
     ///
     /// This can be useful for interning schemes.
     pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T>
-        where U: Eq + PhfHash,
-              T: Borrow<U>
+    where
+        U: AsRef<[u8]>,
+        T: Borrow<U>,
     {
         self.map.get_key(key)
     }
@@ -51,8 +55,9 @@ impl<T> OrderedSet<T> {
     /// Returns the index of the key within the list used to initialize
     /// the ordered set.
     pub fn get_index<U: ?Sized>(&self, key: &U) -> Option<usize>
-        where U: Eq + PhfHash,
-              T: Borrow<U>
+    where
+        U: AsRef<[u8]>,
+        T: Borrow<U>,
     {
         self.map.get_index(key)
     }
@@ -65,8 +70,9 @@ impl<T> OrderedSet<T> {
 
     /// Returns true if `value` is in the `Set`.
     pub fn contains<U: ?Sized>(&self, value: &U) -> bool
-        where U: Eq + PhfHash,
-              T: Borrow<U>
+    where
+        U: AsRef<[u8]>,
+        T: Borrow<U>,
     {
         self.map.contains_key(value)
     }
@@ -75,11 +81,16 @@ impl<T> OrderedSet<T> {
     ///
     /// Values are returned in the same order in which they were defined.
     pub fn iter<'a>(&'a self) -> Iter<'a, T> {
-        Iter { iter: self.map.keys() }
+        Iter {
+            iter: self.map.keys(),
+        }
     }
 }
 
-impl<T> OrderedSet<T> where T: Eq + PhfHash {
+impl<T> OrderedSet<T>
+where
+    T: AsRef<[u8]>,
+{
     /// Returns true if `other` shares no elements with `self`.
     #[inline]
     pub fn is_disjoint(&self, other: &OrderedSet<T>) -> bool {

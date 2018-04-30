@@ -12,8 +12,5 @@ name = "phf_shared"
 path = "src/lib.rs"
 test = false
 
-[features]
-core = []
-
 [dependencies]
 siphasher = "0.2"

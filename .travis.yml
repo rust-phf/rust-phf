@@ -9,6 +9,5 @@ script:
 - cargo clean
 - (test $TRAVIS_RUST_VERSION != "nightly" || cargo test --manifest-path phf_macros/Cargo.toml)
 - (test $TRAVIS_RUST_VERSION != "nightly" || cargo bench --manifest-path phf_macros/Cargo.toml)
-- (test $TRAVIS_RUST_VERSION != "nightly" || cargo build --manifest-path phf/Cargo.toml --features core)
 - cargo test --manifest-path phf_codegen/Cargo.toml
 - cargo test --manifest-path phf_codegen/test/Cargo.toml

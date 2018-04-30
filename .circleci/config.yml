@@ -22,7 +22,7 @@ version: 2
 jobs:
   stable:
     docker:
-      - image: rust:1.19.0
+      - image: rust:1.25.0-slim
     environment:
       RUSTFLAGS: -D warnings
     steps:
@@ -36,7 +36,7 @@ jobs:
       - *SAVE_DEPS
   nightly:
     docker:
-      - image: rustlang/rust:nightly
+      - image: rustlang/rust:nightly-slim
     environment:
       RUSTFLAGS: -D warnings
     steps:

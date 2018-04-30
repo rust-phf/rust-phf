@@ -67,12 +67,7 @@ where
             iter: self.map.keys(),
         }
     }
-}
 
-impl<T> Set<T>
-where
-    T: AsRef<[u8]>,
-{
     /// Returns true if `other` shares no elements with `self`.
     pub fn is_disjoint(&self, other: &Set<T>) -> bool {
         !self.iter().any(|value| other.contains(value))

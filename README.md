@@ -1,7 +1,7 @@
 Rust-PHF
 =========
 
-[![Build Status](https://travis-ci.org/sfackler/rust-phf.png?branch=master)](https://travis-ci.org/sfackler/rust-phf) [![Latest Version](https://img.shields.io/crates/v/phf.svg)](https://crates.io/crates/phf)
+[![CircleCI](https://circleci.com/gh/sfackler/rust-phf.svg?style=shield)](https://circleci.com/gh/sfackler/rust-phf) [![Latest Version](https://img.shields.io/crates/v/phf.svg)](https://crates.io/crates/phf)
 
 [Documentation](https://docs.rs/phf/0.7.21/phf)
 

@@ -6,7 +6,10 @@ use rand::{Rng, SeedableRng, XorShiftRng};
 
 const DEFAULT_LAMBDA: usize = 5;
 
-const FIXED_SEED: [u32; 4] = [3141592653, 589793238, 462643383, 2795028841];
+const FIXED_SEED: [u8; 16] = [187, 64, 230, 77,
+                              35, 39, 135, 214,
+                              27, 147, 96, 183,
+                              166, 152, 193, 105];
 
 pub struct HashState {
     pub key: u64,

@@ -8,5 +8,5 @@ repository = "https://github.com/sfackler/rust-phf"
 documentation = "https://docs.rs/phf_generator/0.7.21/phf_generator"
 
 [dependencies]
-rand = "0.4"
+rand = "0.5"
 phf_shared = { version = "0.7.21", path = "../phf_shared" }

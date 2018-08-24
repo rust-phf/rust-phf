@@ -2,8 +2,8 @@ use std::rc::Rc;
 use std::hash::{Hash, Hasher};
 
 use syntax::ast::Expr;
-use syntax::codemap::Span;
-use syntax::ext::base::{ExtCtxt, MacResult, MacEager};
+use syntax_pos::Span;
+use syntax::ext::base::{ExtCtxt, MacEager, MacResult};
 use syntax::ext::build::AstBuilder;
 use syntax::ptr::P;
 use syntax::symbol::LocalInternedString;

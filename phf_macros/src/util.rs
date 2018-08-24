@@ -2,7 +2,7 @@ use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 
 use syntax::ast::Expr;
-use syntax::codemap::Span;
+use syntax_pos::Span;
 use syntax::ext::base::{ExtCtxt, MacEager, MacResult};
 use syntax::ext::build::AstBuilder;
 use syntax::ptr::P;

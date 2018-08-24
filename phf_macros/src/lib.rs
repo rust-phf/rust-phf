@@ -35,6 +35,7 @@
 
 #[macro_use]
 extern crate syntax;
+extern crate syntax_pos;
 extern crate phf_generator;
 extern crate phf_shared;
 extern crate rustc_plugin;
@@ -46,7 +47,7 @@ use std::collections::HashMap;
 use std::env;
 use std::time::Instant;
 use syntax::ast::{self, Expr, ExprKind, Mutability, TyKind};
-use syntax::codemap::Span;
+use syntax_pos::Span;
 use syntax::ext::base::{DummyResult, ExtCtxt, MacResult};
 use syntax::ext::build::AstBuilder;
 use syntax::fold::Folder;

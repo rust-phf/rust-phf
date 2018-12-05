@@ -1,8 +1,10 @@
 #![doc(html_root_url = "https://docs.rs/phf_generator/0.7.20")]
 extern crate phf_shared;
 extern crate rand;
+extern crate rand_xorshift;
 
-use rand::{Rng, SeedableRng, XorShiftRng};
+use rand::{Rng, SeedableRng};
+use rand_xorshift::XorShiftRng;
 
 const DEFAULT_LAMBDA: usize = 5;
 
@@ -47,16 +49,14 @@ fn try_generate_hash<H: AsRef<[u8]>>(entries: &[H], rng: &mut XorShiftRng) -> Op
                 f1: f1,
                 f2: f2,
             }
-        })
-        .collect();
+        }).collect();
 
     let buckets_len = (entries.len() + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA;
     let mut buckets = (0..buckets_len)
         .map(|i| Bucket {
             idx: i,
             keys: vec![],
-        })
-        .collect::<Vec<_>>();
+        }).collect::<Vec<_>>();
 
     for (i, hash) in hashes.iter().enumerate() {
         buckets[(hash.g % (buckets_len as u32)) as usize]

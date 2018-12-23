@@ -38,9 +38,11 @@ extern crate syntax;
 extern crate syntax_pos;
 extern crate phf_generator;
 extern crate phf_shared;
+extern crate rustc_data_structures;
 extern crate rustc_plugin;
 
 use phf_generator::HashState;
+use rustc_data_structures::sync::Lrc;
 use rustc_plugin::Registry;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::HashMap;
@@ -223,7 +225,7 @@ fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
                 })
                 .collect();
             if bytes.iter().all(|x| x.is_some()) {
-                Some(Key::Binary(std::rc::Rc::new(
+                Some(Key::Binary(Lrc::new(
                     bytes.iter().map(|x| x.unwrap()).collect(),
                 )))
             } else {

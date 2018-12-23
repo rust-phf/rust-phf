@@ -1,5 +1,4 @@
 use std::hash::{Hash, Hasher};
-use std::rc::Rc;
 
 use syntax::ast::Expr;
 use syntax_pos::Span;
@@ -7,13 +6,14 @@ use syntax::ext::base::{ExtCtxt, MacEager, MacResult};
 use syntax::ext::build::AstBuilder;
 use syntax::ptr::P;
 use syntax::symbol::LocalInternedString;
+use rustc_data_structures::sync::Lrc;
 
 use phf_generator::HashState;
 
 #[derive(PartialEq, Eq, Clone)]
 pub enum Key {
     Str(LocalInternedString),
-    Binary(Rc<Vec<u8>>),
+    Binary(Lrc<Vec<u8>>),
 }
 
 impl Hash for Key {

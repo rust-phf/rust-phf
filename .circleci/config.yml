@@ -45,10 +45,8 @@ jobs:
       - run: cargo generate-lockfile
       - *SAVE_REGISTRY
       - run: rustc --version > ~/rust-version
-      - *RESTORE_DEPS
       - run: cargo test -p phf_macros
       - run: cargo test -p phf_codegen_test
-      - *SAVE_DEPS
 
 workflows:
   version: 2

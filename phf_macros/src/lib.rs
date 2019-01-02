@@ -1,384 +1,260 @@
-//! Compiler plugin defining macros that create PHF data structures.
-//!
-//! # Example
-//!
-//! ```rust
-//! #![feature(plugin, core)]
-//! #![plugin(phf_macros)]
-//!
-//! extern crate phf;
-//!
-//! #[derive(Clone)]
-//! pub enum Keyword {
-//!     Loop,
-//!     Continue,
-//!     Break,
-//!     Fn,
-//!     Extern,
-//! }
-//!
-//! static KEYWORDS: phf::Map<&'static str, Keyword> = phf_map! {
-//!     "loop" => Keyword::Loop,
-//!     "continue" => Keyword::Continue,
-//!     "break" => Keyword::Break,
-//!     "fn" => Keyword::Fn,
-//!     "extern" => Keyword::Extern,
-//! };
-//!
-//! pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
-//!     KEYWORDS.get(keyword).cloned()
-//! }
-//! # fn main() {}
-//! ```
-#![doc(html_root_url = "https://docs.rs/phf_macros/0.7.20")]
-#![feature(plugin_registrar, quote, rustc_private)]
-
-#[macro_use]
-extern crate syntax;
-extern crate syntax_pos;
-extern crate phf_generator;
-extern crate phf_shared;
-extern crate rustc_plugin;
-#[cfg(feature = "unicase_support")]
-extern crate unicase;
+extern crate proc_macro;
 
 use phf_generator::HashState;
-use rustc_plugin::Registry;
-use std::collections::hash_map::Entry::{Occupied, Vacant};
-use std::collections::HashMap;
-use std::env;
-use std::time::Instant;
-use syntax::ast::{self, Expr, ExprKind, Mutability, TyKind};
-use syntax_pos::Span;
-use syntax::ext::base::{DummyResult, ExtCtxt, MacResult};
-use syntax::ext::build::AstBuilder;
-use syntax::fold::Folder;
-use syntax::parse;
-use syntax::parse::token::{Comma, Eof, FatArrow};
-use syntax::print::pprust;
-use syntax::ptr::P;
-use syntax::symbol::Symbol;
-use syntax::tokenstream::TokenTree;
-#[cfg(feature = "unicase_support")]
-use unicase::UniCase;
+use phf_shared::PhfHash;
+use proc_macro::TokenStream;
+use quote::quote;
+use std::collections::HashSet;
+use std::hash::Hasher;
+use syn::parse::{self, Parse, ParseStream};
+use syn::punctuated::Punctuated;
+use syn::{parse_macro_input, Error, Expr, IntSuffix, Lit, Token, UnOp};
 
-use util::{create_map, create_ordered_map, create_ordered_set, create_set};
-use util::{Entry, Key};
-
-mod macros;
-pub mod util;
-
-mod errors {
-    pub use syntax::errors::*;
+#[derive(Hash, PartialEq, Eq, Clone)]
+enum ParsedKey {
+    Str(String),
+    Binary(Vec<u8>),
+    Char(char),
+    I8(i8),
+    I16(i16),
+    I32(i32),
+    I64(i64),
+    U8(u8),
+    U16(u16),
+    U32(u32),
+    U64(u64),
+    Bool(bool),
 }
 
-#[plugin_registrar]
-#[doc(hidden)]
-pub fn macro_registrar(reg: &mut Registry) {
-    reg.register_macro("phf_map", expand_phf_map);
-    reg.register_macro("phf_set", expand_phf_set);
-    reg.register_macro("phf_ordered_map", expand_phf_ordered_map);
-    reg.register_macro("phf_ordered_set", expand_phf_ordered_set);
-}
-
-fn generate_hash(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> HashState {
-    let start = Instant::now();
-    let state = phf_generator::generate_hash(entries);
-    let time = Instant::now() - start;
-
-    if env::var_os("PHF_STATS").is_some() {
-        let time = time.as_secs() as f64 + (time.subsec_nanos() as f64 / 1_000_000_000.);
-        cx.parse_sess
-            .span_diagnostic
-            .span_note_without_error(sp, &format!("PHF generation took {} seconds", time));
-    }
-
-    state
-}
-
-fn expand_phf_map(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult + 'static> {
-    let entries = match parse_map(cx, tts) {
-        Some(entries) => entries,
-        None => return DummyResult::expr(sp),
-    };
-
-    if has_duplicates(cx, sp, &*entries) {
-        return DummyResult::expr(sp);
-    }
-
-    let state = generate_hash(cx, sp, &*entries);
-
-    create_map(cx, sp, entries, state)
-}
-
-fn expand_phf_set(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> Box<MacResult + 'static> {
-    let entries = match parse_set(cx, tts) {
-        Some(entries) => entries,
-        None => return DummyResult::expr(sp),
-    };
-
-    if has_duplicates(cx, sp, &*entries) {
-        return DummyResult::expr(sp);
-    }
-
-    let state = generate_hash(cx, sp, &*entries);
-
-    create_set(cx, sp, entries, state)
-}
-
-fn expand_phf_ordered_map(
-    cx: &mut ExtCtxt,
-    sp: Span,
-    tts: &[TokenTree],
-) -> Box<MacResult + 'static> {
-    let entries = match parse_map(cx, tts) {
-        Some(entries) => entries,
-        None => return DummyResult::expr(sp),
-    };
-
-    if has_duplicates(cx, sp, &*entries) {
-        return DummyResult::expr(sp);
-    }
-
-    let state = generate_hash(cx, sp, &*entries);
-
-    create_ordered_map(cx, sp, entries, state)
-}
-
-fn expand_phf_ordered_set(
-    cx: &mut ExtCtxt,
-    sp: Span,
-    tts: &[TokenTree],
-) -> Box<MacResult + 'static> {
-    let entries = match parse_set(cx, tts) {
-        Some(entries) => entries,
-        None => return DummyResult::expr(sp),
-    };
-
-    if has_duplicates(cx, sp, &*entries) {
-        return DummyResult::expr(sp);
-    }
-
-    let state = generate_hash(cx, sp, &*entries);
-
-    create_ordered_set(cx, sp, entries, state)
-}
-
-fn parse_map(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
-    let mut parser = parse::new_parser_from_tts(cx.parse_sess(), tts.to_vec());
-    let mut entries = Vec::new();
-
-    let mut bad = false;
-    while parser.token != Eof {
-        let key = cx.expander().fold_expr(panictry!(parser.parse_expr()));
-        let key_contents = parse_key(cx, &*key).unwrap_or_else(|| {
-            bad = true;
-            Key::Str(Symbol::intern("").as_str())
-        });
-        let key = adjust_key(cx, key);
-
-        if !parser.eat(&FatArrow) {
-            cx.span_err(parser.span, "expected `=>`");
-            return None;
-        }
-
-        let value = panictry!(parser.parse_expr());
-
-        entries.push(Entry {
-            key_contents: key_contents,
-            key: key,
-            value: value,
-        });
-
-        if !parser.eat(&Comma) && parser.token != Eof {
-            cx.span_err(parser.span, "expected `,`");
-            return None;
+impl PhfHash for ParsedKey {
+    fn phf_hash<H>(&self, state: &mut H)
+    where
+        H: Hasher,
+    {
+        match self {
+            ParsedKey::Str(s) => s.phf_hash(state),
+            ParsedKey::Binary(s) => s.phf_hash(state),
+            ParsedKey::Char(s) => s.phf_hash(state),
+            ParsedKey::I8(s) => s.phf_hash(state),
+            ParsedKey::I16(s) => s.phf_hash(state),
+            ParsedKey::I32(s) => s.phf_hash(state),
+            ParsedKey::I64(s) => s.phf_hash(state),
+            ParsedKey::U8(s) => s.phf_hash(state),
+            ParsedKey::U16(s) => s.phf_hash(state),
+            ParsedKey::U32(s) => s.phf_hash(state),
+            ParsedKey::U64(s) => s.phf_hash(state),
+            ParsedKey::Bool(s) => s.phf_hash(state),
         }
     }
-
-    if bad {
-        return None;
-    }
-
-    Some(entries)
 }
 
-fn parse_set(cx: &mut ExtCtxt, tts: &[TokenTree]) -> Option<Vec<Entry>> {
-    let mut parser = parse::new_parser_from_tts(cx.parse_sess(), tts.to_vec());
-    let mut entries = Vec::new();
-    let value = quote_expr!(&*cx, ());
-
-    let mut bad = false;
-    while parser.token != Eof {
-        let key = cx.expander().fold_expr(panictry!(parser.parse_expr()));
-        let key_contents = parse_key(cx, &*key).unwrap_or_else(|| {
-            bad = true;
-            Key::Str(Symbol::intern("").as_str())
-        });
-        let key = adjust_key(cx, key);
-
-        entries.push(Entry {
-            key_contents: key_contents,
-            key: key,
-            value: value.clone(),
-        });
-
-        if !parser.eat(&Comma) && parser.token != Eof {
-            cx.span_err(parser.span, "expected `,`");
-            return None;
-        }
-    }
-
-    if bad {
-        return None;
-    }
-
-    Some(entries)
-}
-
-fn parse_key(cx: &mut ExtCtxt, e: &Expr) -> Option<Key> {
-    match e.node {
-        ExprKind::Lit(ref lit) => match lit.node {
-            ast::LitKind::Str(ref s, _) => Some(Key::Str(s.as_str())),
-            ast::LitKind::ByteStr(ref b) => Some(Key::Binary(b.clone())),
-            ast::LitKind::Byte(b) => Some(Key::U8(b)),
-            ast::LitKind::Char(c) => Some(Key::Char(c)),
-            ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I8)) => Some(Key::I8(i as i8)),
-            ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I16)) => {
-                Some(Key::I16(i as i16))
-            }
-            ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I32)) => {
-                Some(Key::I32(i as i32))
-            }
-            ast::LitKind::Int(i, ast::LitIntType::Signed(ast::IntTy::I64)) => {
-                Some(Key::I64(i as i64))
-            }
-            ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U8)) => {
-                Some(Key::U8(i as u8))
-            }
-            ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U16)) => {
-                Some(Key::U16(i as u16))
-            }
-            ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U32)) => {
-                Some(Key::U32(i as u32))
-            }
-            ast::LitKind::Int(i, ast::LitIntType::Unsigned(ast::UintTy::U64)) => {
-                Some(Key::U64(i as u64))
-            }
-            ast::LitKind::Bool(b) => Some(Key::Bool(b)),
-            _ => {
-                cx.span_err(e.span, "unsupported literal type");
-                None
-            }
-        },
-        ExprKind::Array(ref v) => {
-            let bytes: Vec<Option<u8>> = v.iter()
-                .map(|expr| {
-                    if let ExprKind::Lit(ref p) = expr.node {
-                        match p.node {
-                            ast::LitKind::Int(val, ast::LitIntType::Unsigned(ast::UintTy::U8))
-                                if val < 256 =>
-                            {
-                                Some(val as u8)
-                            }
-                            ast::LitKind::Int(val, ast::LitIntType::Unsuffixed) if val < 256 => {
-                                Some(val as u8)
-                            }
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    }
-                })
-                .collect();
-            if bytes.iter().all(|x| x.is_some()) {
-                Some(Key::Binary(std::rc::Rc::new(
-                    bytes.iter().map(|x| x.unwrap()).collect(),
-                )))
-            } else {
-                cx.span_err(
-                    e.span,
-                    "not all elements of an expected u8 array literal were u8 literals",
-                );
-                None
-            }
-        }
-        #[cfg(feature = "unicase_support")]
-        ExprKind::Call(ref f, ref args) => {
-            if let ExprKind::Path(_, ref path) = f.node {
-                if &*path.segments.last().unwrap().ident.name.as_str() == "UniCase" {
-                    if args.len() == 1 {
-                        if let ExprKind::Lit(ref lit) = args.first().unwrap().node {
-                            if let ast::LitKind::Str(ref s, _) = lit.node {
-                                return Some(Key::UniCase(UniCase(s.to_string())));
-                            } else {
-                                cx.span_err(e.span, "only a str literal is allowed in UniCase");
-                                return None;
-                            }
-                        }
-                    } else {
-                        cx.span_err(e.span, "only one str literal is allowed in UniCase");
-                        return None;
+impl ParsedKey {
+    fn from_expr(expr: &Expr) -> Option<ParsedKey> {
+        match expr {
+            Expr::Lit(lit) => match &lit.lit {
+                Lit::Str(s) => Some(ParsedKey::Str(s.value())),
+                Lit::ByteStr(s) => Some(ParsedKey::Binary(s.value())),
+                Lit::Byte(s) => Some(ParsedKey::U8(s.value())),
+                Lit::Char(s) => Some(ParsedKey::Char(s.value())),
+                Lit::Int(s) => match s.suffix() {
+                    IntSuffix::I8 => Some(ParsedKey::I8(s.value() as i8)),
+                    IntSuffix::I16 => Some(ParsedKey::I16(s.value() as i16)),
+                    IntSuffix::I32 => Some(ParsedKey::I32(s.value() as i32)),
+                    IntSuffix::I64 => Some(ParsedKey::I64(s.value() as i64)),
+                    IntSuffix::U8 => Some(ParsedKey::U8(s.value() as u8)),
+                    IntSuffix::U16 => Some(ParsedKey::U16(s.value() as u16)),
+                    IntSuffix::U32 => Some(ParsedKey::U32(s.value() as u32)),
+                    IntSuffix::U64 => Some(ParsedKey::U64(s.value())),
+                    _ => None,
+                },
+                Lit::Bool(s) => Some(ParsedKey::Bool(s.value)),
+                _ => None,
+            },
+            Expr::Array(array) => {
+                let mut buf = vec![];
+                for expr in &array.elems {
+                    match expr {
+                        Expr::Lit(lit) => match &lit.lit {
+                            Lit::Int(s) => match s.suffix() {
+                                IntSuffix::U8 | IntSuffix::None => buf.push(s.value() as u8),
+                                _ => return None,
+                            },
+                            _ => return None,
+                        },
+                        _ => return None,
                     }
                 }
+                Some(ParsedKey::Binary(buf))
             }
-            cx.span_err(e.span, "only UniCase is allowed besides literals");
-            None
-        }
-        _ => {
-            cx.span_err(
-                e.span,
-                "expected a literal (or a UniCase if the unicase_support feature is enabled)",
-            );
-            None
+            Expr::Unary(unary) => match unary.op {
+                UnOp::Neg(_) => match ParsedKey::from_expr(&unary.expr)? {
+                    ParsedKey::I8(v) => Some(ParsedKey::I8(-v)),
+                    ParsedKey::I16(v) => Some(ParsedKey::I16(-v)),
+                    ParsedKey::I32(v) => Some(ParsedKey::I32(-v)),
+                    ParsedKey::I64(v) => Some(ParsedKey::I64(-v)),
+                    _ => None,
+                },
+                _ => None,
+            },
+            Expr::Group(group) => ParsedKey::from_expr(&group.expr),
+            _ => None,
         }
     }
 }
 
-fn adjust_key(cx: &mut ExtCtxt, e: P<Expr>) -> P<Expr> {
-    let coerce_as_slice = match e.node {
-        ExprKind::Lit(ref lit) => match lit.node {
-            ast::LitKind::ByteStr(_) => true,
-            _ => false,
-        },
-        _ => false,
-    };
-    if coerce_as_slice {
-        let u8_type = cx.ty_path(cx.path_ident(e.span, cx.ident_of("u8")));
-        let array_type = cx.ty(e.span, TyKind::Slice(u8_type));
-        let slice_type = cx.ty_rptr(e.span, array_type, None, Mutability::Immutable);
-        cx.expr_cast(e.span, e, slice_type)
-    } else {
-        e
+struct Key {
+    parsed: ParsedKey,
+    expr: Expr,
+}
+
+impl PhfHash for Key {
+    fn phf_hash<H>(&self, state: &mut H)
+    where
+        H: Hasher,
+    {
+        self.parsed.phf_hash(state)
     }
 }
 
-fn has_duplicates(cx: &mut ExtCtxt, sp: Span, entries: &[Entry]) -> bool {
-    let mut dups = false;
-    let mut strings = HashMap::new();
-    for entry in entries.iter() {
-        let &mut (ref mut spans, _) = match strings.entry(&entry.key_contents) {
-            Occupied(e) => e.into_mut(),
-            Vacant(e) => e.insert((vec![], &entry.key)),
-        };
-        spans.push(entry.key.span);
+impl Parse for Key {
+    fn parse(input: ParseStream) -> parse::Result<Key> {
+        let expr = input.parse()?;
+        let parsed = ParsedKey::from_expr(&expr)
+            .ok_or_else(|| Error::new_spanned(&expr, "unsupported key expression"))?;
+
+        Ok(Key { parsed, expr })
     }
+}
 
-    for &(ref spans, key) in strings.values() {
-        if spans.len() == 1 {
-            continue;
-        }
+struct Entry {
+    key: Key,
+    value: Expr,
+}
 
-        dups = true;
-        let mut err = cx.struct_span_err(
-            sp,
-            &*format!("duplicate key {}", pprust::expr_to_string(&**key)),
-        );
-        for span in spans.iter() {
-            err.span_note(*span, "one occurrence here");
-        }
-        err.emit();
+impl PhfHash for Entry {
+    fn phf_hash<H>(&self, state: &mut H)
+    where
+        H: Hasher,
+    {
+        self.key.phf_hash(state)
     }
+}
 
-    dups
+impl Parse for Entry {
+    fn parse(input: ParseStream) -> parse::Result<Entry> {
+        let key = input.parse()?;
+        input.parse::<Token![=>]>()?;
+        let value = input.parse()?;
+        Ok(Entry { key, value })
+    }
+}
+
+struct Map(Vec<Entry>);
+
+impl Parse for Map {
+    fn parse(input: ParseStream) -> parse::Result<Map> {
+        let parsed = Punctuated::<Entry, Token![,]>::parse_terminated(input)?;
+        let map = parsed.into_iter().collect::<Vec<_>>();
+        check_duplicates(&map)?;
+        Ok(Map(map))
+    }
+}
+
+struct Set(Vec<Entry>);
+
+impl Parse for Set {
+    fn parse(input: ParseStream) -> parse::Result<Set> {
+        let parsed = Punctuated::<Key, Token![,]>::parse_terminated(input)?;
+        let set = parsed
+            .into_iter()
+            .map(|key| Entry {
+                key,
+                value: syn::parse_str("()").unwrap(),
+            })
+            .collect::<Vec<_>>();
+        check_duplicates(&set)?;
+        Ok(Set(set))
+    }
+}
+
+fn check_duplicates(entries: &[Entry]) -> parse::Result<()> {
+    let mut keys = HashSet::new();
+    for entry in entries {
+        if !keys.insert(&entry.key.parsed) {
+            return Err(Error::new_spanned(&entry.key.expr, "duplicate key"));
+        }
+    }
+    Ok(())
+}
+
+fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
+    let key = state.key;
+    let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
+    let entries = state.map.iter().map(|&idx| {
+        let key = &entries[idx].key.expr;
+        let value = &entries[idx].value;
+        quote!((#key, #value))
+    });
+
+    quote! {
+        phf::Map {
+            key: #key,
+            disps: phf::Slice::Static(&[#(#disps),*]),
+            entries: phf::Slice::Static(&[#(#entries),*]),
+        }
+    }
+}
+
+fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
+    let key = state.key;
+    let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
+    let idxs = state.map.iter().map(|idx| quote!(#idx));
+    let entries = entries.iter().map(|entry| {
+        let key = &entry.key.expr;
+        let value = &entry.value;
+        quote!((#key, #value))
+    });
+
+    quote! {
+        phf::OrderedMap {
+            key: #key,
+            disps: phf::Slice::Static(&[#(#disps),*]),
+            idxs: phf::Slice::Static(&[#(#idxs),*]),
+            entries: phf::Slice::Static(&[#(#entries),*]),
+        }
+    }
+}
+
+#[proc_macro]
+pub fn phf_map(input: TokenStream) -> TokenStream {
+    let map = parse_macro_input!(input as Map);
+    let state = phf_generator::generate_hash(&map.0);
+
+    build_map(&map.0, state).into()
+}
+
+#[proc_macro]
+pub fn phf_set(input: TokenStream) -> TokenStream {
+    let set = parse_macro_input!(input as Set);
+    let state = phf_generator::generate_hash(&set.0);
+
+    let map = build_map(&set.0, state);
+    quote!(phf::Set { map: #map }).into()
+}
+
+#[proc_macro]
+pub fn phf_ordered_map(input: TokenStream) -> TokenStream {
+    let map = parse_macro_input!(input as Map);
+    let state = phf_generator::generate_hash(&map.0);
+
+    build_ordered_map(&map.0, state).into()
+}
+
+#[proc_macro]
+pub fn phf_ordered_set(input: TokenStream) -> TokenStream {
+    let set = parse_macro_input!(input as Set);
+    let state = phf_generator::generate_hash(&set.0);
+
+    let map = build_ordered_map(&set.0, state);
+    quote!(phf::OrderedSet { map: #map }).into()
 }

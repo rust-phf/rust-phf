@@ -1,13 +1,9 @@
-#![feature(plugin)]
-#![plugin(phf_macros)]
-
-extern crate phf;
-#[cfg(feature = "unicase_support")]
-extern crate unicase;
+#![feature(proc_macro_hygiene)]
 
 mod map {
     use std::collections::{HashMap, HashSet};
     use phf;
+    use phf_macros::phf_map;
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::Map<&'static str, isize> = phf_map!(
@@ -103,14 +99,6 @@ mod map {
             "z" => 25,
         );
         assert!(MAP.get(&("a")) == Some(&0));
-    }
-
-    #[test]
-    fn test_macro_key() {
-        static MAP: phf::Map<&'static str, isize> = phf_map!(
-            concat!("foo", "bar") => 1
-        );
-        assert!(Some(&1) == MAP.get(&("foobar")));
     }
 
     #[test]
@@ -264,6 +252,7 @@ mod map {
 mod set {
     use std::collections::HashSet;
     use phf;
+    use phf_macros::phf_set;
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::Set<&'static str> = phf_set! {
@@ -322,6 +311,7 @@ mod set {
 
 mod ordered_map {
     use phf;
+    use phf_macros::phf_ordered_map;
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
@@ -445,6 +435,7 @@ mod ordered_map {
 
 mod ordered_set {
     use phf;
+    use phf_macros::phf_ordered_set;
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::OrderedSet<&'static str> = phf_ordered_set! {

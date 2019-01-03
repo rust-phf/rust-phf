@@ -47,7 +47,7 @@ jobs:
       - run: rustc --version > ~/rust-version
       - run: cargo test -p phf_macros
       - run: cargo test -p phf_codegen_test
-      - run: cargo test -p phf --features macros
+      - run: cargo test --manifest-path phf/Cargo.toml --features macros
 
 workflows:
   version: 2

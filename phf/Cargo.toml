@@ -15,6 +15,9 @@ test = false
 [features]
 core = ["phf_shared/core"]
 unicase = ["phf_shared/unicase"]
+macros = ["phf_macros"]
 
 [dependencies]
 phf_shared = { version = "=0.7.23", path = "../phf_shared" }
+
+phf_macros = { version = "0.7.23", optional = true, path = "../phf_macros" }

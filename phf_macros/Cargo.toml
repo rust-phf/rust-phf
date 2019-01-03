@@ -1,6 +1,6 @@
 [package]
 name = "phf_macros"
-version = "0.1.0"
+version = "0.7.23"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 edition = "2018"
 
@@ -8,7 +8,7 @@ edition = "2018"
 proc-macro = true
 
 [dependencies]
-syn = { version = "0.15", features = ["full", "extra-traits"] }
+syn = { version = "0.15", features = ["full"] }
 quote = "0.6"
 proc-macro2 = "0.4"
 
@@ -17,4 +17,4 @@ phf_shared = { version = "=0.7.23", path = "../phf_shared" }
 
 [dev-dependencies]
 compiletest_rs = "0.3"
-phf = { version = "0.7.23", path = "../phf" }
+phf = { version = "0.7.23", path = "../phf", features = ["macros"] }

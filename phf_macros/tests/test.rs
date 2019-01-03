@@ -2,8 +2,7 @@
 
 mod map {
     use std::collections::{HashMap, HashSet};
-    use phf;
-    use phf_macros::phf_map;
+    use phf::phf_map;
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::Map<&'static str, isize> = phf_map!(
@@ -251,8 +250,7 @@ mod map {
 
 mod set {
     use std::collections::HashSet;
-    use phf;
-    use phf_macros::phf_set;
+    use phf::phf_set;
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::Set<&'static str> = phf_set! {
@@ -310,8 +308,7 @@ mod set {
 }
 
 mod ordered_map {
-    use phf;
-    use phf_macros::phf_ordered_map;
+    use phf::phf_ordered_map;
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
@@ -434,8 +431,7 @@ mod ordered_map {
 }
 
 mod ordered_set {
-    use phf;
-    use phf_macros::phf_ordered_set;
+    use phf::phf_ordered_set;
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::OrderedSet<&'static str> = phf_ordered_set! {

@@ -11,6 +11,11 @@
 extern crate std as core;
 
 extern crate phf_shared;
+#[cfg(feature = "macros")]
+extern crate phf_macros;
+
+#[cfg(feature = "phf_macros")]
+pub use phf_macros::*;
 
 use core::ops::Deref;
 

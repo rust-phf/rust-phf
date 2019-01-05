@@ -20,4 +20,4 @@ phf_shared = { version = "0.7.24", path = "../phf_shared" }
 
 [dev-dependencies]
 compiletest_rs = "0.3"
-#phf = { version = "0.7", path = "../phf", features = ["macros"] }
+phf = { version = "0.7", path = "../phf", features = ["macros"] }

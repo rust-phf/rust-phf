@@ -1,12 +1,11 @@
 [package]
 name = "phf_generator"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.7.23"
+version = "0.7.24"
 license = "MIT"
 description = "PHF generation logic"
 repository = "https://github.com/sfackler/rust-phf"
-documentation = "https://docs.rs/phf_generator/0.7.23/phf_generator"
 
 [dependencies]
 rand = "0.6"
-phf_shared = { version = "=0.7.23", path = "../phf_shared" }
+phf_shared = { version = "0.7.24", path = "../phf_shared" }

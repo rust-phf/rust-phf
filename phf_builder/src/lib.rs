@@ -1,4 +1,4 @@
-#![doc(html_root_url="https://docs.rs/phf_builder/0.7.20")]
+#![doc(html_root_url="https://docs.rs/phf_builder/0.7")]
 extern crate phf;
 extern crate phf_generator;
 

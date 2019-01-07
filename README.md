@@ -14,7 +14,7 @@ a 100,000 entry map in roughly .4 seconds when compiling with optimizations.
 Usage
 =====
 
-PHF data structures can be constucted via either the compiler plugins in the `phf_macros` crate or
+PHF data structures can be constructed via either the compiler plugins in the `phf_macros` crate or
 code generation supported by the `phf_codegen` crate. Compiler plugins are not a stable part of Rust
 at the moment, so `phf_macros` can only be used with nightlies.
 

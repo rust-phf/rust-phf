@@ -33,6 +33,21 @@
 #![doc(html_root_url = "https://docs.rs/phf_macros/0.7.20")]
 #![feature(plugin_registrar, quote, rustc_private)]
 
+// NOTE: Duplicated from stdlib
+macro_rules! panictry {
+    ($e:expr) => ({
+        use std::result::Result::{Ok, Err};
+        use errors::FatalError;
+        match $e {
+            Ok(e) => e,
+            Err(mut e) => {
+                e.emit();
+                FatalError.raise()
+            }
+        }
+    })
+}
+
 #[macro_use]
 extern crate syntax;
 extern crate syntax_pos;

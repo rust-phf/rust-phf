@@ -29,7 +29,10 @@ mod test {
         assert_eq!("b", ORDERED_MAP[&2]);
         assert_eq!("c", ORDERED_MAP[&3]);
         assert!(!ORDERED_MAP.contains_key(&100));
-        assert_eq!(&["a", "b", "c"][..], &ORDERED_MAP.values().cloned().collect::<Vec<_>>()[..]);
+        assert_eq!(
+            &["a", "b", "c"][..],
+            &ORDERED_MAP.values().cloned().collect::<Vec<_>>()[..]
+        );
     }
 
     #[test]
@@ -38,7 +41,10 @@ mod test {
         assert!(ORDERED_SET.contains(&2));
         assert!(ORDERED_SET.contains(&3));
         assert!(!ORDERED_SET.contains(&4));
-        assert_eq!(&[1, 2, 3][..], &ORDERED_SET.iter().cloned().collect::<Vec<_>>()[..]);
+        assert_eq!(
+            &[1, 2, 3][..],
+            &ORDERED_SET.iter().cloned().collect::<Vec<_>>()[..]
+        );
     }
 
     #[test]
@@ -81,8 +87,14 @@ mod test {
         assert_eq!(FORMATTED_ORDERED_MAP["c"], 3);
         assert!(!FORMATTED_ORDERED_MAP.contains_key("d"));
         assert!(!FORMATTED_ORDERED_MAP.contains_key("A"));
-        assert_eq!(&FORMATTED_ORDERED_MAP.keys().cloned().collect::<Vec<_>>(), &["a", "b", "c"]);
-        assert_eq!(&FORMATTED_ORDERED_MAP.values().cloned().collect::<Vec<_>>(), &[1, 2, 3]);
+        assert_eq!(
+            &FORMATTED_ORDERED_MAP.keys().cloned().collect::<Vec<_>>(),
+            &["a", "b", "c"]
+        );
+        assert_eq!(
+            &FORMATTED_ORDERED_MAP.values().cloned().collect::<Vec<_>>(),
+            &[1, 2, 3]
+        );
     }
 
     #[test]
@@ -92,6 +104,9 @@ mod test {
         assert!(FORMATTED_ORDERED_SET.contains("c"));
         assert!(!FORMATTED_ORDERED_SET.contains("d"));
         assert!(!FORMATTED_ORDERED_SET.contains("A"));
-        assert_eq!(&FORMATTED_ORDERED_SET.iter().cloned().collect::<Vec<_>>(), &["a", "b", "c"]);
+        assert_eq!(
+            &FORMATTED_ORDERED_SET.iter().cloned().collect::<Vec<_>>(),
+            &["a", "b", "c"]
+        );
     }
 }

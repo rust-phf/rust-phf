@@ -30,7 +30,11 @@ fn main() {
         .unwrap();
     write!(&mut file, ";\n").unwrap();
 
-    write!(&mut file, "static ORDERED_MAP: ::phf::OrderedMap<u32, &'static str> = ").unwrap();
+    write!(
+        &mut file,
+        "static ORDERED_MAP: ::phf::OrderedMap<u32, &'static str> = "
+    )
+    .unwrap();
     phf_codegen::OrderedMap::new()
         .entry(1u32, "\"a\"")
         .entry(2u32, "\"b\"")
@@ -48,7 +52,11 @@ fn main() {
         .unwrap();
     write!(&mut file, ";\n").unwrap();
 
-    write!(&mut file, "static STR_KEYS: ::phf::Map<&'static str, u32> = ").unwrap();
+    write!(
+        &mut file,
+        "static STR_KEYS: ::phf::Map<&'static str, u32> = "
+    )
+    .unwrap();
     phf_codegen::Map::new()
         .entry("a", "1")
         .entry("b", "2")
@@ -57,8 +65,12 @@ fn main() {
         .unwrap();
     write!(&mut file, ";\n").unwrap();
 
-    write!(&mut file, "static UNICASE_MAP: ::phf::Map<::unicase::UniCase<&'static str>, \
-                                                      &'static str> = ").unwrap();
+    write!(
+        &mut file,
+        "static UNICASE_MAP: ::phf::Map<::unicase::UniCase<&'static str>, \
+         &'static str> = "
+    )
+    .unwrap();
     phf_codegen::Map::new()
         .entry(UniCase("abc"), "\"a\"")
         .entry(UniCase("DEF"), "\"b\"")
@@ -66,39 +78,40 @@ fn main() {
         .unwrap();
     write!(&mut file, ";\n").unwrap();
 
-    let mut formatted_map = phf_codegen::Map::new();
+    write!(
+        &mut file,
+        "static FORMATTED_MAP: phf::Map<&'static str, u32> = {};\n",
+        phf_codegen::Map::new()
+            .entry("a", "1")
+            .entry("b", "2")
+            .entry("c", "3")
+    )
+    .unwrap();
 
-    formatted_map
-        .entry("a", "1")
-        .entry("b", "2")
-        .entry("c", "3");
+    write!(
+        &mut file,
+        "static FORMATTED_ORDERED_MAP: phf::OrderedMap<&'static str, u32> = {};\n",
+        phf_codegen::OrderedMap::new()
+            .entry("a", "1")
+            .entry("b", "2")
+            .entry("c", "3")
+    )
+    .unwrap();
 
-    write!(&mut file, "static FORMATTED_MAP: phf::Map<&'static str, u32> = {};\n", formatted_map).unwrap();
+    write!(
+        &mut file,
+        "static FORMATTED_SET: phf::Set<&'static str> = {};\n",
+        phf_codegen::Set::new().entry("a").entry("b").entry("c")
+    )
+    .unwrap();
 
-    let mut formatted_ordered_map = phf_codegen::OrderedMap::new();
-
-    formatted_ordered_map
-        .entry("a", "1")
-        .entry("b", "2")
-        .entry("c", "3");
-
-    write!(&mut file, "static FORMATTED_ORDERED_MAP: phf::OrderedMap<&'static str, u32> = {};\n", formatted_ordered_map).unwrap();
-
-    let mut formatted_set = phf_codegen::Set::new();
-
-    formatted_set
-        .entry("a")
-        .entry("b")
-        .entry("c");
-
-    write!(&mut file, "static FORMATTED_SET: phf::Set<&'static str> = {};\n", formatted_set).unwrap();
-
-    let mut formatted_ordered_set = phf_codegen::OrderedSet::new();
-
-    formatted_ordered_set
-        .entry("a")
-        .entry("b")
-        .entry("c");
-
-    write!(&mut file, "static FORMATTED_ORDERED_SET: phf::OrderedSet<&'static str> = {};\n", formatted_ordered_set).unwrap();
+    write!(
+        &mut file,
+        "static FORMATTED_ORDERED_SET: phf::OrderedSet<&'static str> = {};\n",
+        phf_codegen::OrderedSet::new()
+            .entry("a")
+            .entry("b")
+            .entry("c")
+    )
+    .unwrap();
 }

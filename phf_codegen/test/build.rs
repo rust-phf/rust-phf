@@ -80,7 +80,7 @@ fn main() {
 
     write!(
         &mut file,
-        "static FORMATTED_MAP: phf::Map<&'static str, u32> = {};\n",
+        "static FORMATTED_MAP: ::phf::Map<&'static str, u32> = {};\n",
         phf_codegen::Map::new()
             .entry("a", "1")
             .entry("b", "2")
@@ -90,7 +90,7 @@ fn main() {
 
     write!(
         &mut file,
-        "static FORMATTED_ORDERED_MAP: phf::OrderedMap<&'static str, u32> = {};\n",
+        "static FORMATTED_ORDERED_MAP: ::phf::OrderedMap<&'static str, u32> = {};\n",
         phf_codegen::OrderedMap::new()
             .entry("a", "1")
             .entry("b", "2")
@@ -100,14 +100,14 @@ fn main() {
 
     write!(
         &mut file,
-        "static FORMATTED_SET: phf::Set<&'static str> = {};\n",
+        "static FORMATTED_SET: ::phf::Set<&'static str> = {};\n",
         phf_codegen::Set::new().entry("a").entry("b").entry("c")
     )
     .unwrap();
 
     write!(
         &mut file,
-        "static FORMATTED_ORDERED_SET: phf::OrderedSet<&'static str> = {};\n",
+        "static FORMATTED_ORDERED_SET: ::phf::OrderedSet<&'static str> = {};\n",
         phf_codegen::OrderedSet::new()
             .entry("a")
             .entry("b")

@@ -55,4 +55,43 @@ mod test {
         assert_eq!("b", UNICASE_MAP[&UniCase("DEf")]);
         assert!(!UNICASE_MAP.contains_key(&UniCase("XyZ")));
     }
+
+    #[test]
+    fn formatted_map() {
+        assert_eq!(FORMATTED_MAP["a"], 1);
+        assert_eq!(FORMATTED_MAP["b"], 2);
+        assert_eq!(FORMATTED_MAP["c"], 3);
+        assert!(!FORMATTED_MAP.contains_key("d"));
+        assert!(!FORMATTED_MAP.contains_key("A"));
+    }
+
+    #[test]
+    fn formatted_set() {
+        assert!(FORMATTED_SET.contains("a"));
+        assert!(FORMATTED_SET.contains("b"));
+        assert!(FORMATTED_SET.contains("c"));
+        assert!(!FORMATTED_SET.contains("d"));
+        assert!(!FORMATTED_SET.contains("A"));
+    }
+
+    #[test]
+    fn formatted_ordered_map() {
+        assert_eq!(FORMATTED_ORDERED_MAP["a"], 1);
+        assert_eq!(FORMATTED_ORDERED_MAP["b"], 2);
+        assert_eq!(FORMATTED_ORDERED_MAP["c"], 3);
+        assert!(!FORMATTED_ORDERED_MAP.contains_key("d"));
+        assert!(!FORMATTED_ORDERED_MAP.contains_key("A"));
+        assert_eq!(&FORMATTED_ORDERED_MAP.keys().cloned().collect::<Vec<_>>(), &["a", "b", "c"]);
+        assert_eq!(&FORMATTED_ORDERED_MAP.values().cloned().collect::<Vec<_>>(), &[1, 2, 3]);
+    }
+
+    #[test]
+    fn formatted_ordered_set() {
+        assert!(FORMATTED_ORDERED_SET.contains("a"));
+        assert!(FORMATTED_ORDERED_SET.contains("b"));
+        assert!(FORMATTED_ORDERED_SET.contains("c"));
+        assert!(!FORMATTED_ORDERED_SET.contains("d"));
+        assert!(!FORMATTED_ORDERED_SET.contains("A"));
+        assert_eq!(&FORMATTED_ORDERED_SET.iter().cloned().collect::<Vec<_>>(), &["a", "b", "c"]);
+    }
 }

@@ -84,12 +84,14 @@ extern crate phf_generator;
 
 use phf_shared::PhfHash;
 use std::collections::HashSet;
-use std::fmt;
+use std::fmt::{self, Formatter, Display};
 use std::hash::Hash;
 use std::io;
+use std::default::Default;
 use std::io::prelude::*;
 
 /// A builder for the `phf::Map` type.
+#[derive(Debug, Clone)]
 pub struct Map<K> {
     keys: Vec<K>,
     values: Vec<String>,
@@ -138,6 +140,18 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
     ///
     /// Panics if there are any duplicate keys.
     pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
+        write!(w, "{}", self)
+    }
+}
+
+impl<K: Hash + PhfHash + Eq + fmt::Debug> Default for Map<K> {
+    fn default() -> Self {
+        Map::new()
+    }
+}
+
+impl<K: Hash+PhfHash+Eq+fmt::Debug> Display for Map<K> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
@@ -147,30 +161,30 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(w,
+        try!(write!(f,
                     "{}::Map {{
     key: {},
     disps: {}::Slice::Static(&[",
                     self.path, state.key, self.path));
         for &(d1, d2) in &state.disps {
-            try!(write!(w,
+            try!(write!(f,
                         "
         ({}, {}),",
                         d1,
                         d2));
         }
-        try!(write!(w,
+        try!(write!(f,
                     "
     ]),
     entries: {}::Slice::Static(&[", self.path));
         for &idx in &state.map {
-            try!(write!(w,
+            try!(write!(f,
                         "
         ({:?}, {}),",
                         &self.keys[idx],
                         &self.values[idx]));
         }
-        write!(w,
+        write!(f,
                "
     ]),
 }}")
@@ -178,6 +192,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
 }
 
 /// A builder for the `phf::Set` type.
+#[derive(Debug, Clone)]
 pub struct Set<T> {
     map: Map<T>,
 }
@@ -208,13 +223,24 @@ impl<T: Hash+PhfHash+Eq+fmt::Debug> Set<T> {
     ///
     /// Panics if there are any duplicate entries.
     pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
-        try!(write!(w, "{}::Set {{ map: ", self.map.path));
-        try!(self.map.build(w));
-        write!(w, " }}")
+        write!(w, "{}", self)
+    }
+}
+
+impl<T: Hash + PhfHash + Eq + fmt::Debug> Default for Set<T> {
+    fn default() -> Self {
+        Set::new()
+    }
+}
+
+impl<T: Hash + PhfHash + Eq + fmt::Debug> Display for Set<T> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}::Set {{ map: {} }}", self.map.path, self.map)
     }
 }
 
 /// A builder for the `phf::OrderedMap` type.
+#[derive(Debug, Clone)]
 pub struct OrderedMap<K> {
     keys: Vec<K>,
     values: Vec<String>,
@@ -253,6 +279,18 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
     ///
     /// Panics if there are any duplicate keys.
     pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
+        write!(w, "{}", self)
+    }
+}
+
+impl<K: Hash+PhfHash+Eq+fmt::Debug> Default for OrderedMap<K> {
+    fn default() -> Self {
+        OrderedMap::new()
+    }
+}
+
+impl<K: Hash+PhfHash+Eq+fmt::Debug> Display for OrderedMap<K> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
@@ -262,40 +300,29 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(w,
+        try!(write!(f,
                     "{}::OrderedMap {{
     key: {},
     disps: {}::Slice::Static(&[",
                     self.path, state.key, self.path));
         for &(d1, d2) in &state.disps {
-            try!(write!(w,
-                        "
-        ({}, {}),",
-                        d1,
-                        d2));
+            try!(write!(f,"\n        ({}, {}),", d1, d2));
         }
-        try!(write!(w,
+        try!(write!(f,
                     "
     ]),
     idxs: {}::Slice::Static(&[", self.path));
         for &idx in &state.map {
-            try!(write!(w,
-                        "
-        {},",
-                        idx));
+            try!(write!(f, "\n        {},", idx));
         }
-        try!(write!(w,
+        try!(write!(f,
                     "
     ]),
     entries: {}::Slice::Static(&[", self.path));
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
-            try!(write!(w,
-                        "
-        ({:?}, {}),",
-                        key,
-                        value));
+            try!(write!(f, "\n        ({:?}, {}),", key, value));
         }
-        write!(w,
+        write!(f,
                "
     ]),
 }}")
@@ -303,6 +330,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
 }
 
 /// A builder for the `phf::OrderedSet` type.
+#[derive(Debug, Clone)]
 pub struct OrderedSet<T> {
     map: OrderedMap<T>,
 }
@@ -334,8 +362,18 @@ impl<T: Hash+PhfHash+Eq+fmt::Debug> OrderedSet<T> {
     ///
     /// Panics if there are any duplicate entries.
     pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
-        try!(write!(w, "{}::OrderedSet {{ map: ", self.map.path));
-        try!(self.map.build(w));
-        write!(w, " }}")
+        write!(w, "{}", self)
+    }
+}
+
+impl<T: Hash + PhfHash + Eq + fmt::Debug> Default for OrderedSet<T> {
+    fn default() -> Self {
+        OrderedSet::new()
+    }
+}
+
+impl<T: Hash + PhfHash + Eq + fmt::Debug> Display for OrderedSet<T> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}::OrderedSet {{ map: {} }}", self.map.path, self.map)
     }
 }

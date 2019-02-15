@@ -65,4 +65,40 @@ fn main() {
         .build(&mut file)
         .unwrap();
     write!(&mut file, ";\n").unwrap();
+
+    let mut formatted_map = phf_codegen::Map::new();
+
+    formatted_map
+        .entry("a", "1")
+        .entry("b", "2")
+        .entry("c", "3");
+
+    write!(&mut file, "static FORMATTED_MAP: phf::Map<&'static str, u32> = {};\n", formatted_map).unwrap();
+
+    let mut formatted_ordered_map = phf_codegen::OrderedMap::new();
+
+    formatted_ordered_map
+        .entry("a", "1")
+        .entry("b", "2")
+        .entry("c", "3");
+
+    write!(&mut file, "static FORMATTED_ORDERED_MAP: phf::OrderedMap<&'static str, u32> = {};\n", formatted_ordered_map).unwrap();
+
+    let mut formatted_set = phf_codegen::Set::new();
+
+    formatted_set
+        .entry("a")
+        .entry("b")
+        .entry("c");
+
+    write!(&mut file, "static FORMATTED_SET: phf::Set<&'static str> = {};\n", formatted_set).unwrap();
+
+    let mut formatted_ordered_set = phf_codegen::OrderedSet::new();
+
+    formatted_ordered_set
+        .entry("a")
+        .entry("b")
+        .entry("c");
+
+    write!(&mut file, "static FORMATTED_ORDERED_SET: phf::OrderedSet<&'static str> = {};\n", formatted_ordered_set).unwrap();
 }

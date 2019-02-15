@@ -78,16 +78,16 @@
 //! builder.entry("world", "2");
 //! // ...
 //! ```
-#![doc(html_root_url="https://docs.rs/phf_codegen/0.7")]
-extern crate phf_shared;
+#![doc(html_root_url = "https://docs.rs/phf_codegen/0.7")]
 extern crate phf_generator;
+extern crate phf_shared;
 
 use phf_shared::PhfHash;
 use std::collections::HashSet;
-use std::fmt::{self, Formatter, Display};
+use std::default::Default;
+use std::fmt::{self, Display, Formatter};
 use std::hash::Hash;
 use std::io;
-use std::default::Default;
 use std::io::prelude::*;
 
 /// A builder for the `phf::Map` type.
@@ -98,7 +98,7 @@ pub struct Map<K> {
     path: String,
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
+impl<K: Hash + PhfHash + Eq + fmt::Debug> Map<K> {
     /// Creates a new `phf::Map` builder.
     pub fn new() -> Map<K> {
         // FIXME rust#27438
@@ -108,8 +108,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         // the linker ends up throwing a way a bunch of static symbols we actually need.
         // This works around the problem, assuming that all clients call `Map::new` by
         // calling a non-generic function.
-        fn noop_fix_for_27438() {
-        }
+        fn noop_fix_for_27438() {}
         noop_fix_for_27438();
 
         Map {
@@ -150,7 +149,7 @@ impl<K: Hash + PhfHash + Eq + fmt::Debug> Default for Map<K> {
     }
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Debug> Display for Map<K> {
+impl<K: Hash + PhfHash + Eq + fmt::Debug> Display for Map<K> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let mut set = HashSet::new();
         for key in &self.keys {
@@ -161,33 +160,42 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Display for Map<K> {
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(f,
-                    "{}::Map {{
+        try!(write!(
+            f,
+            "{}::Map {{
     key: {},
     disps: {}::Slice::Static(&[",
-                    self.path, state.key, self.path));
+            self.path, state.key, self.path
+        ));
         for &(d1, d2) in &state.disps {
-            try!(write!(f,
-                        "
+            try!(write!(
+                f,
+                "
         ({}, {}),",
-                        d1,
-                        d2));
+                d1, d2
+            ));
         }
-        try!(write!(f,
-                    "
+        try!(write!(
+            f,
+            "
     ]),
-    entries: {}::Slice::Static(&[", self.path));
+    entries: {}::Slice::Static(&[",
+            self.path
+        ));
         for &idx in &state.map {
-            try!(write!(f,
-                        "
+            try!(write!(
+                f,
+                "
         ({:?}, {}),",
-                        &self.keys[idx],
-                        &self.values[idx]));
+                &self.keys[idx], &self.values[idx]
+            ));
         }
-        write!(f,
-               "
+        write!(
+            f,
+            "
     ]),
-}}")
+}}"
+        )
     }
 }
 
@@ -197,12 +205,10 @@ pub struct Set<T> {
     map: Map<T>,
 }
 
-impl<T: Hash+PhfHash+Eq+fmt::Debug> Set<T> {
+impl<T: Hash + PhfHash + Eq + fmt::Debug> Set<T> {
     /// Constructs a new `phf::Set` builder.
     pub fn new() -> Set<T> {
-        Set {
-            map: Map::new(),
-        }
+        Set { map: Map::new() }
     }
 
     /// Set the path to the `phf` crate from the global namespace
@@ -247,7 +253,7 @@ pub struct OrderedMap<K> {
     path: String,
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
+impl<K: Hash + PhfHash + Eq + fmt::Debug> OrderedMap<K> {
     /// Constructs a enw `phf::OrderedMap` builder.
     pub fn new() -> OrderedMap<K> {
         OrderedMap {
@@ -283,13 +289,13 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
     }
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Debug> Default for OrderedMap<K> {
+impl<K: Hash + PhfHash + Eq + fmt::Debug> Default for OrderedMap<K> {
     fn default() -> Self {
         OrderedMap::new()
     }
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Debug> Display for OrderedMap<K> {
+impl<K: Hash + PhfHash + Eq + fmt::Debug> Display for OrderedMap<K> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let mut set = HashSet::new();
         for key in &self.keys {
@@ -300,32 +306,42 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Display for OrderedMap<K> {
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(f,
-                    "{}::OrderedMap {{
+        try!(write!(
+            f,
+            "{}::OrderedMap {{
     key: {},
     disps: {}::Slice::Static(&[",
-                    self.path, state.key, self.path));
+            self.path, state.key, self.path
+        ));
         for &(d1, d2) in &state.disps {
-            try!(write!(f,"\n        ({}, {}),", d1, d2));
+            try!(write!(f, "\n        ({}, {}),", d1, d2));
         }
-        try!(write!(f,
-                    "
+        try!(write!(
+            f,
+            "
     ]),
-    idxs: {}::Slice::Static(&[", self.path));
+    idxs: {}::Slice::Static(&[",
+            self.path
+        ));
         for &idx in &state.map {
             try!(write!(f, "\n        {},", idx));
         }
-        try!(write!(f,
-                    "
+        try!(write!(
+            f,
+            "
     ]),
-    entries: {}::Slice::Static(&[", self.path));
+    entries: {}::Slice::Static(&[",
+            self.path
+        ));
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
             try!(write!(f, "\n        ({:?}, {}),", key, value));
         }
-        write!(f,
-               "
+        write!(
+            f,
+            "
     ]),
-}}")
+}}"
+        )
     }
 }
 
@@ -335,7 +351,7 @@ pub struct OrderedSet<T> {
     map: OrderedMap<T>,
 }
 
-impl<T: Hash+PhfHash+Eq+fmt::Debug> OrderedSet<T> {
+impl<T: Hash + PhfHash + Eq + fmt::Debug> OrderedSet<T> {
     /// Constructs a new `phf::OrderedSet` builder.
     pub fn new() -> OrderedSet<T> {
         OrderedSet {

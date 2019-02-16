@@ -28,10 +28,9 @@ phf_macros
 ===========
 
 ```rust
-#![feature(plugin)]
-#![plugin(phf_macros)]
+#![feature(proc_macro_hygiene)]
 
-extern crate phf;
+use phf::phf_map;
 
 #[derive(Clone)]
 pub enum Keyword {
@@ -53,6 +52,11 @@ static KEYWORDS: phf::Map<&'static str, Keyword> = phf_map! {
 pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
     KEYWORDS.get(keyword).cloned()
 }
+```
+
+```toml
+[dependencies]
+phf = { version = "0.7", features = ["macros"] }
 ```
 
 phf_codegen

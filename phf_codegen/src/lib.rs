@@ -21,17 +21,17 @@
 //!     let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
 //!     let mut file = BufWriter::new(File::create(&path).unwrap());
 //!
-//! write!(&mut file, "static KEYWORDS: phf::Map<&'static str, Keyword> =
-//! ").unwrap();
-//!     phf_codegen::Map::new()
-//!         .entry("loop", "Keyword::Loop")
-//!         .entry("continue", "Keyword::Continue")
-//!         .entry("break", "Keyword::Break")
-//!         .entry("fn", "Keyword::Fn")
-//!         .entry("extern", "Keyword::Extern")
-//!         .build(&mut file)
-//!         .unwrap();
-//!     write!(&mut file, ";\n").unwrap();
+//!     write!(
+//!         &mut file,
+//!         "static KEYWORDS: phf::Map<&'static str, Keyword> = {};\n",
+//!         phf_codegen::Map::new()
+//!             .entry("loop", "Keyword::Loop")
+//!             .entry("continue", "Keyword::Continue")
+//!             .entry("break", "Keyword::Break")
+//!             .entry("fn", "Keyword::Fn")
+//!             .entry("extern", "Keyword::Extern")
+//!             .build(),
+//!     ).unwrap();
 //! }
 //! ```
 //!
@@ -85,9 +85,9 @@ extern crate phf_generator;
 use phf_shared::PhfHash;
 use std::collections::HashSet;
 use std::fmt;
+use std::fmt::Debug;
+use std::fmt::Display;
 use std::hash::Hash;
-use std::io;
-use std::io::prelude::*;
 
 /// A builder for the `phf::Map` type.
 pub struct Map<K> {
@@ -96,7 +96,7 @@ pub struct Map<K> {
     path: String,
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
+impl<K: Hash+PhfHash+Eq+Debug> Map<K> {
     /// Creates a new `phf::Map` builder.
     pub fn new() -> Map<K> {
         // FIXME rust#27438
@@ -132,12 +132,12 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         self
     }
 
-    /// Constructs a `phf::Map`, outputting Rust source to the provided writer.
+    /// Constructs a `phf::Map`, outputting a displayable struct.
     ///
     /// # Panics
     ///
     /// Panics if there are any duplicate keys.
-    pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
+    pub fn build<'a>(&'a self) -> MapView<'a, K> {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
@@ -146,31 +146,42 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         }
 
         let state = phf_generator::generate_hash(&self.keys);
+        MapView { map: self, state }
+    }
+}
 
-        try!(write!(w,
+/// A valid [`Map`](struct.Map.html) that can be displayed.
+pub struct MapView<'a, K> {
+    map: &'a Map<K>,
+    state: phf_generator::HashState,
+}
+
+impl<'a, K: Hash+PhfHash+Eq+Debug> Display for MapView<'a, K> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(f,
                     "{}::Map {{
     key: {},
     disps: {}::Slice::Static(&[",
-                    self.path, state.key, self.path));
-        for &(d1, d2) in &state.disps {
-            try!(write!(w,
+                    self.map.path, self.state.key, self.map.path));
+        for &(d1, d2) in &self.state.disps {
+            try!(write!(f,
                         "
         ({}, {}),",
                         d1,
                         d2));
         }
-        try!(write!(w,
+        try!(write!(f,
                     "
     ]),
-    entries: {}::Slice::Static(&[", self.path));
-        for &idx in &state.map {
-            try!(write!(w,
+    entries: {}::Slice::Static(&[", self.map.path));
+        for &idx in &self.state.map {
+            try!(write!(f,
                         "
         ({:?}, {}),",
-                        &self.keys[idx],
-                        &self.values[idx]));
+                        &self.map.keys[idx],
+                        &self.map.values[idx]));
         }
-        write!(w,
+        write!(f,
                "
     ]),
 }}")
@@ -182,7 +193,7 @@ pub struct Set<T> {
     map: Map<T>,
 }
 
-impl<T: Hash+PhfHash+Eq+fmt::Debug> Set<T> {
+impl<T: Hash+PhfHash+Eq+Debug> Set<T> {
     /// Constructs a new `phf::Set` builder.
     pub fn new() -> Set<T> {
         Set {
@@ -207,10 +218,20 @@ impl<T: Hash+PhfHash+Eq+fmt::Debug> Set<T> {
     /// # Panics
     ///
     /// Panics if there are any duplicate entries.
-    pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
-        try!(write!(w, "{}::Set {{ map: ", self.map.path));
-        try!(self.map.build(w));
-        write!(w, " }}")
+    pub fn build<'a>(&'a self) -> SetView<'a, T> {
+        SetView { path: &self.map.path, map: self.map.build() }
+    }
+}
+
+/// A valid [`Set`](struct.Set.html) that can be displayed.
+pub struct SetView<'a, T> {
+    path: &'a str,
+    map: MapView<'a, T>,
+}
+
+impl<'a, K: Hash+PhfHash+Eq+Debug> Display for SetView<'a, K> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}::Set {{ map: {} }}", self.path, self.map)
     }
 }
 
@@ -221,7 +242,7 @@ pub struct OrderedMap<K> {
     path: String,
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
+impl<K: Hash+PhfHash+Eq+Debug> OrderedMap<K> {
     /// Constructs a enw `phf::OrderedMap` builder.
     pub fn new() -> OrderedMap<K> {
         OrderedMap {
@@ -252,7 +273,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
     /// # Panics
     ///
     /// Panics if there are any duplicate keys.
-    pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
+    pub fn build<'a>(&'a self) -> OrderedMapView<'a, K> {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
@@ -261,41 +282,52 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         }
 
         let state = phf_generator::generate_hash(&self.keys);
+        OrderedMapView { state, map: self }
+    }
+}
 
-        try!(write!(w,
+/// A valid [`OrderedMap`](struct.OrderedMap.html) that can be displayed.
+pub struct OrderedMapView<'a, K> {
+    map: &'a OrderedMap<K>,
+    state: ::phf_generator::HashState,
+}
+
+impl<'a, K: Hash+PhfHash+Eq+Debug> Display for OrderedMapView<'a, K> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(f,
                     "{}::OrderedMap {{
     key: {},
     disps: {}::Slice::Static(&[",
-                    self.path, state.key, self.path));
-        for &(d1, d2) in &state.disps {
-            try!(write!(w,
+                    self.map.path, self.state.key, self.map.path));
+        for &(d1, d2) in &self.state.disps {
+            try!(write!(f,
                         "
         ({}, {}),",
                         d1,
                         d2));
         }
-        try!(write!(w,
+        try!(write!(f,
                     "
     ]),
-    idxs: {}::Slice::Static(&[", self.path));
-        for &idx in &state.map {
-            try!(write!(w,
+    idxs: {}::Slice::Static(&[", self.map.path));
+        for &idx in &self.state.map {
+            try!(write!(f,
                         "
         {},",
                         idx));
         }
-        try!(write!(w,
+        try!(write!(f,
                     "
     ]),
-    entries: {}::Slice::Static(&[", self.path));
-        for (key, value) in self.keys.iter().zip(self.values.iter()) {
-            try!(write!(w,
+    entries: {}::Slice::Static(&[", self.map.path));
+        for (key, value) in self.map.keys.iter().zip(self.map.values.iter()) {
+            try!(write!(f,
                         "
         ({:?}, {}),",
                         key,
                         value));
         }
-        write!(w,
+        write!(f,
                "
     ]),
 }}")
@@ -307,7 +339,7 @@ pub struct OrderedSet<T> {
     map: OrderedMap<T>,
 }
 
-impl<T: Hash+PhfHash+Eq+fmt::Debug> OrderedSet<T> {
+impl<T: Hash+PhfHash+Eq+Debug> OrderedSet<T> {
     /// Constructs a new `phf::OrderedSet` builder.
     pub fn new() -> OrderedSet<T> {
         OrderedSet {
@@ -333,9 +365,19 @@ impl<T: Hash+PhfHash+Eq+fmt::Debug> OrderedSet<T> {
     /// # Panics
     ///
     /// Panics if there are any duplicate entries.
-    pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
-        try!(write!(w, "{}::OrderedSet {{ map: ", self.map.path));
-        try!(self.map.build(w));
-        write!(w, " }}")
+    pub fn build<'a>(&'a self) -> OrderedSetView<'a, T> {
+        OrderedSetView { path: &self.map.path, map: self.map.build() }
+    }
+}
+
+/// A valid [`OrderedSet`](struct.OrderedMap.html) that can be displayed.
+pub struct OrderedSetView<'a, T> {
+    path: &'a str,
+    map: OrderedMapView<'a, T>
+}
+
+impl<'a, T: Hash+PhfHash+Eq+Debug> Display for OrderedSetView<'a, T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}::OrderedSet {{ map: {} }}", self.path, self.map)
     }
 }

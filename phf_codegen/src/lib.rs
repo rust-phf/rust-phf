@@ -132,7 +132,7 @@ impl<K: Hash+PhfHash+Eq+Debug> Map<K> {
         self
     }
 
-    /// Constructs a `phf::Map`, outputting a displayable struct.
+    /// Constructs a `phf::Map`, returning a `Display` implementor.
     ///
     /// # Panics
     ///
@@ -213,7 +213,7 @@ impl<T: Hash+PhfHash+Eq+Debug> Set<T> {
         self
     }
 
-    /// Constructs a `phf::Set`, outputting Rust source to the provided writer.
+    /// Constructs a `phf::Set`, returning a `Display` implementor.
     ///
     /// # Panics
     ///
@@ -267,8 +267,7 @@ impl<K: Hash+PhfHash+Eq+Debug> OrderedMap<K> {
         self
     }
 
-    /// Constructs a `phf::OrderedMap`, outputting Rust source to the provided
-    /// writer.
+    /// Constructs a `phf::OrderedMap`, returning a `Display` implementor.
     ///
     /// # Panics
     ///
@@ -359,8 +358,7 @@ impl<T: Hash+PhfHash+Eq+Debug> OrderedSet<T> {
         self
     }
 
-    /// Constructs a `phf::OrderedSet`, outputting Rust source to the provided
-    /// writer.
+    /// Constructs a `phf::OrderedSet`, returning a `Display` implementor.
     ///
     /// # Panics
     ///

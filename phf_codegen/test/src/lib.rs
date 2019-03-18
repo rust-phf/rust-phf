@@ -55,4 +55,15 @@ mod test {
         assert_eq!("b", UNICASE_MAP[&UniCase("DEf")]);
         assert!(!UNICASE_MAP.contains_key(&UniCase("XyZ")));
     }
+
+     #[test]
+    fn empty_map() {
+        assert_eq!(None, EMPTY.get(&1));
+    }
+
+     #[test]
+    fn empty_ordered_map() {
+        assert_eq!(None, EMPTY_ORDERED.get(&1));
+    }
+
 }

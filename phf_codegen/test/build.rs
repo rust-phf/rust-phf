@@ -65,4 +65,13 @@ fn main() {
         .build(&mut file)
         .unwrap();
     write!(&mut file, ";\n").unwrap();
+
+    //u32 is used here purely for a type that impls `Hash+PhfHash+Eq+fmt::Debug`, but is not required for the empty test itself
+    write!(&mut file, "static EMPTY: ::phf::Map<u32, u32> = ").unwrap();
+    phf_codegen::Map::<u32>::new().build(&mut file).unwrap();
+    write!(&mut file, ";\n").unwrap();
+
+    write!(&mut file, "static EMPTY_ORDERED: ::phf::OrderedMap<u32, u32> = ").unwrap();
+    phf_codegen::OrderedMap::<u32>::new().build(&mut file).unwrap();
+    write!(&mut file, ";\n").unwrap();
 }

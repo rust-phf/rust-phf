@@ -112,7 +112,7 @@ mod map {
 
     #[bench]
     fn bench_hashmap_none(b: &mut Bencher) {
-        let mut map = BTreeMap::new();
+        let mut map = HashMap::new();
         for (key, value) in MAP.entries() {
             map.insert(*key, *value);
         }

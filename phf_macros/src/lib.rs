@@ -225,36 +225,97 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
     }
 }
 
+struct BracedStaticDeclaration<InputSeq : Parse> {
+    identifier: ::syn::Ident,
+    ty: ::syn::Type,
+    expr: InputSeq,
+}
+
+impl<InputSeq : Parse> Parse for BracedStaticDeclaration<InputSeq> {
+    fn parse (input: ParseStream) -> parse::Result<Self>
+    {
+        input.parse::<Token![               static
+            ]>()?;
+        let identifier:                     syn::Ident
+            = input.parse()?;
+        input.parse::<Token![               :
+            ]>()?;
+        let ty:                             syn::Type
+            = input.parse()?;
+        input.parse::<Token![               =
+            ]>()?;
+            let _braced; ::syn::            braced!
+            (_braced in input);
+        let expr:                           InputSeq
+            = _braced.parse()?;
+        input.parse::<Token![               ;
+            ]>()?;
+
+        Ok(BracedStaticDeclaration {
+            identifier,
+            ty,
+            expr,
+        })
+    }
+}
+
+
 #[proc_macro]
-pub fn phf_map(input: TokenStream) -> TokenStream {
-    let map = parse_macro_input!(input as Map);
+pub
+fn phf_map (input: TokenStream) -> TokenStream
+{
+    let BracedStaticDeclaration {
+        identifier, ty, expr: map,
+    } = parse_macro_input!(input as BracedStaticDeclaration<Map>);
     let state = phf_generator::generate_hash(&map.0);
 
-    build_map(&map.0, state).into()
+    let map = build_map(&map.0, state);
+    TokenStream::from(quote! {
+        static #identifier: #ty = #map;
+    })
 }
 
 #[proc_macro]
-pub fn phf_set(input: TokenStream) -> TokenStream {
-    let set = parse_macro_input!(input as Set);
+pub
+fn phf_set (input: TokenStream) -> TokenStream
+{
+    let BracedStaticDeclaration {
+        identifier, ty, expr: set,
+    } = parse_macro_input!(input as BracedStaticDeclaration<Set>);
     let state = phf_generator::generate_hash(&set.0);
 
     let map = build_map(&set.0, state);
-    quote!(phf::Set { map: #map }).into()
+    TokenStream::from(quote! {
+        static #identifier: #ty = phf::Set { map: #map };
+    })
 }
 
 #[proc_macro]
-pub fn phf_ordered_map(input: TokenStream) -> TokenStream {
-    let map = parse_macro_input!(input as Map);
+pub
+fn phf_ordered_map (input: TokenStream) -> TokenStream
+{
+    let BracedStaticDeclaration {
+        identifier, ty, expr: map,
+    } = parse_macro_input!(input as BracedStaticDeclaration<Map>);
     let state = phf_generator::generate_hash(&map.0);
 
-    build_ordered_map(&map.0, state).into()
+    let map = build_ordered_map(&map.0, state);
+    TokenStream::from(quote! {
+        static #identifier: #ty = #map;
+    })
 }
 
 #[proc_macro]
-pub fn phf_ordered_set(input: TokenStream) -> TokenStream {
-    let set = parse_macro_input!(input as Set);
+pub
+fn phf_ordered_set (input: TokenStream) -> TokenStream
+{
+    let BracedStaticDeclaration {
+        identifier, ty, expr: set,
+    } = parse_macro_input!(input as BracedStaticDeclaration<Set>);
     let state = phf_generator::generate_hash(&set.0);
 
     let map = build_ordered_map(&set.0, state);
-    quote!(phf::OrderedSet { map: #map }).into()
+    TokenStream::from(quote! {
+        static #identifier: #ty = phf::OrderedSet { map: #map };
+    })
 }

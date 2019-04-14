@@ -1,11 +1,11 @@
 [package]
 name = "phf_builder"
-version = "0.7.24"
+version = "0.8.0"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 license = "MIT"
 description = "Runtime creation of perfect hash function data structures"
 repository = "https://github.com/sfackler/rust-phf"
 
 [dependencies]
-phf = { version = "0.7.24", path = "../phf" }
-phf_generator = { version = "0.7.24", path = "../phf_generator" }
+phf = { version = "0.8.0", path = "../phf" }
+phf_generator = { version = "0.8.0", path = "../phf_generator" }

@@ -7,29 +7,32 @@
 //!
 //! If the `macros` Cargo feature is enabled, the `phf_map`, `phf_set`,
 //! `phf_ordered_map`, and `phf_ordered_set` macros can be used to construct
-//! the PHF type. This currently requires a nightly compiler.
+//! the PHF type.
 //!
 //! ```toml
 //! [dependencies]
 //! phf = { version = "0.7.24", features = ["macros"] }
 //! ```
 //!
-//! ```
-//! #![feature(proc_macro_hygiene)]
+//! ```rust,edition2018
+//! use ::phf::{phf_map, phf_set};
 //!
-//! use phf::{phf_map, phf_set};
+//! phf_map! {
+//!     static MY_MAP: phf::Map<&'static str, u32> = {
+//!         "hello" => 1,
+//!         "world" => 2,
+//!     };
+//! }
 //!
-//! static MY_MAP: phf::Map<&'static str, u32> = phf_map! {
-//!     "hello" => 1,
-//!     "world" => 2,
-//! };
+//! phf_set! {
+//!     static MY_SET: phf::Set<&'static str> = {
+//!         "hello world",
+//!         "hola mundo",
+//!     };
+//! }
 //!
-//! static MY_SET: phf::Set<&'static str> = phf_set! {
-//!     "hello world",
-//!     "hola mundo",
-//! };
-//!
-//! fn main() {
+//! fn main ()
+//! {
 //!     assert_eq!(MY_MAP["hello"], 1);
 //!     assert!(MY_SET.contains("hello world"));
 //! }
@@ -49,7 +52,7 @@ extern crate phf_shared;
 extern crate phf_macros;
 
 #[cfg(feature = "macros")]
-pub use phf_macros::*;
+include!("macros.rs");
 
 use core::ops::Deref;
 

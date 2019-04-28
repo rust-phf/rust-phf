@@ -9,6 +9,7 @@ extern crate siphasher;
 #[cfg(feature = "unicase")]
 extern crate unicase;
 
+use core::fmt;
 use core::hash::{Hasher, Hash};
 use siphasher::sip::SipHasher13;
 
@@ -66,6 +67,39 @@ pub trait PhfHash {
     }
 }
 
+/// Trait for printing types with `const` constructors, used by `phf_codegen` and `phf_macros`.
+pub trait FmtConst {
+    /// Print a `const` expression representing this value.
+    fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result;
+}
+
+/// Create an impl of `FmtConst` delegating to `fmt::Debug` for types that can deal with it.
+///
+/// Ideally with specialization this could be just one default impl and then specialized where
+/// it doesn't apply.
+macro_rules! delegate_debug(
+    ($ty:ty) => {
+        impl FmtConst for $ty {
+            fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                write!(f, "{:?}", self)
+            }
+        }
+    }
+);
+
+delegate_debug!(str);
+delegate_debug!([u8]);
+delegate_debug!(char);
+delegate_debug!(u8);
+delegate_debug!(i8);
+delegate_debug!(u16);
+delegate_debug!(i16);
+delegate_debug!(u32);
+delegate_debug!(i32);
+delegate_debug!(u64);
+delegate_debug!(i64);
+delegate_debug!(bool);
+
 #[cfg(not(feature = "core"))]
 impl PhfHash for String {
     #[inline]
@@ -82,17 +116,15 @@ impl PhfHash for Vec<u8> {
     }
 }
 
-impl<'a> PhfHash for &'a str {
-    #[inline]
+impl<'a, T: 'a + PhfHash + ?Sized> PhfHash for &'a T {
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
         (*self).phf_hash(state)
     }
 }
 
-impl<'a> PhfHash for &'a [u8] {
-    #[inline]
-    fn phf_hash<H: Hasher>(&self, state: &mut H) {
-        (*self).phf_hash(state)
+impl<'a, T: 'a + FmtConst + ?Sized> FmtConst for &'a T {
+    fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        (*self).fmt_const(f)
     }
 }
 
@@ -116,6 +148,15 @@ where unicase::UniCase<S>: Hash {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
         self.hash(state)
+    }
+}
+
+#[cfg(feature = "unicase")]
+impl<S> FmtConst for unicase::UniCase<S> where S: FmtConst {
+    fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("UniCase(")?;
+        self.0.fmt_const(f)?;
+        f.write_str(")")
     }
 }
 
@@ -161,6 +202,13 @@ macro_rules! array_impl(
             #[inline]
             fn phf_hash<H: Hasher>(&self, state: &mut H) {
                 state.write(self);
+            }
+        }
+
+        impl FmtConst for [$t; $n] {
+            fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                // delegate to the slice impl to minimize duplicated code
+                self[..].fmt_const(f)
             }
         }
     )

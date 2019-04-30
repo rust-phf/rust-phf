@@ -5,10 +5,10 @@ version = "0.0.0"
 build = "build.rs"
 
 [dependencies]
-unicase = "1.1"
+unicase = "2.4.0"
 
 [build-dependencies]
-unicase = "1.1"
+unicase = "2.4.0"
 
 [build-dependencies.phf_codegen]
 path = ".."

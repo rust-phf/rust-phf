@@ -152,10 +152,15 @@ where unicase::UniCase<S>: Hash {
 }
 
 #[cfg(feature = "unicase")]
-impl<S> FmtConst for unicase::UniCase<S> where S: FmtConst {
+impl<S> FmtConst for unicase::UniCase<S> where S: AsRef<str> {
     fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("UniCase(")?;
-        self.0.fmt_const(f)?;
+        if self.is_ascii() {
+            f.write_str("UniCase::ascii(")?;
+        } else {
+            f.write_str("UniCase::unicode(")?;
+        }
+
+        self.as_ref().fmt_const(f)?;
         f.write_str(")")
     }
 }

@@ -1,6 +1,3 @@
-extern crate phf;
-extern crate unicase;
-
 #[cfg(test)]
 mod test {
     use unicase::UniCase;

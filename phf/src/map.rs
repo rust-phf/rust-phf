@@ -5,7 +5,7 @@ use core::slice;
 use core::fmt;
 use core::iter::IntoIterator;
 use phf_shared::{self, PhfHash};
-use Slice;
+use crate::Slice;
 
 /// An immutable map constructed at compile time.
 ///

@@ -3,6 +3,7 @@ name = "phf_codegen_test"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 version = "0.0.0"
 build = "build.rs"
+edition = "2018"
 
 [dependencies]
 unicase = "2.4.0"

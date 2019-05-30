@@ -6,7 +6,7 @@ use core::fmt;
 use core::slice;
 use phf_shared::{self, PhfHash};
 
-use Slice;
+use crate::Slice;
 
 /// An order-preserving immutable map constructed at compile time.
 ///

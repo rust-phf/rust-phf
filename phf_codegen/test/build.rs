@@ -60,8 +60,8 @@ fn main() {
     write!(&mut file, "static UNICASE_MAP: ::phf::Map<::unicase::UniCase<&'static str>, \
                                                       &'static str> = ").unwrap();
     phf_codegen::Map::new()
-        .entry(UniCase("abc"), "\"a\"")
-        .entry(UniCase("DEF"), "\"b\"")
+        .entry(UniCase::new("abc"), "\"a\"")
+        .entry(UniCase::new("DEF"), "\"b\"")
         .build(&mut file)
         .unwrap();
     write!(&mut file, ";\n").unwrap();

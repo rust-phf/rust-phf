@@ -98,6 +98,8 @@ delegate_debug!(u32);
 delegate_debug!(i32);
 delegate_debug!(u64);
 delegate_debug!(i64);
+delegate_debug!(u128);
+delegate_debug!(i128);
 delegate_debug!(bool);
 
 #[cfg(not(feature = "core"))]
@@ -192,6 +194,8 @@ sip_impl!(le u32);
 sip_impl!(le i32);
 sip_impl!(le u64);
 sip_impl!(le i64);
+sip_impl!(le u128);
+sip_impl!(le i128);
 sip_impl!(bool);
 
 impl PhfHash for char {

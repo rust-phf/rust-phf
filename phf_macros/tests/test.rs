@@ -166,42 +166,60 @@ mod map {
 
     #[test]
     fn test_i8_keys() {
-        test_key_type!(i8, 0i8 => 0, 1i8 => 1);
+        test_key_type!(i8, 0i8 => 0, 1i8 => 1, 127i8 => 2, -128i8 => 3);
     }
 
     #[test]
     fn test_i16_keys() {
-        test_key_type!(i16, 0i16 => 0, 1i16 => 1);
+        test_key_type!(i16, 0i16 => 0, 1i16 => 1, 32767i16 => 2, -32768i16 => 3);
     }
 
     #[test]
     fn test_i32_keys() {
-        test_key_type!(i32, 0i32 => 0, 1i32 => 1);
+        test_key_type!(i32, 0i32 => 0, 1i32 => 1, 2147483647i32 => 2, -2147483648i32 => 3);
     }
 
     #[test]
     fn test_i64_keys() {
-        test_key_type!(i64, 0i64 => 0, 1i64 => 1);
+        test_key_type!(i64, 0i64 => 0, 1i64 => 1, -9223372036854775808i64 => 2);
+    }
+
+    #[test]
+    fn test_i128_keys() {
+        test_key_type!(
+            i128, 0i128 => 0, 1i128 => 1,
+            // `syn` handles literals larger than 64-bit differently
+            170141183460469231731687303715884105727i128 => 2,
+            -170141183460469231731687303715884105727i128 => 3
+        );
     }
 
     #[test]
     fn test_u8_keys() {
-        test_key_type!(u8, 0u8 => 0, 1u8 => 1);
+        test_key_type!(u8, 0u8 => 0, 1u8 => 1, 255u8 => 2);
     }
 
     #[test]
     fn test_u16_keys() {
-        test_key_type!(u16, 0u16 => 0, 1u16 => 1);
+        test_key_type!(u16, 0u16 => 0, 1u16 => 1, 65535u16 => 2);
     }
 
     #[test]
     fn test_u32_keys() {
-        test_key_type!(u32, 0u32 => 0, 1u32 => 1);
+        test_key_type!(u32, 0u32 => 0, 1u32 => 1, 4294967295u32 => 2);
     }
 
     #[test]
     fn test_u64_keys() {
-        test_key_type!(u64, 0u64 => 0, 1u64 => 1);
+        test_key_type!(u64, 0u64 => 0, 1u64 => 1, 18446744073709551615u64 => 2);
+    }
+
+    #[test]
+    fn test_u128_keys() {
+        test_key_type!(
+            u128, 0u128 => 0, 1u128 => 1,
+            340282366920938463463374607431768211455u128 => 2
+        );
     }
 
     #[test]

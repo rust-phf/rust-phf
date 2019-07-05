@@ -2,8 +2,7 @@
 use core::borrow::Borrow;
 use core::iter::IntoIterator;
 use core::fmt;
-use ordered_map;
-use {PhfHash, OrderedMap};
+use crate::{ordered_map, PhfHash, OrderedMap};
 
 /// An order-preserving immutable set constructed at compile time.
 ///

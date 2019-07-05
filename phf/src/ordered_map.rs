@@ -6,7 +6,7 @@ use core::fmt;
 use core::slice;
 use phf_shared::{self, PhfHash};
 
-use Slice;
+use crate::Slice;
 
 /// An order-preserving immutable map constructed at compile time.
 ///
@@ -108,6 +108,7 @@ impl<K, V> OrderedMap<K, V> {
         where T: Eq + PhfHash,
               K: Borrow<T>
     {
+        if self.disps.len() == 0 { return None; } //Prevent panic on empty map
         let hash = phf_shared::hash(key, self.key);
         let idx_index = phf_shared::get_index(hash, &*self.disps, self.idxs.len());
         let idx = self.idxs[idx_index as usize];

@@ -1,6 +1,3 @@
-extern crate phf;
-extern crate unicase;
-
 #[cfg(test)]
 mod test {
     use unicase::UniCase;
@@ -50,9 +47,20 @@ mod test {
 
     #[test]
     fn unicase_map() {
-        assert_eq!("a", UNICASE_MAP[&UniCase("AbC")]);
-        assert_eq!("a", UNICASE_MAP[&UniCase("abc")]);
-        assert_eq!("b", UNICASE_MAP[&UniCase("DEf")]);
-        assert!(!UNICASE_MAP.contains_key(&UniCase("XyZ")));
+        assert_eq!("a", UNICASE_MAP[&UniCase::new("AbC")]);
+        assert_eq!("a", UNICASE_MAP[&UniCase::new("abc")]);
+        assert_eq!("b", UNICASE_MAP[&UniCase::new("DEf")]);
+        assert!(!UNICASE_MAP.contains_key(&UniCase::new("XyZ")));
     }
+
+     #[test]
+    fn empty_map() {
+        assert_eq!(None, EMPTY.get(&1));
+    }
+
+     #[test]
+    fn empty_ordered_map() {
+        assert_eq!(None, EMPTY_ORDERED.get(&1));
+    }
+
 }

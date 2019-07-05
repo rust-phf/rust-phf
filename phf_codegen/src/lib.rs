@@ -82,12 +82,20 @@
 extern crate phf_shared;
 extern crate phf_generator;
 
-use phf_shared::PhfHash;
+use phf_shared::{PhfHash, FmtConst};
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 use std::io;
 use std::io::prelude::*;
+
+struct Delegate<T>(T);
+
+impl<T: FmtConst> fmt::Display for Delegate<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt_const(f)
+    }
+}
 
 /// A builder for the `phf::Map` type.
 pub struct Map<K> {
@@ -96,7 +104,7 @@ pub struct Map<K> {
     path: String,
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
+impl<K: Hash+PhfHash+Eq+FmtConst> Map<K> {
     /// Creates a new `phf::Map` builder.
     pub fn new() -> Map<K> {
         // FIXME rust#27438
@@ -141,7 +149,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
-                panic!("duplicate key `{:?}`", key);
+                panic!("duplicate key `{}`", Delegate(key));
             }
         }
 
@@ -166,8 +174,8 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> Map<K> {
         for &idx in &state.map {
             try!(write!(w,
                         "
-        ({:?}, {}),",
-                        &self.keys[idx],
+        ({}, {}),",
+                        Delegate(&self.keys[idx]),
                         &self.values[idx]));
         }
         write!(w,
@@ -182,7 +190,7 @@ pub struct Set<T> {
     map: Map<T>,
 }
 
-impl<T: Hash+PhfHash+Eq+fmt::Debug> Set<T> {
+impl<T: Hash+PhfHash+Eq+FmtConst> Set<T> {
     /// Constructs a new `phf::Set` builder.
     pub fn new() -> Set<T> {
         Set {
@@ -221,7 +229,7 @@ pub struct OrderedMap<K> {
     path: String,
 }
 
-impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
+impl<K: Hash+PhfHash+Eq+FmtConst> OrderedMap<K> {
     /// Constructs a enw `phf::OrderedMap` builder.
     pub fn new() -> OrderedMap<K> {
         OrderedMap {
@@ -256,7 +264,7 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
-                panic!("duplicate key `{:?}`", key);
+                panic!("duplicate key `{}`", Delegate(key));
             }
         }
 
@@ -291,8 +299,8 @@ impl<K: Hash+PhfHash+Eq+fmt::Debug> OrderedMap<K> {
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
             try!(write!(w,
                         "
-        ({:?}, {}),",
-                        key,
+        ({}, {}),",
+                        Delegate(key),
                         value));
         }
         write!(w,
@@ -307,7 +315,7 @@ pub struct OrderedSet<T> {
     map: OrderedMap<T>,
 }
 
-impl<T: Hash+PhfHash+Eq+fmt::Debug> OrderedSet<T> {
+impl<T: Hash+PhfHash+Eq+FmtConst> OrderedSet<T> {
     /// Constructs a new `phf::OrderedSet` builder.
     pub fn new() -> OrderedSet<T> {
         OrderedSet {

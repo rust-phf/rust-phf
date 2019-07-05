@@ -19,17 +19,19 @@ enum ParsedKey {
     I16(i16),
     I32(i32),
     I64(i64),
+    I128(i128),
     U8(u8),
     U16(u16),
     U32(u32),
     U64(u64),
+    U128(u128),
     Bool(bool),
 }
 
 impl PhfHash for ParsedKey {
     fn phf_hash<H>(&self, state: &mut H)
-    where
-        H: Hasher,
+        where
+            H: Hasher,
     {
         match self {
             ParsedKey::Str(s) => s.phf_hash(state),
@@ -39,10 +41,12 @@ impl PhfHash for ParsedKey {
             ParsedKey::I16(s) => s.phf_hash(state),
             ParsedKey::I32(s) => s.phf_hash(state),
             ParsedKey::I64(s) => s.phf_hash(state),
+            ParsedKey::I128(s) => s.phf_hash(state),
             ParsedKey::U8(s) => s.phf_hash(state),
             ParsedKey::U16(s) => s.phf_hash(state),
             ParsedKey::U32(s) => s.phf_hash(state),
             ParsedKey::U64(s) => s.phf_hash(state),
+            ParsedKey::U128(s) => s.phf_hash(state),
             ParsedKey::Bool(s) => s.phf_hash(state),
         }
     }
@@ -61,12 +65,32 @@ impl ParsedKey {
                     IntSuffix::I16 => Some(ParsedKey::I16(s.value() as i16)),
                     IntSuffix::I32 => Some(ParsedKey::I32(s.value() as i32)),
                     IntSuffix::I64 => Some(ParsedKey::I64(s.value() as i64)),
+                    IntSuffix::I128 => Some(ParsedKey::I128(s.value() as i128)),
                     IntSuffix::U8 => Some(ParsedKey::U8(s.value() as u8)),
                     IntSuffix::U16 => Some(ParsedKey::U16(s.value() as u16)),
                     IntSuffix::U32 => Some(ParsedKey::U32(s.value() as u32)),
                     IntSuffix::U64 => Some(ParsedKey::U64(s.value())),
+                    IntSuffix::U128 => Some(ParsedKey::U128(s.value() as u128)),
                     _ => None,
                 },
+                // `syn` doesn't bother parsing integer literals larger than 64 bits so that's on us
+                Lit::Verbatim(verb) => {
+                    let lit_str = verb.token.to_string();
+
+                    // check the literal suffix manually
+                    if lit_str.ends_with("u128") {
+                        Some(ParsedKey::U128(lit_str[..lit_str.len() - 4].parse::<u128>().unwrap()))
+                    } else if lit_str.ends_with("i128") {
+                        Some(ParsedKey::I128(
+                            // parse as u128 so we get the full integer literal range
+                            // then the cast will negate it to the same absolute value
+                            // we receive the negation as a separate token so this will always
+                            // appear as a non-negative value
+                            lit_str[..lit_str.len() - 4].parse::<u128>().unwrap() as i128))
+                    } else {
+                        None
+                    }
+                }
                 Lit::Bool(s) => Some(ParsedKey::Bool(s.value)),
                 _ => None,
             },
@@ -86,16 +110,26 @@ impl ParsedKey {
                 }
                 Some(ParsedKey::Binary(buf))
             }
-            Expr::Unary(unary) => match unary.op {
-                UnOp::Neg(_) => match ParsedKey::from_expr(&unary.expr)? {
-                    ParsedKey::I8(v) => Some(ParsedKey::I8(-v)),
-                    ParsedKey::I16(v) => Some(ParsedKey::I16(-v)),
-                    ParsedKey::I32(v) => Some(ParsedKey::I32(-v)),
-                    ParsedKey::I64(v) => Some(ParsedKey::I64(-v)),
+            Expr::Unary(unary) => {
+                // if we received an integer literal (always unsigned) greater than i__::max_value()
+                // then casting it to a signed integer type of the same width will negate it to
+                // the same absolute value so we don't need to negate it here
+                macro_rules! try_negate (
+                    ($val:expr) => {if $val < 0 { $val } else { -$val }}
+                );
+
+                match unary.op {
+                    UnOp::Neg(_) => match ParsedKey::from_expr(&unary.expr)? {
+                        ParsedKey::I8(v) => Some(ParsedKey::I8(try_negate!(v))),
+                        ParsedKey::I16(v) => Some(ParsedKey::I16(try_negate!(v))),
+                        ParsedKey::I32(v) => Some(ParsedKey::I32(try_negate!(v))),
+                        ParsedKey::I64(v) => Some(ParsedKey::I64(try_negate!(v))),
+                        ParsedKey::I128(v) => Some(ParsedKey::I128(try_negate!(v))),
+                        _ => None,
+                    },
                     _ => None,
-                },
-                _ => None,
-            },
+                }
+            }
             Expr::Group(group) => ParsedKey::from_expr(&group.expr),
             _ => None,
         }
@@ -109,8 +143,8 @@ struct Key {
 
 impl PhfHash for Key {
     fn phf_hash<H>(&self, state: &mut H)
-    where
-        H: Hasher,
+        where
+            H: Hasher,
     {
         self.parsed.phf_hash(state)
     }
@@ -133,8 +167,8 @@ struct Entry {
 
 impl PhfHash for Entry {
     fn phf_hash<H>(&self, state: &mut H)
-    where
-        H: Hasher,
+        where
+            H: Hasher,
     {
         self.key.phf_hash(state)
     }

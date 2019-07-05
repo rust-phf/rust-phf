@@ -44,10 +44,6 @@
 #[cfg(not(feature = "core"))]
 extern crate std as core;
 
-extern crate phf_shared;
-#[cfg(feature = "macros")]
-extern crate phf_macros;
-
 #[cfg(feature = "macros")]
 pub use phf_macros::*;
 
@@ -55,13 +51,13 @@ use core::ops::Deref;
 
 pub use phf_shared::PhfHash;
 #[doc(inline)]
-pub use map::Map;
+pub use self::map::Map;
 #[doc(inline)]
-pub use set::Set;
+pub use self::set::Set;
 #[doc(inline)]
-pub use ordered_map::OrderedMap;
+pub use self::ordered_map::OrderedMap;
 #[doc(inline)]
-pub use ordered_set::OrderedSet;
+pub use self::ordered_set::OrderedSet;
 
 pub mod map;
 pub mod set;

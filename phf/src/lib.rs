@@ -7,7 +7,8 @@
 //!
 //! If the `macros` Cargo feature is enabled, the `phf_map`, `phf_set`,
 //! `phf_ordered_map`, and `phf_ordered_set` macros can be used to construct
-//! the PHF type. This currently requires a nightly compiler.
+//! the PHF type. This method can be used with a stable compiler
+//! (`rustc` version 1.30+)
 //!
 //! ```toml
 //! [dependencies]
@@ -15,8 +16,6 @@
 //! ```
 //!
 //! ```
-//! #![feature(proc_macro_hygiene)]
-//!
 //! use phf::{phf_map, phf_set};
 //!
 //! static MY_MAP: phf::Map<&'static str, u32> = phf_map! {
@@ -35,8 +34,8 @@
 //! }
 //! ```
 //!
-//! Alternatively, you can use the phf_codegen crate to generate PHF datatypes
-//! in a build script. This method can be used with a stable compiler.
+//! (Alternatively, you can use the phf_codegen crate to generate PHF datatypes
+//! in a build script)
 #![doc(html_root_url="https://docs.rs/phf/0.7")]
 #![warn(missing_docs)]
 #![cfg_attr(feature = "core", no_std)]
@@ -45,7 +44,65 @@
 extern crate std as core;
 
 #[cfg(feature = "macros")]
-pub use phf_macros::*;
+/// Macro to create a `static` (compile-time) [`Map`].
+///
+/// Requires the `"macros"` feature.
+///
+/// # Example
+///
+/// ```rust,edition2018
+/// use ::phf::{phf_map, Map};
+///
+/// static MY_MAP: Map<&'static str, u32> = phf_map! {
+///     "hello" => 1,
+///     "world" => 2,
+/// };
+///
+/// fn main ()
+/// {
+///     assert_eq!(MY_MAP["hello"], 1);
+/// }
+/// ```
+#[::proc_macro_hack::proc_macro_hack]
+pub use phf_macros:: phf_map;
+
+#[cfg(feature = "macros")]
+/// Macro to create a `static` (compile-time) [`OrderedMap`].
+///
+/// Requires the `"macros"` feature. Same usage as [`phf_map`]`!`.
+#[::proc_macro_hack::proc_macro_hack]
+pub use phf_macros::phf_ordered_map;
+
+#[cfg(feature = "macros")]
+/// Macro to create a `static` (compile-time) [`Set`].
+///
+/// Requires the `"macros"` feature.
+///
+/// # Example
+///
+/// ```rust,edition2018
+/// use ::phf::{phf_set, Set};
+///
+/// static MY_SET: Set<&'static str> = phf_set! {
+///     "hello world",
+///     "hola mundo",
+/// };
+///
+/// fn main ()
+/// {
+///     assert!(MY_SET.contains("hello world"));
+/// }
+/// ```
+#[::proc_macro_hack::proc_macro_hack]
+pub use phf_macros::phf_set;
+
+#[cfg(feature = "macros")]
+/// Macro to create a `static` (compile-time) [`OrderedSet`].
+///
+/// Requires the `"macros"` feature. Same usage as [`phf_set`]`!`.
+#[::proc_macro_hack::proc_macro_hack]
+pub use phf_macros::phf_ordered_set;
+
 
 use core::ops::Deref;
 

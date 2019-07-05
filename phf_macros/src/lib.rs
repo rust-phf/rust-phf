@@ -259,7 +259,7 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
     }
 }
 
-#[proc_macro]
+#[::proc_macro_hack::proc_macro_hack]
 pub fn phf_map(input: TokenStream) -> TokenStream {
     let map = parse_macro_input!(input as Map);
     let state = phf_generator::generate_hash(&map.0);
@@ -267,7 +267,7 @@ pub fn phf_map(input: TokenStream) -> TokenStream {
     build_map(&map.0, state).into()
 }
 
-#[proc_macro]
+#[::proc_macro_hack::proc_macro_hack]
 pub fn phf_set(input: TokenStream) -> TokenStream {
     let set = parse_macro_input!(input as Set);
     let state = phf_generator::generate_hash(&set.0);
@@ -276,7 +276,7 @@ pub fn phf_set(input: TokenStream) -> TokenStream {
     quote!(phf::Set { map: #map }).into()
 }
 
-#[proc_macro]
+#[::proc_macro_hack::proc_macro_hack]
 pub fn phf_ordered_map(input: TokenStream) -> TokenStream {
     let map = parse_macro_input!(input as Map);
     let state = phf_generator::generate_hash(&map.0);
@@ -284,7 +284,7 @@ pub fn phf_ordered_map(input: TokenStream) -> TokenStream {
     build_ordered_map(&map.0, state).into()
 }
 
-#[proc_macro]
+#[::proc_macro_hack::proc_macro_hack]
 pub fn phf_ordered_set(input: TokenStream) -> TokenStream {
     let set = parse_macro_input!(input as Set);
     let state = phf_generator::generate_hash(&set.0);

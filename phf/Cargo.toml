@@ -15,9 +15,17 @@ test = false
 [features]
 core = ["phf_shared/core"]
 unicase = ["phf_shared/unicase"]
-macros = ["phf_macros"]
+macros = [
+	"phf_macros",
+	"proc-macro-hack",
+]
 
 [dependencies]
 phf_shared = { version = "0.7.24", path = "../phf_shared" }
 
+proc-macro-hack = { version = "0.5.4", optional = true }
 phf_macros = { version = "0.7.24", optional = true, path = "../phf_macros" }
+
+[package.metadata.docs.rs]
+features = ["macros", ]
+

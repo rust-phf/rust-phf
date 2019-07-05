@@ -212,6 +212,11 @@ impl PhfHash for char {
     }
 }
 
+// minimize duplicated code since formatting drags in quite a bit
+fn fmt_array(array: &[u8], f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{:?}", array)
+}
+
 macro_rules! array_impl(
     ($t:ty, $n:expr) => (
         impl PhfHash for [$t; $n] {
@@ -223,8 +228,7 @@ macro_rules! array_impl(
 
         impl FmtConst for [$t; $n] {
             fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                // delegate to the slice impl to minimize duplicated code
-                self[..].fmt_const(f)
+                fmt_array(self, f)
             }
         }
     )

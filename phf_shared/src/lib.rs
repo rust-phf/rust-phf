@@ -88,7 +88,6 @@ macro_rules! delegate_debug(
 );
 
 delegate_debug!(str);
-delegate_debug!([u8]);
 delegate_debug!(char);
 delegate_debug!(u8);
 delegate_debug!(i8);
@@ -141,6 +140,14 @@ impl PhfHash for [u8] {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
         state.write(self);
+    }
+}
+
+impl FmtConst for [u8] {
+    #[inline]
+    fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // slices need a leading reference
+        write!(f, "&{:?}", self)
     }
 }
 

@@ -53,6 +53,22 @@ mod test {
         assert!(!UNICASE_MAP.contains_key(&UniCase::new("XyZ")));
     }
 
+    #[test]
+    fn array_keys() {
+        assert_eq!(0, ARRAY_KEYS[b"foo"]);
+        assert_eq!(1, ARRAY_KEYS[b"bar"]);
+        assert_eq!(2, ARRAY_KEYS[b"baz"]);
+    }
+
+    #[test]
+    fn byte_str_keys() {
+        // slicing is required unless the key type is fixed-size
+        assert_eq!(0, BYTE_STR_KEYS[&b"foo"[..]]);
+        assert_eq!(1, BYTE_STR_KEYS[&b"bar"[..]]);
+        assert_eq!(2, BYTE_STR_KEYS[&b"baz"[..]]);
+        assert_eq!(3, BYTE_STR_KEYS[&b"quux"[..]]);
+    }
+
      #[test]
     fn empty_map() {
         assert_eq!(None, EMPTY.get(&1));
@@ -62,5 +78,6 @@ mod test {
     fn empty_ordered_map() {
         assert_eq!(None, EMPTY_ORDERED.get(&1));
     }
+
 
 }

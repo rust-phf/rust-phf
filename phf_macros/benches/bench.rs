@@ -1,12 +1,11 @@
-#![feature(test, proc_macro_hygiene)]
+#![feature(test)]
 
 extern crate test;
 
 mod map {
     use std::collections::{BTreeMap, HashMap};
     use test::Bencher;
-    use phf_macros::phf_map;
-    use phf;
+    use phf::phf_map;
 
     macro_rules! map_and_match {
         ($map:ident, $f:ident, $($key:expr => $value:expr,)+) => {

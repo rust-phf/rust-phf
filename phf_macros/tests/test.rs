@@ -1,5 +1,3 @@
-#![feature(proc_macro_hygiene)]
-
 mod map {
     use std::collections::{HashMap, HashSet};
     use phf::phf_map;

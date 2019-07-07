@@ -4,7 +4,7 @@ use core::ops::Index;
 use core::slice;
 use core::fmt;
 use core::iter::IntoIterator;
-use phf_shared::{self, PhfHash};
+use phf_shared::{self, PhfHash, HashKey};
 use crate::Slice;
 
 /// An immutable map constructed at compile time.
@@ -16,7 +16,7 @@ use crate::Slice;
 /// time and should never be accessed directly.
 pub struct Map<K: 'static, V: 'static> {
     #[doc(hidden)]
-    pub key: u64,
+    pub key: HashKey,
     #[doc(hidden)]
     pub disps: Slice<(u32, u32)>,
     #[doc(hidden)]
@@ -81,8 +81,8 @@ impl<K, V> Map<K, V> {
               K: Borrow<T>
     {
         if self.disps.len() == 0 { return None; } //Prevent panic on empty map
-        let hash = phf_shared::hash(key, self.key);
-        let index = phf_shared::get_index(hash, &*self.disps, self.entries.len());
+        let hashes = phf_shared::hash(key, &self.key);
+        let index = phf_shared::get_index(&hashes, &*self.disps, self.entries.len());
         let entry = &self.entries[index as usize];
         let b: &T = entry.0.borrow();
         if b == key {

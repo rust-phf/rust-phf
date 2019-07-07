@@ -4,7 +4,7 @@ use core::iter::IntoIterator;
 use core::ops::Index;
 use core::fmt;
 use core::slice;
-use phf_shared::{self, PhfHash};
+use phf_shared::{self, PhfHash, HashKey};
 
 use crate::Slice;
 
@@ -20,7 +20,7 @@ use crate::Slice;
 /// any time and should never be accessed directly.
 pub struct OrderedMap<K: 'static, V: 'static> {
     #[doc(hidden)]
-    pub key: u64,
+    pub key: HashKey,
     #[doc(hidden)]
     pub disps: Slice<(u32, u32)>,
     #[doc(hidden)]
@@ -109,8 +109,8 @@ impl<K, V> OrderedMap<K, V> {
               K: Borrow<T>
     {
         if self.disps.len() == 0 { return None; } //Prevent panic on empty map
-        let hash = phf_shared::hash(key, self.key);
-        let idx_index = phf_shared::get_index(hash, &*self.disps, self.idxs.len());
+        let hashes = phf_shared::hash(key, &self.key);
+        let idx_index = phf_shared::get_index(&hashes, &*self.disps, self.idxs.len());
         let idx = self.idxs[idx_index as usize];
         let entry = &self.entries[idx];
 

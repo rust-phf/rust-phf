@@ -1,4 +1,4 @@
-#![doc(html_root_url="https://docs.rs/phf_shared/0.7")]
+#![doc(html_root_url = "https://docs.rs/phf_shared/0.7")]
 #![cfg_attr(feature = "core", no_std)]
 
 #[cfg(not(feature = "core"))]
@@ -11,29 +11,48 @@ extern crate unicase;
 
 use core::fmt;
 use core::hash::{Hasher, Hash};
+use core::num::Wrapping;
 use siphasher::sip::SipHasher13;
+
+pub struct Hashes {
+    pub g: u32,
+    pub f1: u32,
+    pub f2: u32,
+    _priv: (),
+}
+
+/// A central typedef for hash keys
+pub type HashKey = [u64; 2];
 
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
-    d2 + f1 * d1 + f2
+    (Wrapping(d2) + Wrapping(f1) * Wrapping(d1) + Wrapping(f2)).0
 }
 
+/// `key` is from `phf_generator::HashState`.
 #[inline]
-pub fn split(hash: u64) -> (u32, u32, u32) {
-    const BITS: u32 = 21;
-    const MASK: u64 = (1 << BITS) - 1;
+pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
+    let lower = {
+        // large 64-bit primes as initial keys
+        let mut hasher = SipHasher13::new_with_keys(14_130_675_974_360_801_221,
+                                                    key[0]);
+        x.phf_hash(&mut hasher);
+        hasher.finish()
+    };
 
-    ((hash & MASK) as u32,
-     ((hash >> BITS) & MASK) as u32,
-     ((hash >> (2 * BITS)) & MASK) as u32)
-}
+    let upper = {
+        let mut hasher = SipHasher13::new_with_keys(11_542_695_197_553_437_579,
+                                                    key[1]);
+        x.phf_hash(&mut hasher);
+        hasher.finish()
+    };
 
-/// `key` is from `phf_generator::HashState::key`.
-#[inline]
-pub fn hash<T: ?Sized + PhfHash>(x: &T, key: u64) -> u64 {
-    let mut hasher = SipHasher13::new_with_keys(0, key);
-    x.phf_hash(&mut hasher);
-    hasher.finish()
+    Hashes {
+        g: (lower >> 32) as u32,
+        f1: lower as u32,
+        f2: upper as u32,
+        _priv: (),
+    }
 }
 
 /// Return an index into `phf_generator::HashState::map`.
@@ -42,10 +61,9 @@ pub fn hash<T: ?Sized + PhfHash>(x: &T, key: u64) -> u64 {
 /// * `disps` is from `phf_generator::HashState::disps`.
 /// * `len` is the length of `phf_generator::HashState::map`.
 #[inline]
-pub fn get_index(hash: u64, disps: &[(u32, u32)], len: usize) -> u32 {
-    let (g, f1, f2) = split(hash);
-    let (d1, d2) = disps[(g % (disps.len() as u32)) as usize];
-    displace(f1, f2, d1, d2) % (len as u32)
+pub fn get_index(hashes: &Hashes, disps: &[(u32, u32)], len: usize) -> u32 {
+    let (d1, d2) = disps[(hashes.g % (disps.len() as u32)) as usize];
+    displace(hashes.f1, hashes.f2, d1, d2) % (len as u32)
 }
 
 /// A trait implemented by types which can be used in PHF data structures.
@@ -77,7 +95,7 @@ pub trait FmtConst {
 ///
 /// Ideally with specialization this could be just one default impl and then specialized where
 /// it doesn't apply.
-macro_rules! delegate_debug(
+macro_rules! delegate_debug (
     ($ty:ty) => {
         impl FmtConst for $ty {
             fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -153,7 +171,7 @@ impl FmtConst for [u8] {
 
 #[cfg(feature = "unicase")]
 impl<S> PhfHash for unicase::UniCase<S>
-where unicase::UniCase<S>: Hash {
+    where unicase::UniCase<S>: Hash {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
         self.hash(state)
@@ -174,7 +192,7 @@ impl<S> FmtConst for unicase::UniCase<S> where S: AsRef<str> {
     }
 }
 
-macro_rules! sip_impl(
+macro_rules! sip_impl (
     (le $t:ty) => (
         impl PhfHash for $t {
             #[inline]
@@ -217,7 +235,7 @@ fn fmt_array(array: &[u8], f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{:?}", array)
 }
 
-macro_rules! array_impl(
+macro_rules! array_impl (
     ($t:ty, $n:expr) => (
         impl PhfHash for [$t; $n] {
             #[inline]

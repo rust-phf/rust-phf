@@ -13,6 +13,13 @@ phf_shared = { version = "0.7.24", path = "../phf_shared" }
 # for stable black_box()
 criterion = { version = "0.2", optional = true }
 
+[dev-dependencies]
+criterion = "0.2"
+
+[[bench]]
+name = "benches"
+harness = false
+
 [[bin]]
 name = "gen_hash_test"
 required-features = ["criterion"]

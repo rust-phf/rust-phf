@@ -17,19 +17,20 @@ a compiler note about how long it took.
 Usage
 =====
 
-PHF data structures can be constucted via either the compiler plugins in the
-`phf_macros` crate or code generation supported by the `phf_codegen` crate.
-Compiler plugins are not a stable part of Rust at the moment, so `phf_macros`
-can only be used with nightlies.
+##### Release 0.8.0 requires Rust 1.32.0
 
-The `phf/core` feature will compile the `phf` crate with a dependency on libcore instead of libstd, enabling use in environments where libstd will not work.
+PHF data structures can be constucted via either the procedural 
+macros in the `phf_macros` crate or code generation supported by the 
+`phf_codegen` crate.
+
+The `phf/core` feature will compile the `phf` crate with a dependency on
+libcore instead of libstd, enabling use in environments where libstd 
+will not work.
 
 phf_macros
 ===========
 
 ```rust
-#![feature(proc_macro_hygiene)]
-
 use phf::phf_map;
 
 #[derive(Clone)]

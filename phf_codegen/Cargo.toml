@@ -5,6 +5,7 @@ version = "0.7.24"
 license = "MIT"
 description = "Codegen library for PHF types"
 repository = "https://github.com/sfackler/rust-phf"
+edition = "2018"
 
 [dependencies]
 phf_generator = { version = "0.7.24", path = "../phf_generator" }

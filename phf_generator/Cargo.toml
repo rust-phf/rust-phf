@@ -10,3 +10,9 @@ edition = "2018"
 [dependencies]
 rand = { version = "0.7", features = ["small_rng"] }
 phf_shared = { version = "0.7.24", path = "../phf_shared" }
+# for stable black_box()
+criterion = { version = "0.2", optional = true }
+
+[[bin]]
+name = "gen_hash_test"
+required-features = ["criterion"]

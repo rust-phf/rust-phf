@@ -12,7 +12,7 @@ extern crate unicase;
 use core::fmt;
 use core::hash::{Hasher, Hash};
 use core::num::Wrapping;
-use siphasher::sip::SipHasher13;
+use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
 
 pub struct Hashes {
     pub g: u32,
@@ -22,7 +22,9 @@ pub struct Hashes {
 }
 
 /// A central typedef for hash keys
-pub type HashKey = [u64; 2];
+///
+/// Makes experimentation easier by only needing to be updated here.
+pub type HashKey = u64;
 
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
@@ -32,20 +34,10 @@ pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 /// `key` is from `phf_generator::HashState`.
 #[inline]
 pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
-    let lower = {
-        // large 64-bit primes as initial keys
-        let mut hasher = SipHasher13::new_with_keys(14_130_675_974_360_801_221,
-                                                    key[0]);
-        x.phf_hash(&mut hasher);
-        hasher.finish()
-    };
+    let mut hasher = SipHasher13::new_with_keys(0, *key);
+    x.phf_hash(&mut hasher);
 
-    let upper = {
-        let mut hasher = SipHasher13::new_with_keys(11_542_695_197_553_437_579,
-                                                    key[1]);
-        x.phf_hash(&mut hasher);
-        hasher.finish()
-    };
+    let Hash128 { h1: lower, h2: upper} = hasher.finish128();
 
     Hashes {
         g: (lower >> 32) as u32,

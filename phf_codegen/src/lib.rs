@@ -157,7 +157,7 @@ impl<K: Hash+PhfHash+Eq+FmtConst> Map<K> {
 
         try!(write!(w,
                     "{}::Map {{
-    key: {},
+    key: {:?},
     disps: {}::Slice::Static(&[",
                     self.path, state.key, self.path));
         for &(d1, d2) in &state.disps {
@@ -272,7 +272,7 @@ impl<K: Hash+PhfHash+Eq+FmtConst> OrderedMap<K> {
 
         try!(write!(w,
                     "{}::OrderedMap {{
-    key: {},
+    key: {:?},
     disps: {}::Slice::Static(&[",
                     self.path, state.key, self.path));
         for &(d1, d2) in &state.disps {

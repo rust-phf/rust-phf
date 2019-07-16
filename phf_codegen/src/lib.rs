@@ -215,7 +215,7 @@ impl<K: Hash + PhfHash + Eq + FmtConst> Map<K> {
     }
 }
 
-/// An adapter for printing a [`Map`](::Map).
+/// An adapter for printing a [`Map`](Map).
 pub struct DisplayMap<'a, K> {
     path: &'a str,
     state: HashState,
@@ -301,7 +301,7 @@ impl<T: Hash + PhfHash + Eq + FmtConst> Set<T> {
     }
 }
 
-/// An adapter for printing a [`Set`](::Set).
+/// An adapter for printing a [`Set`](Set).
 pub struct DisplaySet<'a, T: 'a> {
     inner: DisplayMap<'a, T>,
 }
@@ -370,7 +370,7 @@ impl<K: Hash + PhfHash + Eq + FmtConst> OrderedMap<K> {
     }
 }
 
-/// An adapter for printing a [`OrderedMap`](::OrderedMap).
+/// An adapter for printing a [`OrderedMap`](OrderedMap).
 pub struct DisplayOrderedMap<'a, K: 'a> {
     path: &'a str,
     state: HashState,
@@ -459,7 +459,7 @@ impl<T: Hash + PhfHash + Eq + FmtConst> OrderedSet<T> {
     }
 }
 
-/// An adapter for printing a [`OrderedSet`](::OrderedSet).
+/// An adapter for printing a [`OrderedSet`](OrderedSet).
 pub struct DisplayOrderedSet<'a, T: 'a> {
     inner: DisplayOrderedMap<'a, T>,
 }

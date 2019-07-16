@@ -148,7 +148,7 @@ impl<T: FmtConst> fmt::Display for Delegate<T> {
     }
 }
 
-/// A builder for the [`phf::Map`](::phf::Map) type.
+/// A builder for the `phf::Map` type.
 pub struct Map<K> {
     keys: Vec<K>,
     values: Vec<String>,
@@ -191,7 +191,7 @@ impl<K: Hash + PhfHash + Eq + FmtConst> Map<K> {
     }
 
     /// Calculate the hash parameters and return a struct implementing
-    /// [`Display`](::std::fmt::Display) which will print the constructed [`phf::Map`](::phf::Map).
+    /// [`Display`](::std::fmt::Display) which will print the constructed `phf::Map`.
     ///
     /// # Panics
     ///
@@ -263,7 +263,7 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
     }
 }
 
-/// A builder for the [`phf::Set`](::phf::Set) type.
+/// A builder for the `phf::Set` type.
 pub struct Set<T> {
     map: Map<T>,
 }
@@ -289,7 +289,7 @@ impl<T: Hash + PhfHash + Eq + FmtConst> Set<T> {
     }
 
     /// Calculate the hash parameters and return a struct implementing
-    /// [`Display`](::std::fmt::Display) which will print the constructed [`phf::Set`](::phf::Set).
+    /// [`Display`](::std::fmt::Display) which will print the constructed `phf::Set`.
     ///
     /// # Panics
     ///
@@ -346,7 +346,7 @@ impl<K: Hash + PhfHash + Eq + FmtConst> OrderedMap<K> {
 
     /// Calculate the hash parameters and return a struct implementing
     /// [`Display`](::std::fmt::Display) which will print the constructed
-    /// [`phf::OrderedMap`](::phf::OrderedMap).
+    /// `phf::OrderedMap`.
     ///
     /// # Panics
     ///
@@ -447,7 +447,7 @@ impl<T: Hash + PhfHash + Eq + FmtConst> OrderedSet<T> {
 
     /// Calculate the hash parameters and return a struct implementing
     /// [`Display`](::std::fmt::Display) which will print the constructed
-    /// [`phf::OrderedSet`](::phf::OrderedSet).
+    /// `phf::OrderedSet`.
     ///
     /// # Panics
     ///

@@ -56,6 +56,59 @@
 //! }
 //! ```
 //!
+//! ##### Byte-String Keys
+//! Byte strings by default produce references to fixed-size arrays; the compiler needs a hint
+//! to coerce them to slices:
+//!
+//! build.rs
+//!
+//! ```rust,no_run
+//! extern crate phf_codegen;
+//!
+//! use std::env;
+//! use std::fs::File;
+//! use std::io::{BufWriter, Write};
+//! use std::path::Path;
+//!
+//! fn main() {
+//!     let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
+//!     let mut file = BufWriter::new(File::create(&path).unwrap());
+//!
+//!     writeln!(
+//!         &mut file,
+//!          "static KEYWORDS: phf::Map<&'static [u8], Keyword> = \n{};\n",
+//!          phf_codegen::Map::<&[u8]>::new()
+//!              .entry(b"loop", "Keyword::Loop")
+//!              .entry(b"continue", "Keyword::Continue")
+//!              .entry(b"break", "Keyword::Break")
+//!              .entry(b"fn", "Keyword::Fn")
+//!              .entry(b"extern", "Keyword::Extern")
+//!              .build()
+//!     ).unwrap();
+//! }
+//! ```
+//!
+//! lib.rs
+//!
+//! ```rust,ignore
+//! extern crate phf;
+//!
+//! #[derive(Clone)]
+//! enum Keyword {
+//!     Loop,
+//!     Continue,
+//!     Break,
+//!     Fn,
+//!     Extern,
+//! }
+//!
+//! include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
+//!
+//! pub fn parse_keyword(keyword: &[u8]) -> Option<Keyword> {
+//!     KEYWORDS.get(keyword).cloned()
+//! }
+//! ```
+//!
 //! # Note
 //!
 //! The compiler's stack will overflow when processing extremely long method
@@ -95,7 +148,7 @@ impl<T: FmtConst> fmt::Display for Delegate<T> {
     }
 }
 
-/// A builder for the [`phf::Map`](::phf::Map) type.
+/// A builder for the `phf::Map` type.
 pub struct Map<K> {
     keys: Vec<K>,
     values: Vec<String>,
@@ -138,7 +191,7 @@ impl<K: Hash + PhfHash + Eq + FmtConst> Map<K> {
     }
 
     /// Calculate the hash parameters and return a struct implementing
-    /// [`Display`](::std::fmt::Display) which will print the constructed [`phf::Map`](::phf::Map).
+    /// [`Display`](::std::fmt::Display) which will print the constructed `phf::Map`.
     ///
     /// # Panics
     ///
@@ -162,7 +215,7 @@ impl<K: Hash + PhfHash + Eq + FmtConst> Map<K> {
     }
 }
 
-/// An adapter for printing a [`Map`](::Map).
+/// An adapter for printing a [`Map`](Map).
 pub struct DisplayMap<'a, K> {
     path: &'a str,
     state: HashState,
@@ -210,7 +263,7 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
     }
 }
 
-/// A builder for the [`phf::Set`](::phf::Set) type.
+/// A builder for the `phf::Set` type.
 pub struct Set<T> {
     map: Map<T>,
 }
@@ -236,7 +289,7 @@ impl<T: Hash + PhfHash + Eq + FmtConst> Set<T> {
     }
 
     /// Calculate the hash parameters and return a struct implementing
-    /// [`Display`](::std::fmt::Display) which will print the constructed [`phf::Set`](::phf::Set).
+    /// [`Display`](::std::fmt::Display) which will print the constructed `phf::Set`.
     ///
     /// # Panics
     ///
@@ -248,7 +301,7 @@ impl<T: Hash + PhfHash + Eq + FmtConst> Set<T> {
     }
 }
 
-/// An adapter for printing a [`Set`](::Set).
+/// An adapter for printing a [`Set`](Set).
 pub struct DisplaySet<'a, T: 'a> {
     inner: DisplayMap<'a, T>,
 }
@@ -293,7 +346,7 @@ impl<K: Hash + PhfHash + Eq + FmtConst> OrderedMap<K> {
 
     /// Calculate the hash parameters and return a struct implementing
     /// [`Display`](::std::fmt::Display) which will print the constructed
-    /// [`phf::OrderedMap`](::phf::OrderedMap).
+    /// `phf::OrderedMap`.
     ///
     /// # Panics
     ///
@@ -317,7 +370,7 @@ impl<K: Hash + PhfHash + Eq + FmtConst> OrderedMap<K> {
     }
 }
 
-/// An adapter for printing a [`OrderedMap`](::OrderedMap).
+/// An adapter for printing a [`OrderedMap`](OrderedMap).
 pub struct DisplayOrderedMap<'a, K: 'a> {
     path: &'a str,
     state: HashState,
@@ -394,7 +447,7 @@ impl<T: Hash + PhfHash + Eq + FmtConst> OrderedSet<T> {
 
     /// Calculate the hash parameters and return a struct implementing
     /// [`Display`](::std::fmt::Display) which will print the constructed
-    /// [`phf::OrderedSet`](::phf::OrderedSet).
+    /// `phf::OrderedSet`.
     ///
     /// # Panics
     ///
@@ -406,7 +459,7 @@ impl<T: Hash + PhfHash + Eq + FmtConst> OrderedSet<T> {
     }
 }
 
-/// An adapter for printing a [`OrderedSet`](::OrderedSet).
+/// An adapter for printing a [`OrderedSet`](OrderedSet).
 pub struct DisplayOrderedSet<'a, T: 'a> {
     inner: DisplayOrderedMap<'a, T>,
 }

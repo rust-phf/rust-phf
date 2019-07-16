@@ -30,9 +30,12 @@ jobs:
       - *RESTORE_REGISTRY
       - run: cargo generate-lockfile
       - *SAVE_REGISTRY
-      - run: rustc --version > ~/rust-version
+      - run: rustc --version | tee ~/rust-version
       - *RESTORE_DEPS
+      - run: cargo test
+      - run: (cd phf_macros && cargo test)
       - run: cargo test -p phf_codegen_test
+      - run: (cd phf_shared && cargo build --features core)
       - *SAVE_DEPS
   nightly:
     docker:
@@ -44,10 +47,11 @@ jobs:
       - *RESTORE_REGISTRY
       - run: cargo generate-lockfile
       - *SAVE_REGISTRY
-      - run: rustc --version > ~/rust-version
-      - run: cargo test -p phf_macros
+      - run: rustc --version | tee ~/rust-version
+      - run: cargo test
+      - run: (cd phf_macros && cargo test && cargo test -- --ignored --test-threads=1)
       - run: cargo test -p phf_codegen_test
-      - run: cargo test --manifest-path phf/Cargo.toml --features macros
+      - run: (cd phf_shared && cargo build --features core)
 
 workflows:
   version: 2

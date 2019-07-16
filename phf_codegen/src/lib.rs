@@ -56,6 +56,59 @@
 //! }
 //! ```
 //!
+//! ##### Byte-String Keys
+//! Byte strings by default produce references to fixed-size arrays; the compiler needs a hint
+//! to coerce them to slices:
+//!
+//! build.rs
+//!
+//! ```rust,no_run
+//! extern crate phf_codegen;
+//!
+//! use std::env;
+//! use std::fs::File;
+//! use std::io::{BufWriter, Write};
+//! use std::path::Path;
+//!
+//! fn main() {
+//!     let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
+//!     let mut file = BufWriter::new(File::create(&path).unwrap());
+//!
+//!     writeln!(
+//!         &mut file,
+//!          "static KEYWORDS: phf::Map<&'static [u8], Keyword> = \n{};\n",
+//!          phf_codegen::Map::<&[u8]>::new()
+//!              .entry(b"loop", "Keyword::Loop")
+//!              .entry(b"continue", "Keyword::Continue")
+//!              .entry(b"break", "Keyword::Break")
+//!              .entry(b"fn", "Keyword::Fn")
+//!              .entry(b"extern", "Keyword::Extern")
+//!              .build()
+//!     ).unwrap();
+//! }
+//! ```
+//!
+//! lib.rs
+//!
+//! ```rust,ignore
+//! extern crate phf;
+//!
+//! #[derive(Clone)]
+//! enum Keyword {
+//!     Loop,
+//!     Continue,
+//!     Break,
+//!     Fn,
+//!     Extern,
+//! }
+//!
+//! include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
+//!
+//! pub fn parse_keyword(keyword: &[u8]) -> Option<Keyword> {
+//!     KEYWORDS.get(keyword).cloned()
+//! }
+//! ```
+//!
 //! # Note
 //!
 //! The compiler's stack will overflow when processing extremely long method

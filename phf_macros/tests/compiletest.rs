@@ -1,3 +1,5 @@
+#![cfg(compiletest)]
+
 extern crate compiletest_rs as compiletest;
 
 use compiletest::Config;

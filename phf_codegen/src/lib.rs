@@ -21,17 +21,17 @@
 //!     let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
 //!     let mut file = BufWriter::new(File::create(&path).unwrap());
 //!
-//! write!(&mut file, "static KEYWORDS: phf::Map<&'static str, Keyword> =
-//! ").unwrap();
-//!     phf_codegen::Map::new()
-//!         .entry("loop", "Keyword::Loop")
-//!         .entry("continue", "Keyword::Continue")
-//!         .entry("break", "Keyword::Break")
-//!         .entry("fn", "Keyword::Fn")
-//!         .entry("extern", "Keyword::Extern")
-//!         .build(&mut file)
-//!         .unwrap();
-//!     write!(&mut file, ";\n").unwrap();
+//!     writeln!(
+//!         &mut file,
+//!          "static KEYWORDS: phf::Map<&'static str, Keyword> = \n{};\n",
+//!          phf_codegen::Map::new()
+//!              .entry("loop", "Keyword::Loop")
+//!              .entry("continue", "Keyword::Continue")
+//!              .entry("break", "Keyword::Break")
+//!              .entry("fn", "Keyword::Fn")
+//!              .entry("extern", "Keyword::Extern")
+//!              .build()
+//!     ).unwrap();
 //! }
 //! ```
 //!
@@ -78,16 +78,14 @@
 //! builder.entry("world", "2");
 //! // ...
 //! ```
-#![doc(html_root_url="https://docs.rs/phf_codegen/0.7")]
-extern crate phf_shared;
-extern crate phf_generator;
+#![doc(html_root_url = "https://docs.rs/phf_codegen/0.7")]
 
 use phf_shared::{PhfHash, FmtConst};
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
-use std::io;
-use std::io::prelude::*;
+
+use phf_generator::HashState;
 
 struct Delegate<T>(T);
 
@@ -97,14 +95,14 @@ impl<T: FmtConst> fmt::Display for Delegate<T> {
     }
 }
 
-/// A builder for the `phf::Map` type.
+/// A builder for the [`phf::Map`](::phf::Map) type.
 pub struct Map<K> {
     keys: Vec<K>,
     values: Vec<String>,
     path: String,
 }
 
-impl<K: Hash+PhfHash+Eq+FmtConst> Map<K> {
+impl<K: Hash + PhfHash + Eq + FmtConst> Map<K> {
     /// Creates a new `phf::Map` builder.
     pub fn new() -> Map<K> {
         // FIXME rust#27438
@@ -114,8 +112,7 @@ impl<K: Hash+PhfHash+Eq+FmtConst> Map<K> {
         // the linker ends up throwing a way a bunch of static symbols we actually need.
         // This works around the problem, assuming that all clients call `Map::new` by
         // calling a non-generic function.
-        fn noop_fix_for_27438() {
-        }
+        fn noop_fix_for_27438() {}
         noop_fix_for_27438();
 
         Map {
@@ -140,12 +137,13 @@ impl<K: Hash+PhfHash+Eq+FmtConst> Map<K> {
         self
     }
 
-    /// Constructs a `phf::Map`, outputting Rust source to the provided writer.
+    /// Calculate the hash parameters and return a struct implementing
+    /// [`Display`](::std::fmt::Display) which will print the constructed [`phf::Map`](::phf::Map).
     ///
     /// # Panics
     ///
     /// Panics if there are any duplicate keys.
-    pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
+    pub fn build(&self) -> DisplayMap<K> {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
@@ -155,42 +153,69 @@ impl<K: Hash+PhfHash+Eq+FmtConst> Map<K> {
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(w,
-                    "{}::Map {{
+        DisplayMap {
+            path: &self.path,
+            keys: &self.keys,
+            values: &self.values,
+            state,
+        }
+    }
+}
+
+/// An adapter for printing a [`Map`](::Map).
+pub struct DisplayMap<'a, K> {
+    path: &'a str,
+    state: HashState,
+    keys: &'a [K],
+    values: &'a [String],
+
+}
+
+impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // funky formatting here for nice output
+        write!(f,
+               "{}::Map {{
     key: {:?},
     disps: {}::Slice::Static(&[",
-                    self.path, state.key, self.path));
-        for &(d1, d2) in &state.disps {
-            try!(write!(w,
-                        "
+               self.path, self.state.key, self.path)?;
+
+        // write map displacements
+        for &(d1, d2) in &self.state.disps {
+            write!(f,
+                   "
         ({}, {}),",
-                        d1,
-                        d2));
+                   d1,
+                   d2)?;
         }
-        try!(write!(w,
-                    "
+
+        write!(f,
+               "
     ]),
-    entries: {}::Slice::Static(&[", self.path));
-        for &idx in &state.map {
-            try!(write!(w,
-                        "
+    entries: {}::Slice::Static(&[", self.path)?;
+
+        // write map entries
+        for &idx in &self.state.map {
+            write!(f,
+                   "
         ({}, {}),",
-                        Delegate(&self.keys[idx]),
-                        &self.values[idx]));
+                   Delegate(&self.keys[idx]),
+                   &self.values[idx])?;
         }
-        write!(w,
+
+        write!(f,
                "
     ]),
 }}")
     }
 }
 
-/// A builder for the `phf::Set` type.
+/// A builder for the [`phf::Set`](::phf::Set) type.
 pub struct Set<T> {
     map: Map<T>,
 }
 
-impl<T: Hash+PhfHash+Eq+FmtConst> Set<T> {
+impl<T: Hash + PhfHash + Eq + FmtConst> Set<T> {
     /// Constructs a new `phf::Set` builder.
     pub fn new() -> Set<T> {
         Set {
@@ -210,15 +235,27 @@ impl<T: Hash+PhfHash+Eq+FmtConst> Set<T> {
         self
     }
 
-    /// Constructs a `phf::Set`, outputting Rust source to the provided writer.
+    /// Calculate the hash parameters and return a struct implementing
+    /// [`Display`](::std::fmt::Display) which will print the constructed [`phf::Set`](::phf::Set).
     ///
     /// # Panics
     ///
-    /// Panics if there are any duplicate entries.
-    pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
-        try!(write!(w, "{}::Set {{ map: ", self.map.path));
-        try!(self.map.build(w));
-        write!(w, " }}")
+    /// Panics if there are any duplicate keys.
+    pub fn build(&self) -> DisplaySet<T> {
+        DisplaySet {
+            inner: self.map.build()
+        }
+    }
+}
+
+/// An adapter for printing a [`Set`](::Set).
+pub struct DisplaySet<'a, T: 'a> {
+    inner: DisplayMap<'a, T>,
+}
+
+impl<'a, T: FmtConst + 'a> fmt::Display for DisplaySet<'a, T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}::Set {{ map: {} }}", self.inner.path, self.inner)
     }
 }
 
@@ -229,7 +266,7 @@ pub struct OrderedMap<K> {
     path: String,
 }
 
-impl<K: Hash+PhfHash+Eq+FmtConst> OrderedMap<K> {
+impl<K: Hash + PhfHash + Eq + FmtConst> OrderedMap<K> {
     /// Constructs a enw `phf::OrderedMap` builder.
     pub fn new() -> OrderedMap<K> {
         OrderedMap {
@@ -254,13 +291,14 @@ impl<K: Hash+PhfHash+Eq+FmtConst> OrderedMap<K> {
         self
     }
 
-    /// Constructs a `phf::OrderedMap`, outputting Rust source to the provided
-    /// writer.
+    /// Calculate the hash parameters and return a struct implementing
+    /// [`Display`](::std::fmt::Display) which will print the constructed
+    /// [`phf::OrderedMap`](::phf::OrderedMap).
     ///
     /// # Panics
     ///
     /// Panics if there are any duplicate keys.
-    pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
+    pub fn build(&self) -> DisplayOrderedMap<K> {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
@@ -270,40 +308,59 @@ impl<K: Hash+PhfHash+Eq+FmtConst> OrderedMap<K> {
 
         let state = phf_generator::generate_hash(&self.keys);
 
-        try!(write!(w,
-                    "{}::OrderedMap {{
+        DisplayOrderedMap {
+            path: &self.path,
+            state,
+            keys: &self.keys,
+            values: &self.values,
+        }
+    }
+}
+
+/// An adapter for printing a [`OrderedMap`](::OrderedMap).
+pub struct DisplayOrderedMap<'a, K: 'a> {
+    path: &'a str,
+    state: HashState,
+    keys: &'a [K],
+    values: &'a [String],
+}
+
+impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,
+               "{}::OrderedMap {{
     key: {:?},
     disps: {}::Slice::Static(&[",
-                    self.path, state.key, self.path));
-        for &(d1, d2) in &state.disps {
-            try!(write!(w,
-                        "
+               self.path, self.state.key, self.path)?;
+        for &(d1, d2) in &self.state.disps {
+            write!(f,
+                   "
         ({}, {}),",
-                        d1,
-                        d2));
+                   d1,
+                   d2)?;
         }
-        try!(write!(w,
-                    "
+        write!(f,
+               "
     ]),
-    idxs: {}::Slice::Static(&[", self.path));
-        for &idx in &state.map {
-            try!(write!(w,
-                        "
+    idxs: {}::Slice::Static(&[", self.path)?;
+        for &idx in &self.state.map {
+            write!(f,
+                   "
         {},",
-                        idx));
+                   idx)?;
         }
-        try!(write!(w,
-                    "
+        write!(f,
+               "
     ]),
-    entries: {}::Slice::Static(&[", self.path));
+    entries: {}::Slice::Static(&[", self.path)?;
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
-            try!(write!(w,
-                        "
+            write!(f,
+                   "
         ({}, {}),",
-                        Delegate(key),
-                        value));
+                   Delegate(key),
+                   value)?;
         }
-        write!(w,
+        write!(f,
                "
     ]),
 }}")
@@ -315,7 +372,7 @@ pub struct OrderedSet<T> {
     map: OrderedMap<T>,
 }
 
-impl<T: Hash+PhfHash+Eq+FmtConst> OrderedSet<T> {
+impl<T: Hash + PhfHash + Eq + FmtConst> OrderedSet<T> {
     /// Constructs a new `phf::OrderedSet` builder.
     pub fn new() -> OrderedSet<T> {
         OrderedSet {
@@ -335,15 +392,27 @@ impl<T: Hash+PhfHash+Eq+FmtConst> OrderedSet<T> {
         self
     }
 
-    /// Constructs a `phf::OrderedSet`, outputting Rust source to the provided
-    /// writer.
+    /// Calculate the hash parameters and return a struct implementing
+    /// [`Display`](::std::fmt::Display) which will print the constructed
+    /// [`phf::OrderedSet`](::phf::OrderedSet).
     ///
     /// # Panics
     ///
-    /// Panics if there are any duplicate entries.
-    pub fn build<W: Write>(&self, w: &mut W) -> io::Result<()> {
-        try!(write!(w, "{}::OrderedSet {{ map: ", self.map.path));
-        try!(self.map.build(w));
-        write!(w, " }}")
+    /// Panics if there are any duplicate keys.
+    pub fn build(&self) -> DisplayOrderedSet<T> {
+        DisplayOrderedSet {
+            inner: self.map.build()
+        }
+    }
+}
+
+/// An adapter for printing a [`OrderedSet`](::OrderedSet).
+pub struct DisplayOrderedSet<'a, T: 'a> {
+    inner: DisplayOrderedMap<'a, T>,
+}
+
+impl<'a, T: FmtConst + 'a> fmt::Display for DisplayOrderedSet<'a, T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}::OrderedSet {{ map: {} }}", self.inner.path, self.inner)
     }
 }

@@ -20,5 +20,6 @@ phf_generator = { version = "0.7.24", path = "../phf_generator" }
 phf_shared = { version = "0.7.24", path = "../phf_shared" }
 
 [dev-dependencies]
-compiletest_rs = "0.3.22"
+# requires nightly to build and dev-deps can't be optional
+# compiletest_rs = "0.3.22"
 phf = { version = "0.7", path = "../phf", features = ["macros"] }

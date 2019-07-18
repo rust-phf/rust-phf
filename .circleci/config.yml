@@ -35,7 +35,7 @@ jobs:
       - run: cargo test
       - run: (cd phf_macros && cargo test)
       - run: cargo test -p phf_codegen_test
-      - run: (cd phf_shared && cargo build --features core)
+      - run: (cd phf && cargo build --no-default-features)
       - *SAVE_DEPS
   nightly:
     docker:
@@ -51,7 +51,7 @@ jobs:
       - run: cargo test
       - run: (cd phf_macros && cargo test && cargo test -- --ignored --test-threads=1)
       - run: cargo test -p phf_codegen_test
-      - run: (cd phf_shared && cargo build --features core)
+      - run: (cd phf && cargo build --no-default-features)
 
 workflows:
   version: 2

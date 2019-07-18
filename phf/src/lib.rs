@@ -38,9 +38,9 @@
 //! in a build script)
 #![doc(html_root_url="https://docs.rs/phf/0.7")]
 #![warn(missing_docs)]
-#![cfg_attr(feature = "core", no_std)]
+#![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(not(feature = "core"))]
+#[cfg(feature = "std")]
 extern crate std as core;
 
 #[cfg(feature = "macros")]
@@ -128,7 +128,7 @@ pub mod ordered_set;
 #[doc(hidden)]
 pub enum Slice<T: 'static> {
     Static(&'static [T]),
-    #[cfg(not(feature = "core"))]
+    #[cfg(feature = "std")]
     Dynamic(Vec<T>),
 }
 
@@ -138,7 +138,7 @@ impl<T> Deref for Slice<T> {
     fn deref(&self) -> &[T] {
         match *self {
             Slice::Static(t) => t,
-            #[cfg(not(feature = "core"))]
+            #[cfg(feature = "std")]
             Slice::Dynamic(ref t) => t,
         }
     }

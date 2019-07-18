@@ -13,7 +13,8 @@ path = "src/lib.rs"
 test = false
 
 [features]
-core = ["phf_shared/core"]
+default = ["std"]
+std = ["phf_shared/std"]
 unicase = ["phf_shared/unicase"]
 macros = [
 	"phf_macros",

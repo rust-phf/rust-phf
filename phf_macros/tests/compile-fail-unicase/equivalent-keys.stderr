@@ -1,0 +1,11 @@
+error: unsupported key expression
+ --> $DIR/equivalent-keys.rs:5:5
+  |
+5 |     UniCase("FOO") => 42, //~ NOTE one occurrence here
+  |     ^^^^^^^^^^^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  |
+  = note: consider adding a `main` function to `$DIR/tests/compile-fail-unicase/equivalent-keys.rs`
+
+For more information about this error, try `rustc --explain E0601`.

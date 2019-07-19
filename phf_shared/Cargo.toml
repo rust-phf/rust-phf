@@ -13,7 +13,8 @@ path = "src/lib.rs"
 test = false
 
 [features]
-core = []
+default = ["std"]
+std = []
 
 [dependencies]
 siphasher = "0.3"

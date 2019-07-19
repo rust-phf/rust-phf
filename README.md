@@ -23,9 +23,15 @@ PHF data structures can be constucted via either the procedural
 macros in the `phf_macros` crate or code generation supported by the 
 `phf_codegen` crate.
 
-The `phf/core` feature will compile the `phf` crate with a dependency on
+To compile the `phf` crate with a dependency on
 libcore instead of libstd, enabling use in environments where libstd 
-will not work.
+will not work, set `default-features = false` for the dependency:
+
+```toml
+[dependencies]
+# to use `phf` in `no_std` environments
+phf = { version = "0.8", default-features = false }
+```
 
 phf_macros
 ===========

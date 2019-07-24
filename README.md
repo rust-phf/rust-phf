@@ -3,7 +3,7 @@ Rust-PHF
 
 [![Build Status](https://travis-ci.org/sfackler/rust-phf.png?branch=master)](https://travis-ci.org/sfackler/rust-phf) [![Latest Version](https://img.shields.io/crates/v/phf.svg)](https://crates.io/crates/phf)
 
-[Documentation](https://docs.rs/phf/0.7.23/phf)
+[Documentation](https://docs.rs/phf)
 
 Rust-PHF is a library to generate efficient lookup tables at compile time using
 [perfect hash functions](http://en.wikipedia.org/wiki/Perfect_hash_function).
@@ -63,7 +63,7 @@ pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
 
 ```toml
 [dependencies]
-phf = { version = "0.7", features = ["macros"] }
+phf = { version = "0.8", features = ["macros"] }
 ```
 
 phf_codegen

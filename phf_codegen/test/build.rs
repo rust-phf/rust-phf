@@ -34,26 +34,6 @@ fn main() -> io::Result<()> {
 
     writeln!(
         &mut file,
-        "static ORDERED_MAP: ::phf::OrderedMap<u32, &'static str> = \n{};",
-        phf_codegen::OrderedMap::new()
-            .entry(1u32, "\"a\"")
-            .entry(2u32, "\"b\"")
-            .entry(3u32, "\"c\"")
-            .build()
-    )?;
-
-    writeln!(
-        &mut file,
-        "static ORDERED_SET: ::phf::OrderedSet<u32> = \n{};",
-        phf_codegen::OrderedSet::new()
-            .entry(1u32)
-            .entry(2u32)
-            .entry(3u32)
-            .build()
-    )?;
-
-    writeln!(
-        &mut file,
         "static STR_KEYS: ::phf::Map<&'static str, u32> = \n{};",
         phf_codegen::Map::new()
             .entry("a", "1")
@@ -75,10 +55,6 @@ fn main() -> io::Result<()> {
     writeln!(&mut file,
              "static EMPTY: ::phf::Map<u32, u32> = \n{};",
              phf_codegen::Map::<u32>::new().build())?;
-
-    writeln!(&mut file,
-             "static EMPTY_ORDERED: ::phf::OrderedMap<u32, u32> = \n{};",
-             phf_codegen::OrderedMap::<u32>::new().build())?;
 
     writeln!(&mut file, "static ARRAY_KEYS: ::phf::Map<[u8; 3], u32> = \n{};",
              phf_codegen::Map::<[u8; 3]>::new()

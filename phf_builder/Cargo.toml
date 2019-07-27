@@ -3,7 +3,7 @@ name = "phf_builder"
 version = "0.7.24"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 license = "MIT"
-description = "Runtime creation of perfect hash function data structures"
+description = "DEPRECATED: removed in 0.8.0. Runtime creation of perfect hash function data structures"
 repository = "https://github.com/sfackler/rust-phf"
 
 [dependencies]

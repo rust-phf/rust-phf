@@ -1,6 +1,6 @@
 [package]
 name = "phf_builder"
-version = "0.7.24"
+version = "0.7.25"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 license = "MIT"
 description = "DEPRECATED: removed in 0.8.0. Runtime creation of perfect hash function data structures"

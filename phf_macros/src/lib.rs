@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use std::hash::Hasher;
 use syn::parse::{self, Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, Error, Expr, IntSuffix, Lit, Token, UnOp};
+use syn::{parse_macro_input, Error, Expr, Lit, Token, UnOp};
 
 #[derive(Hash, PartialEq, Eq, Clone)]
 enum ParsedKey {
@@ -61,36 +61,21 @@ impl ParsedKey {
                 Lit::Byte(s) => Some(ParsedKey::U8(s.value())),
                 Lit::Char(s) => Some(ParsedKey::Char(s.value())),
                 Lit::Int(s) => match s.suffix() {
-                    IntSuffix::I8 => Some(ParsedKey::I8(s.value() as i8)),
-                    IntSuffix::I16 => Some(ParsedKey::I16(s.value() as i16)),
-                    IntSuffix::I32 => Some(ParsedKey::I32(s.value() as i32)),
-                    IntSuffix::I64 => Some(ParsedKey::I64(s.value() as i64)),
-                    IntSuffix::I128 => Some(ParsedKey::I128(s.value() as i128)),
-                    IntSuffix::U8 => Some(ParsedKey::U8(s.value() as u8)),
-                    IntSuffix::U16 => Some(ParsedKey::U16(s.value() as u16)),
-                    IntSuffix::U32 => Some(ParsedKey::U32(s.value() as u32)),
-                    IntSuffix::U64 => Some(ParsedKey::U64(s.value())),
-                    IntSuffix::U128 => Some(ParsedKey::U128(s.value() as u128)),
+                    // we've lost the sign at this point, so `-128i8` looks like `128i8`,
+                    // which doesn't fit in an `i8`; parse it as a `u8` and cast (to `0i8`),
+                    // which is handled below, by `Unary`
+                    "i8" => Some(ParsedKey::I8(s.base10_parse::<u8>().unwrap() as i8)),
+                    "i16" => Some(ParsedKey::I16(s.base10_parse::<u16>().unwrap() as i16)),
+                    "i32" => Some(ParsedKey::I32(s.base10_parse::<u32>().unwrap() as i32)),
+                    "i64" => Some(ParsedKey::I64(s.base10_parse::<u64>().unwrap() as i64)),
+                    "i128" => Some(ParsedKey::I128(s.base10_parse::<u128>().unwrap() as i128)),
+                    "u8" => Some(ParsedKey::U8(s.base10_parse::<u8>().unwrap())),
+                    "u16" => Some(ParsedKey::U16(s.base10_parse::<u16>().unwrap())),
+                    "u32" => Some(ParsedKey::U32(s.base10_parse::<u32>().unwrap())),
+                    "u64" => Some(ParsedKey::U64(s.base10_parse::<u64>().unwrap())),
+                    "u128" => Some(ParsedKey::U128(s.base10_parse::<u128>().unwrap())),
                     _ => None,
                 },
-                // `syn` doesn't bother parsing integer literals larger than 64 bits so that's on us
-                Lit::Verbatim(verb) => {
-                    let lit_str = verb.token.to_string();
-
-                    // check the literal suffix manually
-                    if lit_str.ends_with("u128") {
-                        Some(ParsedKey::U128(lit_str[..lit_str.len() - 4].parse::<u128>().unwrap()))
-                    } else if lit_str.ends_with("i128") {
-                        Some(ParsedKey::I128(
-                            // parse as u128 so we get the full integer literal range
-                            // then the cast will negate it to the same absolute value
-                            // we receive the negation as a separate token so this will always
-                            // appear as a non-negative value
-                            lit_str[..lit_str.len() - 4].parse::<u128>().unwrap() as i128))
-                    } else {
-                        None
-                    }
-                }
                 Lit::Bool(s) => Some(ParsedKey::Bool(s.value)),
                 _ => None,
             },
@@ -100,7 +85,7 @@ impl ParsedKey {
                     match expr {
                         Expr::Lit(lit) => match &lit.lit {
                             Lit::Int(s) => match s.suffix() {
-                                IntSuffix::U8 | IntSuffix::None => buf.push(s.value() as u8),
+                                "u8" | "" => buf.push(s.base10_parse::<u8>().unwrap()),
                                 _ => return None,
                             },
                             _ => return None,

@@ -3,9 +3,3 @@ error: expected identifier
   |
 5 |     => //~ ERROR expected identifier
   |     ^^
-
-error[E0601]: `main` function not found in crate `$CRATE`
-  |
-  = note: consider adding a `main` function to `$DIR/tests/compile-fail/bad-syntax.rs`
-
-For more information about this error, try `rustc --explain E0601`.

@@ -5,3 +5,5 @@ static MAP: phf::Map<UniCase<&'static str>, isize> = phf_map!( //~ ERROR duplica
     UniCase("FOO") => 42, //~ NOTE one occurrence here
     UniCase("foo") => 42, //~ NOTE one occurrence here
 );
+
+fn main() {}

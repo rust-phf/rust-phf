@@ -5,3 +5,5 @@ static MAP: phf::Map<u32, u32> = phf_map! {
     => //~ ERROR expected identifier
     ()
 };
+
+fn main() {}

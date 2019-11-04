@@ -249,19 +249,6 @@ mod map {
         assert!(Some(&11) == MAP.get(&UniCase::new("bar")));
         assert_eq!(None, MAP.get(&UniCase::new("asdf")));
     }
-
-    #[cfg(feature = "unicase_support")]
-    #[test]
-    fn test_unicase_alt() {
-        use unicase;
-        static MAP: phf::Map<unicase::UniCase<&'static str>, isize> = phf_map!(
-            unicase::UniCase("FOO") => 10,
-            unicase::UniCase("Bar") => 11,
-        );
-        assert!(Some(&10) == MAP.get(&unicase::UniCase::new("FOo")));
-        assert!(Some(&11) == MAP.get(&unicase::UniCase::new("bar")));
-        assert_eq!(None, MAP.get(&unicase::UniCase::new("asdf")));
-    }
 }
 
 mod set {

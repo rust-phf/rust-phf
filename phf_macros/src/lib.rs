@@ -8,7 +8,9 @@ use std::collections::HashSet;
 use std::hash::Hasher;
 use syn::parse::{self, Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, Error, Expr, Lit, Token, UnOp};
+use syn::{parse_macro_input, Error, Expr, ExprLit, Lit, Token, UnOp};
+#[cfg(feature = "unicase_support")]
+use unicase::UniCase;
 
 #[derive(Hash, PartialEq, Eq, Clone)]
 enum ParsedKey {
@@ -26,6 +28,8 @@ enum ParsedKey {
     U64(u64),
     U128(u128),
     Bool(bool),
+    #[cfg(feature = "unicase_support")]
+    UniCase(UniCase<String>),
 }
 
 impl PhfHash for ParsedKey {
@@ -48,6 +52,8 @@ impl PhfHash for ParsedKey {
             ParsedKey::U64(s) => s.phf_hash(state),
             ParsedKey::U128(s) => s.phf_hash(state),
             ParsedKey::Bool(s) => s.phf_hash(state),
+            #[cfg(feature = "unicase_support")]
+            ParsedKey::UniCase(s) => s.phf_hash(state),
         }
     }
 }
@@ -116,6 +122,29 @@ impl ParsedKey {
                 }
             }
             Expr::Group(group) => ParsedKey::from_expr(&group.expr),
+            #[cfg(feature = "unicase_support")]
+            Expr::Call(call) => match call.func.as_ref() {
+                Expr::Path(ep) => {
+                    if let Some(ident) = ep.path.get_ident() {
+                        if (ident == "UniCase" || ident == "Ascii") && call.args.len() == 1 {
+                            if let Some(Expr::Lit(ExprLit {
+                                attrs: _,
+                                lit: Lit::Str(s),
+                            })) = call.args.first()
+                            {
+                                Some(ParsedKey::UniCase(UniCase::unicode(s.value()))) // FIXME or ascii
+                            } else {
+                                None
+                            }
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            },
             _ => None,
         }
     }

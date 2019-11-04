@@ -245,9 +245,9 @@ mod map {
             UniCase("FOO") => 10,
             UniCase("Bar") => 11,
         );
-        assert!(Some(&10) == MAP.get(&UniCase("FOo")));
-        assert!(Some(&11) == MAP.get(&UniCase("bar")));
-        assert_eq!(None, MAP.get(&UniCase("asdf")));
+        assert!(Some(&10) == MAP.get(&UniCase::new("FOo")));
+        assert!(Some(&11) == MAP.get(&UniCase::new("bar")));
+        assert_eq!(None, MAP.get(&UniCase::new("asdf")));
     }
 
     #[cfg(feature = "unicase_support")]
@@ -258,9 +258,9 @@ mod map {
             unicase::UniCase("FOO") => 10,
             unicase::UniCase("Bar") => 11,
         );
-        assert!(Some(&10) == MAP.get(&unicase::UniCase("FOo")));
-        assert!(Some(&11) == MAP.get(&unicase::UniCase("bar")));
-        assert_eq!(None, MAP.get(&unicase::UniCase("asdf")));
+        assert!(Some(&10) == MAP.get(&unicase::UniCase::new("FOo")));
+        assert!(Some(&11) == MAP.get(&unicase::UniCase::new("bar")));
+        assert_eq!(None, MAP.get(&unicase::UniCase::new("asdf")));
     }
 }
 

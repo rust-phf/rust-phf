@@ -36,7 +36,7 @@
 //!
 //! (Alternatively, you can use the phf_codegen crate to generate PHF datatypes
 //! in a build script)
-#![doc(html_root_url="https://docs.rs/phf/0.7")]
+#![doc(html_root_url="https://docs.rs/phf/0.8")]
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 

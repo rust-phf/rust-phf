@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/phf_shared/0.7")]
+#![doc(html_root_url = "https://docs.rs/phf_shared/0.8")]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(feature = "std")]

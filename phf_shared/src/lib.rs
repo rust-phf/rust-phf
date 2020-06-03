@@ -97,6 +97,7 @@ macro_rules! delegate_debug (
     }
 );
 
+delegate_debug!(String);
 delegate_debug!(str);
 delegate_debug!(char);
 delegate_debug!(u8);

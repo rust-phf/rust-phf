@@ -98,6 +98,7 @@ macro_rules! delegate_debug (
 );
 
 delegate_debug!(String);
+delegate_debug!((String, String));
 delegate_debug!(str);
 delegate_debug!(char);
 delegate_debug!(u8);
@@ -125,6 +126,18 @@ impl PhfHash for Vec<u8> {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
         (**self).phf_hash(state)
+    }
+}
+
+impl<T, U> PhfHash for (T, U)
+where
+    T: PhfHash,
+    U: PhfHash,
+{
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        (self.0).phf_hash(state);
+        (self.1).phf_hash(state);
     }
 }
 

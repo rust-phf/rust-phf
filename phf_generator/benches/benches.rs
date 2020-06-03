@@ -7,7 +7,10 @@ use rand::{Rng, SeedableRng};
 use phf_generator::generate_hash;
 
 fn gen_vec(len: usize) -> Vec<u64> {
-    SmallRng::seed_from_u64(0xAAAAAAAAAAAAAAAA).sample_iter(Standard).take(len).collect()
+    SmallRng::seed_from_u64(0xAAAAAAAAAAAAAAAA)
+        .sample_iter(Standard)
+        .take(len)
+        .collect()
 }
 
 fn bench_hash(b: &mut Bencher, len: &usize) {
@@ -35,7 +38,13 @@ fn gen_hash_xlarge(c: &mut Criterion) {
     c.bench_function_over_inputs("gen_hash_xlarge", bench_hash, sizes);
 }
 
-criterion_group!(benches, gen_hash_small, gen_hash_med, gen_hash_large, gen_hash_xlarge);
+criterion_group!(
+    benches,
+    gen_hash_small,
+    gen_hash_med,
+    gen_hash_large,
+    gen_hash_xlarge
+);
 
 #[cfg(not(feature = "rayon"))]
 criterion_main!(benches);
@@ -76,5 +85,11 @@ mod rayon {
         c.bench_function_over_inputs("gen_hash_xlarge_rayon", bench_hash, sizes);
     }
 
-    criterion_group!(benches, gen_hash_small, gen_hash_med, gen_hash_large, gen_hash_xlarge);
+    criterion_group!(
+        benches,
+        gen_hash_small,
+        gen_hash_med,
+        gen_hash_large,
+        gen_hash_xlarge
+    );
 }

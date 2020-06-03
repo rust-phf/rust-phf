@@ -30,8 +30,8 @@ enum ParsedKey {
 
 impl PhfHash for ParsedKey {
     fn phf_hash<H>(&self, state: &mut H)
-        where
-            H: Hasher,
+    where
+        H: Hasher,
     {
         match self {
             ParsedKey::Str(s) => s.phf_hash(state),
@@ -128,8 +128,8 @@ struct Key {
 
 impl PhfHash for Key {
     fn phf_hash<H>(&self, state: &mut H)
-        where
-            H: Hasher,
+    where
+        H: Hasher,
     {
         self.parsed.phf_hash(state)
     }
@@ -152,8 +152,8 @@ struct Entry {
 
 impl PhfHash for Entry {
     fn phf_hash<H>(&self, state: &mut H)
-        where
-            H: Hasher,
+    where
+        H: Hasher,
     {
         self.key.phf_hash(state)
     }

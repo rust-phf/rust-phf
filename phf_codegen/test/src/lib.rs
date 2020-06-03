@@ -51,7 +51,7 @@ mod test {
         assert_eq!(3, BYTE_STR_KEYS[&b"quux"[..]]);
     }
 
-     #[test]
+    #[test]
     fn empty_map() {
         assert_eq!(None, EMPTY.get(&1));
     }

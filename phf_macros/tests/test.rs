@@ -1,6 +1,6 @@
 mod map {
-    use std::collections::{HashMap, HashSet};
     use phf::phf_map;
+    use std::collections::{HashMap, HashSet};
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::Map<&'static str, isize> = phf_map!(
@@ -35,7 +35,10 @@ mod map {
             "foo" => 10,
             "bar" => 11,
         );
-        let hash = MAP.entries().map(|(&k, &v)| (k, v)).collect::<HashMap<_, isize>>();
+        let hash = MAP
+            .entries()
+            .map(|(&k, &v)| (k, v))
+            .collect::<HashMap<_, isize>>();
         assert!(Some(&10) == hash.get(&("foo")));
         assert!(Some(&11) == hash.get(&("bar")));
         assert_eq!(2, hash.len());
@@ -265,8 +268,8 @@ mod map {
 }
 
 mod set {
-    use std::collections::HashSet;
     use phf::phf_set;
+    use std::collections::HashSet;
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::Set<&'static str> = phf_set! {

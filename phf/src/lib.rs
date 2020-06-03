@@ -36,7 +36,7 @@
 //!
 //! (Alternatively, you can use the phf_codegen crate to generate PHF datatypes
 //! in a build script)
-#![doc(html_root_url="https://docs.rs/phf/0.7")]
+#![doc(html_root_url = "https://docs.rs/phf/0.7")]
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -64,7 +64,7 @@ extern crate std as core;
 /// }
 /// ```
 #[::proc_macro_hack::proc_macro_hack]
-pub use phf_macros:: phf_map;
+pub use phf_macros::phf_map;
 
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`Set`].
@@ -91,11 +91,11 @@ pub use phf_macros::phf_set;
 
 use core::ops::Deref;
 
-pub use phf_shared::PhfHash;
 #[doc(inline)]
 pub use self::map::Map;
 #[doc(inline)]
 pub use self::set::Set;
+pub use phf_shared::PhfHash;
 
 pub mod map;
 pub mod set;

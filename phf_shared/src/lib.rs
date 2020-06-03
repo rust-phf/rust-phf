@@ -10,7 +10,7 @@ extern crate siphasher;
 extern crate unicase;
 
 use core::fmt;
-use core::hash::{Hasher, Hash};
+use core::hash::{Hash, Hasher};
 use core::num::Wrapping;
 use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
 
@@ -37,7 +37,10 @@ pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
     let mut hasher = SipHasher13::new_with_keys(0, *key);
     x.phf_hash(&mut hasher);
 
-    let Hash128 { h1: lower, h2: upper} = hasher.finish128();
+    let Hash128 {
+        h1: lower,
+        h2: upper,
+    } = hasher.finish128();
 
     Hashes {
         g: (lower >> 32) as u32,
@@ -69,7 +72,8 @@ pub trait PhfHash {
 
     /// Feeds a slice of this type into the state provided.
     fn phf_hash_slice<H: Hasher>(data: &[Self], state: &mut H)
-        where Self: Sized
+    where
+        Self: Sized,
     {
         for piece in data {
             piece.phf_hash(state);
@@ -177,7 +181,9 @@ impl FmtConst for [u8] {
 
 #[cfg(feature = "unicase")]
 impl<S> PhfHash for unicase::UniCase<S>
-    where unicase::UniCase<S>: Hash {
+where
+    unicase::UniCase<S>: Hash,
+{
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
         self.hash(state)
@@ -185,7 +191,10 @@ impl<S> PhfHash for unicase::UniCase<S>
 }
 
 #[cfg(feature = "unicase")]
-impl<S> FmtConst for unicase::UniCase<S> where S: AsRef<str> {
+impl<S> FmtConst for unicase::UniCase<S>
+where
+    S: AsRef<str>,
+{
     fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.is_ascii() {
             f.write_str("UniCase::ascii(")?;

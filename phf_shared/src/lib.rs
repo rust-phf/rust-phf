@@ -112,6 +112,9 @@ delegate_debug!(i128);
 delegate_debug!(bool);
 
 #[cfg(feature = "std")]
+delegate_debug!(String);
+
+#[cfg(feature = "std")]
 impl PhfHash for String {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {

@@ -8,7 +8,7 @@ repository = "https://github.com/sfackler/rust-phf"
 edition = "2018"
 
 [dependencies]
-rand = { version = "0.7", features = ["small_rng"] }
+rand = { version = "0.8", features = ["small_rng"] }
 phf_shared = { version = "0.8.0", path = "../phf_shared" }
 # for stable black_box()
 criterion = { version = "0.3", optional = true }

@@ -3,3 +3,5 @@ error: unsupported key expression
   |
 5 |     UniCase("FOO") => 42, //~ NOTE one occurrence here
   |     ^^^^^^^^^^^^^^
+  |
+  = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)

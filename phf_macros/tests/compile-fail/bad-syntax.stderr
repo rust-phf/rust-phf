@@ -3,3 +3,5 @@ error: expected identifier
   |
 5 |     => //~ ERROR expected identifier
   |     ^^
+  |
+  = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)

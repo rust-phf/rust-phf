@@ -6,14 +6,9 @@ build = "build.rs"
 edition = "2018"
 
 [dependencies]
+phf = { version = "0.8", features = ["unicase"] }
 unicase = "2.4.0"
 
 [build-dependencies]
+phf_codegen = "0.8"
 unicase = "2.4.0"
-
-[build-dependencies.phf_codegen]
-path = ".."
-
-[dependencies.phf]
-path = "../../phf"
-features = ["unicase"]

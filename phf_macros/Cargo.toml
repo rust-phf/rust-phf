@@ -17,7 +17,7 @@ proc-macro2 = "1"
 proc-macro-hack = "0.5.4"
 
 phf_generator = { version = "0.8.0", path = "../phf_generator" }
-phf_shared = { version = "0.8.0", path = "../phf_shared" }
+phf_shared = { version = "0.8.0", path = "../phf_shared", default-features = false }
 
 [dev-dependencies]
 trybuild = "1.0"

@@ -58,8 +58,7 @@ extern crate std as core;
 ///     "world" => 2,
 /// };
 ///
-/// fn main ()
-/// {
+/// fn main () {
 ///     assert_eq!(MY_MAP["hello"], 1);
 /// }
 /// ```

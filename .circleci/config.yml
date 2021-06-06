@@ -5,7 +5,7 @@ save_registry: &SAVE_REGISTRY
   save_cache:
     key: registry-{{ .BuildNum }}
     paths:
-    - /usr/local/cargo/registry/index
+      - /usr/local/cargo/registry/index
 deps_key: &DEPS_KEY
   key: deps-{{ checksum "~/rust-version" }}-{{ checksum "Cargo.lock" }}
 restore_deps: &RESTORE_DEPS
@@ -15,14 +15,14 @@ save_deps: &SAVE_DEPS
   save_cache:
     <<: *DEPS_KEY
     paths:
-    - target
-    - /usr/local/cargo/registry/cache
+      - target
+      - /usr/local/cargo/registry/cache
 
 version: 2
 jobs:
   stable:
     docker:
-      - image: rust:1.36.0-slim
+      - image: rust:1.40.0-slim
     environment:
       RUSTFLAGS: -D warnings
     steps:

@@ -125,40 +125,33 @@ impl ParsedKey {
             }
             Expr::Group(group) => ParsedKey::from_expr(&group.expr),
             #[cfg(feature = "unicase_support")]
-            Expr::Call(call) => match call.func.as_ref() {
-                Expr::Path(ep) => {
-                    if ep.path.leading_colon.is_none()
-                        && ep.path.segments.len() == 2
-                        && call.args.len() == 1
+            Expr::Call(call) => if let Expr::Path(ep) = call.func.as_ref() {
+                let segments = &mut ep.path.segments.iter().rev();
+                let last = &segments.next()?.ident;
+                let last_ahead = &segments.next()?.ident;
+                let is_unicode = last_ahead == "UniCase" && last == "unicode";
+                let is_ascii = last_ahead == "UniCase" && last == "ascii";
+                if call.args.len() == 1 && (is_unicode || is_ascii) {
+                    if let Some(Expr::Lit(ExprLit {
+                        attrs: _,
+                        lit: Lit::Str(s),
+                    })) = call.args.first()
                     {
-                        let first = ep.path.segments.first().unwrap();
-                        let last = ep.path.segments.last().unwrap();
-                        if first.ident == "UniCase"
-                            && (last.ident == "unicode" || last.ident == "ascii")
-                        {
-                            if let Some(Expr::Lit(ExprLit {
-                                attrs: _,
-                                lit: Lit::Str(s),
-                            })) = call.args.first()
-                            {
-                                let v = if last.ident == "unicode" {
-                                    UniCase::unicode(s.value())
-                                } else {
-                                    UniCase::ascii(s.value())
-                                };
-                                Some(ParsedKey::UniCase(v))
-                            } else {
-                                None
-                            }
+                        let v = if is_unicode {
+                            UniCase::unicode(s.value())
                         } else {
-                            None
-                        }
+                            UniCase::ascii(s.value())
+                        };
+                        Some(ParsedKey::UniCase(v))
                     } else {
                         None
                     }
+                } else {
+                    None
                 }
-                _ => None,
-            },
+            } else {
+                None
+            }
             _ => None,
         }
     }

@@ -242,7 +242,7 @@ mod map {
     fn test_unicase() {
         use unicase::UniCase;
         static MAP: phf::Map<UniCase<&'static str>, isize> = phf_map!(
-            UniCase::unicode("FOO") => 10,
+            UniCase::ascii("FOO") => 10,
             UniCase::unicode("Bar") => 11,
         );
         assert!(Some(&10) == MAP.get(&UniCase::new("FOo")));

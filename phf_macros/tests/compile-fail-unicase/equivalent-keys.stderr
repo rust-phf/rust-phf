@@ -1,7 +1,7 @@
-error: unsupported key expression
- --> $DIR/equivalent-keys.rs:5:5
+error: duplicate key
+ --> $DIR/equivalent-keys.rs:6:5
   |
-5 |     UniCase("FOO") => 42, //~ NOTE one occurrence here
-  |     ^^^^^^^^^^^^^^
+6 |     UniCase::ascii("foo") => 42, //~ NOTE one occurrence here
+  |     ^^^^^^^^^^^^^^^^^^^^^
   |
   = note: this error originates in the macro `proc_macro_call` (in Nightly builds, run with -Z macro-backtrace for more info)

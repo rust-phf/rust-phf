@@ -49,7 +49,7 @@ jobs:
       - *SAVE_REGISTRY
       - run: rustc --version | tee ~/rust-version
       - run: cargo test
-      - run: (cd phf_macros && cargo test && cargo test -- --ignored --test-threads=1)
+      - run: (cd phf_macros && cargo test && cargo test --features=unicase_support -- --ignored --test-threads=1)
       - run: cargo test -p phf_codegen_test
       - run: (cd phf && cargo build --no-default-features)
 

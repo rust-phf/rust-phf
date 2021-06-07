@@ -8,7 +8,11 @@ use std::collections::HashSet;
 use std::hash::Hasher;
 use syn::parse::{self, Parse, ParseStream};
 use syn::punctuated::Punctuated;
+#[cfg(feature = "unicase_support")]
+use syn::ExprLit;
 use syn::{parse_macro_input, Error, Expr, Lit, Token, UnOp};
+#[cfg(feature = "unicase_support")]
+use unicase::UniCase;
 
 #[derive(Hash, PartialEq, Eq, Clone)]
 enum ParsedKey {
@@ -26,6 +30,8 @@ enum ParsedKey {
     U64(u64),
     U128(u128),
     Bool(bool),
+    #[cfg(feature = "unicase_support")]
+    UniCase(UniCase<String>),
 }
 
 impl PhfHash for ParsedKey {
@@ -48,6 +54,8 @@ impl PhfHash for ParsedKey {
             ParsedKey::U64(s) => s.phf_hash(state),
             ParsedKey::U128(s) => s.phf_hash(state),
             ParsedKey::Bool(s) => s.phf_hash(state),
+            #[cfg(feature = "unicase_support")]
+            ParsedKey::UniCase(s) => s.phf_hash(state),
         }
     }
 }
@@ -116,6 +124,34 @@ impl ParsedKey {
                 }
             }
             Expr::Group(group) => ParsedKey::from_expr(&group.expr),
+            #[cfg(feature = "unicase_support")]
+            Expr::Call(call) => if let Expr::Path(ep) = call.func.as_ref() {
+                let segments = &mut ep.path.segments.iter().rev();
+                let last = &segments.next()?.ident;
+                let last_ahead = &segments.next()?.ident;
+                let is_unicode = last_ahead == "UniCase" && last == "unicode";
+                let is_ascii = last_ahead == "UniCase" && last == "ascii";
+                if call.args.len() == 1 && (is_unicode || is_ascii) {
+                    if let Some(Expr::Lit(ExprLit {
+                        attrs: _,
+                        lit: Lit::Str(s),
+                    })) = call.args.first()
+                    {
+                        let v = if is_unicode {
+                            UniCase::unicode(s.value())
+                        } else {
+                            UniCase::ascii(s.value())
+                        };
+                        Some(ParsedKey::UniCase(v))
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
             _ => None,
         }
     }

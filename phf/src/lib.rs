@@ -66,6 +66,13 @@ extern crate std as core;
 pub use phf_macros:: phf_map;
 
 #[cfg(feature = "macros")]
+/// Macro to create a `static` (compile-time) [`OrderedMap`].
+///
+/// Requires the `"macros"` feature. Same usage as [`phf_map`]`!`.
+#[::proc_macro_hack::proc_macro_hack]
+pub use phf_macros::phf_ordered_map;
+
+#[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`Set`].
 ///
 /// Requires the `"macros"` feature.
@@ -88,6 +95,14 @@ pub use phf_macros:: phf_map;
 #[::proc_macro_hack::proc_macro_hack]
 pub use phf_macros::phf_set;
 
+#[cfg(feature = "macros")]
+/// Macro to create a `static` (compile-time) [`OrderedSet`].
+///
+/// Requires the `"macros"` feature. Same usage as [`phf_set`]`!`.
+#[::proc_macro_hack::proc_macro_hack]
+pub use phf_macros::phf_ordered_set;
+
+
 use core::ops::Deref;
 
 pub use phf_shared::PhfHash;
@@ -95,9 +110,15 @@ pub use phf_shared::PhfHash;
 pub use self::map::Map;
 #[doc(inline)]
 pub use self::set::Set;
+#[doc(inline)]
+pub use self::ordered_map::OrderedMap;
+#[doc(inline)]
+pub use self::ordered_set::OrderedSet;
 
 pub mod map;
 pub mod set;
+pub mod ordered_map;
+pub mod ordered_set;
 
 // WARNING: this is not considered part of phf's public API and is subject to
 // change at any time.

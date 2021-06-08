@@ -21,6 +21,24 @@ mod test {
     }
 
     #[test]
+    fn ordered_map() {
+        assert_eq!("a", ORDERED_MAP[&1]);
+        assert_eq!("b", ORDERED_MAP[&2]);
+        assert_eq!("c", ORDERED_MAP[&3]);
+        assert!(!ORDERED_MAP.contains_key(&100));
+        assert_eq!(&["a", "b", "c"][..], &ORDERED_MAP.values().cloned().collect::<Vec<_>>()[..]);
+    }
+
+    #[test]
+    fn ordered_set() {
+        assert!(ORDERED_SET.contains(&1));
+        assert!(ORDERED_SET.contains(&2));
+        assert!(ORDERED_SET.contains(&3));
+        assert!(!ORDERED_SET.contains(&4));
+        assert_eq!(&[1, 2, 3][..], &ORDERED_SET.iter().cloned().collect::<Vec<_>>()[..]);
+    }
+
+    #[test]
     fn str_keys() {
         assert_eq!(1, STR_KEYS["a"]);
         assert_eq!(2, STR_KEYS["b"]);
@@ -55,4 +73,11 @@ mod test {
     fn empty_map() {
         assert_eq!(None, EMPTY.get(&1));
     }
+
+     #[test]
+    fn empty_ordered_map() {
+        assert_eq!(None, EMPTY_ORDERED.get(&1));
+    }
+
+
 }

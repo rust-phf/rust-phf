@@ -311,3 +311,161 @@ impl<'a, T: FmtConst + 'a> fmt::Display for DisplaySet<'a, T> {
         write!(f, "{}::Set {{ map: {} }}", self.inner.path, self.inner)
     }
 }
+
+/// A builder for the `phf::OrderedMap` type.
+pub struct OrderedMap<K> {
+    keys: Vec<K>,
+    values: Vec<String>,
+    path: String,
+}
+
+impl<K: Hash + PhfHash + Eq + FmtConst> OrderedMap<K> {
+    /// Constructs a enw `phf::OrderedMap` builder.
+    pub fn new() -> OrderedMap<K> {
+        OrderedMap {
+            keys: vec![],
+            values: vec![],
+            path: String::from("::phf"),
+        }
+    }
+
+    /// Set the path to the `phf` crate from the global namespace
+    pub fn phf_path(&mut self, path: &str) -> &mut OrderedMap<K> {
+        self.path = path.to_owned();
+        self
+    }
+
+    /// Adds an entry to the builder.
+    ///
+    /// `value` will be written exactly as provided in the constructed source.
+    pub fn entry(&mut self, key: K, value: &str) -> &mut OrderedMap<K> {
+        self.keys.push(key);
+        self.values.push(value.to_owned());
+        self
+    }
+
+    /// Calculate the hash parameters and return a struct implementing
+    /// [`Display`](::std::fmt::Display) which will print the constructed
+    /// `phf::OrderedMap`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if there are any duplicate keys.
+    pub fn build(&self) -> DisplayOrderedMap<K> {
+        let mut set = HashSet::new();
+        for key in &self.keys {
+            if !set.insert(key) {
+                panic!("duplicate key `{}`", Delegate(key));
+            }
+        }
+
+        let state = phf_generator::generate_hash(&self.keys);
+
+        DisplayOrderedMap {
+            path: &self.path,
+            state,
+            keys: &self.keys,
+            values: &self.values,
+        }
+    }
+}
+
+/// An adapter for printing a [`OrderedMap`](OrderedMap).
+pub struct DisplayOrderedMap<'a, K: 'a> {
+    path: &'a str,
+    state: HashState,
+    keys: &'a [K],
+    values: &'a [String],
+}
+
+impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,
+               "{}::OrderedMap {{
+    key: {:?},
+    disps: {}::Slice::Static(&[",
+               self.path, self.state.key, self.path)?;
+        for &(d1, d2) in &self.state.disps {
+            write!(f,
+                   "
+        ({}, {}),",
+                   d1,
+                   d2)?;
+        }
+        write!(f,
+               "
+    ]),
+    idxs: {}::Slice::Static(&[", self.path)?;
+        for &idx in &self.state.map {
+            write!(f,
+                   "
+        {},",
+                   idx)?;
+        }
+        write!(f,
+               "
+    ]),
+    entries: {}::Slice::Static(&[", self.path)?;
+        for (key, value) in self.keys.iter().zip(self.values.iter()) {
+            write!(f,
+                   "
+        ({}, {}),",
+                   Delegate(key),
+                   value)?;
+        }
+        write!(f,
+               "
+    ]),
+}}")
+    }
+}
+
+/// A builder for the `phf::OrderedSet` type.
+pub struct OrderedSet<T> {
+    map: OrderedMap<T>,
+}
+
+impl<T: Hash + PhfHash + Eq + FmtConst> OrderedSet<T> {
+    /// Constructs a new `phf::OrderedSet` builder.
+    pub fn new() -> OrderedSet<T> {
+        OrderedSet {
+            map: OrderedMap::new(),
+        }
+    }
+
+    /// Set the path to the `phf` crate from the global namespace
+    pub fn phf_path(&mut self, path: &str) -> &mut OrderedSet<T> {
+        self.map.phf_path(path);
+        self
+    }
+
+    /// Adds an entry to the builder.
+    pub fn entry(&mut self, entry: T) -> &mut OrderedSet<T> {
+        self.map.entry(entry, "()");
+        self
+    }
+
+    /// Calculate the hash parameters and return a struct implementing
+    /// [`Display`](::std::fmt::Display) which will print the constructed
+    /// `phf::OrderedSet`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if there are any duplicate keys.
+    pub fn build(&self) -> DisplayOrderedSet<T> {
+        DisplayOrderedSet {
+            inner: self.map.build()
+        }
+    }
+}
+
+/// An adapter for printing a [`OrderedSet`](OrderedSet).
+pub struct DisplayOrderedSet<'a, T: 'a> {
+    inner: DisplayOrderedMap<'a, T>,
+}
+
+impl<'a, T: FmtConst + 'a> fmt::Display for DisplayOrderedSet<'a, T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}::OrderedSet {{ map: {} }}", self.inner.path, self.inner)
+    }
+}

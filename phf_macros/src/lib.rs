@@ -260,6 +260,26 @@ fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
     }
 }
 
+fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
+    let key = state.key;
+    let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
+    let idxs = state.map.iter().map(|idx| quote!(#idx));
+    let entries = entries.iter().map(|entry| {
+        let key = &entry.key.expr;
+        let value = &entry.value;
+        quote!((#key, #value))
+    });
+
+    quote! {
+        phf::OrderedMap {
+            key: #key,
+            disps: phf::Slice::Static(&[#(#disps),*]),
+            idxs: phf::Slice::Static(&[#(#idxs),*]),
+            entries: phf::Slice::Static(&[#(#entries),*]),
+        }
+    }
+}
+
 #[::proc_macro_hack::proc_macro_hack]
 pub fn phf_map(input: TokenStream) -> TokenStream {
     let map = parse_macro_input!(input as Map);
@@ -275,4 +295,21 @@ pub fn phf_set(input: TokenStream) -> TokenStream {
 
     let map = build_map(&set.0, state);
     quote!(phf::Set { map: #map }).into()
+}
+
+#[::proc_macro_hack::proc_macro_hack]
+pub fn phf_ordered_map(input: TokenStream) -> TokenStream {
+    let map = parse_macro_input!(input as Map);
+    let state = phf_generator::generate_hash(&map.0);
+
+    build_ordered_map(&map.0, state).into()
+}
+
+#[::proc_macro_hack::proc_macro_hack]
+pub fn phf_ordered_set(input: TokenStream) -> TokenStream {
+    let set = parse_macro_input!(input as Set);
+    let state = phf_generator::generate_hash(&set.0);
+
+    let map = build_ordered_map(&set.0, state);
+    quote!(phf::OrderedSet { map: #map }).into()
 }

@@ -7,6 +7,7 @@
 * Fix some crates' build on `no_std`
 * Restore the `unicase_support` feature for `phf_macros`
 * Allow using the owned `String` type for `phf` dynamic code generation
+* Add back `OrderedMap` and `OrderedSet`
 
 ## 0.8.0
 

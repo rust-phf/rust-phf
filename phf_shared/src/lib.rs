@@ -111,6 +111,19 @@ delegate_debug!(u128);
 delegate_debug!(i128);
 delegate_debug!(bool);
 
+delegate_debug!(String);
+delegate_debug!(Vec<u8>);
+delegate_debug!(Vec<i8>);
+delegate_debug!(Vec<u16>);
+delegate_debug!(Vec<i16>);
+delegate_debug!(Vec<u32>);
+delegate_debug!(Vec<i32>);
+delegate_debug!(Vec<u64>);
+delegate_debug!(Vec<i64>);
+delegate_debug!(Vec<u128>);
+delegate_debug!(Vec<i128>);
+delegate_debug!(Vec<bool>);
+
 #[cfg(feature = "std")]
 delegate_debug!(String);
 

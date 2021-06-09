@@ -8,6 +8,7 @@
 * Restore the `unicase_support` feature for `phf_macros`
 * Allow using the owned `String` type for `phf` dynamic code generation
 * Add back `OrderedMap` and `OrderedSet`
+* (**breaking change**) Use `PhfBorrow` trait instead of `std::borrow::Borrow`
 
 ## 0.8.0
 

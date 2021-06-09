@@ -1,10 +1,9 @@
 //! An order-preserving immutable map constructed at compile time.
-use core::borrow::Borrow;
 use core::iter::IntoIterator;
 use core::ops::Index;
 use core::fmt;
 use core::slice;
-use phf_shared::{self, PhfHash, HashKey};
+use phf_shared::{self, PhfHash, PhfBorrow, HashKey};
 
 use crate::Slice;
 
@@ -35,7 +34,7 @@ impl<K, V> fmt::Debug for OrderedMap<K, V> where K: fmt::Debug, V: fmt::Debug {
     }
 }
 
-impl<'a, K, V, T: ?Sized> Index<&'a T> for OrderedMap<K, V> where T: Eq + PhfHash, K: Borrow<T> {
+impl<'a, K, V, T: ?Sized> Index<&'a T> for OrderedMap<K, V> where T: Eq + PhfHash, K: PhfBorrow<T> {
     type Output = V;
 
     fn index(&self, k: &'a T) -> &V {
@@ -57,7 +56,7 @@ impl<K, V> OrderedMap<K, V> {
     /// Returns a reference to the value that `key` maps to.
     pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V>
         where T: Eq + PhfHash,
-              K: Borrow<T>
+              K: PhfBorrow<T>
     {
         self.get_entry(key).map(|e| e.1)
     }
@@ -68,7 +67,7 @@ impl<K, V> OrderedMap<K, V> {
     /// This can be useful for interning schemes.
     pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K>
         where T: Eq + PhfHash,
-              K: Borrow<T>
+              K: PhfBorrow<T>
     {
         self.get_entry(key).map(|e| e.0)
     }
@@ -76,7 +75,7 @@ impl<K, V> OrderedMap<K, V> {
     /// Determines if `key` is in the `Map`.
     pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool
         where T: Eq + PhfHash,
-              K: Borrow<T>
+              K: PhfBorrow<T>
     {
         self.get(key).is_some()
     }
@@ -85,7 +84,7 @@ impl<K, V> OrderedMap<K, V> {
     /// the ordered map.
     pub fn get_index<T: ?Sized>(&self, key: &T) -> Option<usize>
         where T: Eq + PhfHash,
-              K: Borrow<T>
+              K: PhfBorrow<T>
     {
         self.get_internal(key).map(|(i, _)| i)
     }
@@ -99,14 +98,14 @@ impl<K, V> OrderedMap<K, V> {
     /// Like `get`, but returns both the key and the value.
     pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
         where T: Eq + PhfHash,
-              K: Borrow<T>
+              K: PhfBorrow<T>
     {
         self.get_internal(key).map(|(_, e)| e)
     }
 
     fn get_internal<T: ?Sized>(&self, key: &T) -> Option<(usize, (&K, &V))>
         where T: Eq + PhfHash,
-              K: Borrow<T>
+              K: PhfBorrow<T>
     {
         if self.disps.len() == 0 { return None; } //Prevent panic on empty map
         let hashes = phf_shared::hash(key, &self.key);

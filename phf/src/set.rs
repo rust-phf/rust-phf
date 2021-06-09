@@ -1,9 +1,10 @@
 //! An immutable set constructed at compile time.
-use core::borrow::Borrow;
 use core::iter::IntoIterator;
 use core::fmt;
 
-use crate::{map, Map, PhfHash};
+use phf_shared::{PhfBorrow, PhfHash};
+
+use crate::{map, Map};
 
 /// An immutable set constructed at compile time.
 ///
@@ -40,7 +41,7 @@ impl<T> Set<T> {
     /// This can be useful for interning schemes.
     pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T>
         where U: Eq + PhfHash,
-              T: Borrow<U>
+              T: PhfBorrow<U>
     {
         self.map.get_key(key)
     }
@@ -48,7 +49,7 @@ impl<T> Set<T> {
     /// Returns true if `value` is in the `Set`.
     pub fn contains<U: ?Sized>(&self, value: &U) -> bool
         where U: Eq + PhfHash,
-              T: Borrow<U>
+              T: PhfBorrow<U>
     {
         self.map.contains_key(value)
     }
@@ -61,7 +62,7 @@ impl<T> Set<T> {
     }
 }
 
-impl<T> Set<T> where T: Eq + PhfHash {
+impl<T> Set<T> where T: Eq + PhfHash + PhfBorrow<T> {
     /// Returns true if `other` shares no elements with `self`.
     pub fn is_disjoint(&self, other: &Set<T>) -> bool {
         !self.iter().any(|value| other.contains(value))

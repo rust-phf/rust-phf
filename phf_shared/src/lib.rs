@@ -83,6 +83,49 @@ pub trait FmtConst {
     fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result;
 }
 
+/// Identical to `std::borrow::Borrow` except omitting blanket impls to facilitate other
+/// borrowing patterns.
+///
+/// The same semantic requirements apply:
+///
+/// > In particular `Eq`, `Ord` and `Hash` must be equivalent for borrowed and owned values:
+/// `x.borrow() == y.borrow()` should give the same result as `x == y`.
+///
+/// (This crate's API only requires `Eq` and `PhfHash`, however.)
+///
+/// ### Motivation
+/// The conventional signature for lookup methods on collections looks something like this:
+///
+/// ```rust,ignore
+/// impl<K, V> Map<K, V> where K: PhfHash + Eq {
+///     fn get<T: ?Sized>(&self, key: &T) -> Option<&V> where T: PhfHash + Eq, K: Borrow<T> {
+///         ...
+///     }
+/// }
+/// ```
+///
+/// This allows the key type used for lookup to be different than the key stored in the map so for
+/// example you can use `&str` to look up a value in a `Map<String, _>`. However, this runs into
+/// a problem in the case where `T` and `K` are both a `Foo<_>` type constructor but
+/// the contained type is different (even being the same type with different lifetimes).
+///
+/// The main issue for this crate's API is that, with this method signature, you cannot perform a
+/// lookup on a `Map<UniCase<&'static str>, _>` with a `UniCase<&'a str>` where `'a` is not
+/// `'static`; there is no impl of `Borrow` that resolves to
+/// `impl Borrow<UniCase<'a>> for UniCase<&'static str>` and one cannot be added either because of
+/// all the blanket impls.
+///
+/// Instead, this trait is implemented conservatively, without blanket impls, so that impls like
+/// this may be added. This is feasible since the set of types that implement `PhfHash` is
+/// intentionally small.
+///
+/// This likely won't be fixable with specialization alone but will require full support for lattice
+/// impls since we technically want to add overlapping blanket impls.
+pub trait PhfBorrow<B: ?Sized> {
+    /// Convert a reference to `self` to a reference to the borrowed type.
+    fn borrow(&self) -> &B;
+}
+
 /// Create an impl of `FmtConst` delegating to `fmt::Debug` for types that can deal with it.
 ///
 /// Ideally with specialization this could be just one default impl and then specialized where
@@ -110,6 +153,33 @@ delegate_debug!(i64);
 delegate_debug!(u128);
 delegate_debug!(i128);
 delegate_debug!(bool);
+
+/// `impl PhfBorrow<T> for T`
+macro_rules! impl_reflexive(
+    ($($t:ty),*) => (
+        $(impl PhfBorrow<$t> for $t {
+            fn borrow(&self) -> &$t {
+                self
+            }
+        })*
+    )
+);
+
+impl_reflexive!(str, char, u8, i8, u16, i16, u32, i32, u64, i64, u128, i128, bool, [u8]);
+
+#[cfg(feature = "std")]
+impl PhfBorrow<str> for String {
+    fn borrow(&self) -> &str {
+        self
+    }
+}
+
+#[cfg(feature = "std")]
+impl PhfBorrow<[u8]> for Vec<u8> {
+    fn borrow(&self) -> &[u8] {
+        self
+    }
+}
 
 #[cfg(feature = "std")]
 delegate_debug!(String);
@@ -139,6 +209,18 @@ impl<'a, T: 'a + PhfHash + ?Sized> PhfHash for &'a T {
 impl<'a, T: 'a + FmtConst + ?Sized> FmtConst for &'a T {
     fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
         (*self).fmt_const(f)
+    }
+}
+
+impl<'a> PhfBorrow<str> for &'a str {
+    fn borrow(&self) -> &str {
+        self
+    }
+}
+
+impl<'a> PhfBorrow<[u8]> for &'a [u8] {
+    fn borrow(&self) -> &[u8] {
+        self
     }
 }
 
@@ -184,6 +266,13 @@ impl<S> FmtConst for unicase::UniCase<S> where S: AsRef<str> {
 
         self.as_ref().fmt_const(f)?;
         f.write_str(")")
+    }
+}
+
+#[cfg(feature = "unicase")]
+impl<'b, 'a: 'b, S: ?Sized + 'a> PhfBorrow<unicase::UniCase<&'b S>> for unicase::UniCase<&'a S> {
+    fn borrow(&self) -> &unicase::UniCase<&'b S> {
+        self
     }
 }
 
@@ -242,6 +331,12 @@ macro_rules! array_impl (
         impl FmtConst for [$t; $n] {
             fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
                 fmt_array(self, f)
+            }
+        }
+
+        impl PhfBorrow<[$t]> for [$t; $n] {
+            fn borrow(&self) -> &[$t] {
+                self
             }
         }
     )

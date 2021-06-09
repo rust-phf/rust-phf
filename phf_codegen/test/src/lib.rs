@@ -51,6 +51,14 @@ mod test {
         assert_eq!("a", UNICASE_MAP[&UniCase::new("abc")]);
         assert_eq!("b", UNICASE_MAP[&UniCase::new("DEf")]);
         assert!(!UNICASE_MAP.contains_key(&UniCase::new("XyZ")));
+
+        // allow lookup with non-static slices
+        let local_str_1 = "AbC".to_string();
+        let local_str_2 = "abc".to_string();
+        let local_str_3 = "DEf".to_string();
+        assert_eq!("a", UNICASE_MAP[&UniCase::new(&*local_str_1)]);
+        assert_eq!("a", UNICASE_MAP[&UniCase::new(&*local_str_2)]);
+        assert_eq!("b", UNICASE_MAP[&UniCase::new(&*local_str_3)]);
     }
 
     #[test]

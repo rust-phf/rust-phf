@@ -1,10 +1,9 @@
 //! An immutable map constructed at compile time.
-use core::borrow::Borrow;
 use core::ops::Index;
 use core::slice;
 use core::fmt;
 use core::iter::IntoIterator;
-use phf_shared::{self, PhfHash, HashKey};
+use phf_shared::{self, PhfHash, PhfBorrow, HashKey};
 use crate::Slice;
 
 /// An immutable map constructed at compile time.
@@ -29,7 +28,7 @@ impl<K, V> fmt::Debug for Map<K, V> where K: fmt::Debug, V: fmt::Debug {
     }
 }
 
-impl<'a, K, V, T: ?Sized> Index<&'a T> for Map<K, V> where T: Eq + PhfHash, K: Borrow<T> {
+impl<'a, K, V, T: ?Sized> Index<&'a T> for Map<K, V> where T: Eq + PhfHash, K: PhfBorrow<T> {
     type Output = V;
 
     fn index(&self, k: &'a T) -> &V {
@@ -51,7 +50,7 @@ impl<K, V> Map<K, V> {
     /// Determines if `key` is in the `Map`.
     pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool
         where T: Eq + PhfHash,
-              K: Borrow<T>
+              K: PhfBorrow<T>
     {
         self.get(key).is_some()
     }
@@ -59,7 +58,7 @@ impl<K, V> Map<K, V> {
     /// Returns a reference to the value that `key` maps to.
     pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V>
         where T: Eq + PhfHash,
-              K: Borrow<T>
+              K: PhfBorrow<T>
     {
         self.get_entry(key).map(|e| e.1)
     }
@@ -70,7 +69,7 @@ impl<K, V> Map<K, V> {
     /// This can be useful for interning schemes.
     pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K>
         where T: Eq + PhfHash,
-              K: Borrow<T>
+              K: PhfBorrow<T>
     {
         self.get_entry(key).map(|e| e.0)
     }
@@ -78,7 +77,7 @@ impl<K, V> Map<K, V> {
     /// Like `get`, but returns both the key and the value.
     pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
         where T: Eq + PhfHash,
-              K: Borrow<T>
+              K: PhfBorrow<T>
     {
         if self.disps.len() == 0 { return None; } //Prevent panic on empty map
         let hashes = phf_shared::hash(key, &self.key);

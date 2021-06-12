@@ -1,0 +1,19 @@
+name: Bench
+# FIXME: Run only when adding `benchmarks` label?
+on: [pull_request]
+
+jobs:
+  bench_between_master_and_pr:
+    name: Bench
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: master
+      - name: measure benchmarks on master
+        run: cargo bench
+      - uses: actions/checkout@v2
+        with:
+          clean: false
+      - name: measure benchmarks on PR
+        run: cargo bench

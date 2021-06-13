@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # MSRV and nightly
+        version: [1.40.0, nightly]
+    steps:
+      - uses: actions/checkout@v2
+        
+      - name: Set toolchain
+        run: |
+          rustup set profile minimal
+          rustup override set ${{ matrix.version }}
+
+      - name: Run `cargo test` on workspace
+        run: cargo test --workspace
+
+      - name: phf_macros UI test
+        if: matrix.version == '1.40.0'
+        working-directory: phf_macros
+        run: cargo test --features=unicase_support -- --ignored --test-threads=1
+
+      - name: phf_codegen test
+        run: cargo test -p phf_codegen_test
+
+      - name: no_std build check
+        working-directory: phf
+        run: cargo build --no-default-features

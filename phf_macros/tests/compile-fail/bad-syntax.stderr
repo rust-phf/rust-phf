@@ -3,5 +3,3 @@ error: expected identifier
   |
 5 |     => //~ ERROR expected identifier
   |     ^^
-  |
-  = note: this error originates in the macro `proc_macro_call` (in Nightly builds, run with -Z macro-backtrace for more info)

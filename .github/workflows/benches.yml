@@ -1,9 +1,11 @@
 name: Bench
-# FIXME: Run only when adding `benchmarks` label?
-on: [pull_request]
+on:
+  pull_request:
+    types: [labeled]
 
 jobs:
   bench_between_master_and_pr:
+    if: ${{ github.event.label.name == 'run-benchmarks' }}
     name: Bench
     runs-on: ubuntu-latest
     steps:

@@ -27,5 +27,5 @@ phf_shared = { version = "0.9.0", default-features = false }
 
 [dev-dependencies]
 trybuild = "1.0"
-phf = { version = "0.9", features = ["macros", "unicase"] }
+phf = { version = "0.8", features = ["macros", "unicase"] }
 unicase_ = { package = "unicase", version = "2.4.0" }

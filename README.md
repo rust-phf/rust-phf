@@ -28,7 +28,7 @@ will not work, set `default-features = false` for the dependency:
 ```toml
 [dependencies]
 # to use `phf` in `no_std` environments
-phf = { version = "0.8", default-features = false }
+phf = { version = "0.9", default-features = false }
 ```
 
 ### phf_macros
@@ -60,7 +60,7 @@ pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
 
 ```toml
 [dependencies]
-phf = { version = "0.8", features = ["macros"] }
+phf = { version = "0.9", features = ["macros"] }
 ```
 
 #### Note

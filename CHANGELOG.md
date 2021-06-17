@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.9.0
 
 * Our MSRV is now 1.46.0 (because of dependencies)
 * `rand` dependency has been upgraded to 0.8

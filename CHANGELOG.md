@@ -2,10 +2,10 @@
 
 ## Unreleased
 
-* Our MSRV is now 1.40.0 (because of dependencies)
+* Our MSRV is now 1.46.0 (because of dependencies)
 * `rand` dependency has been upgraded to 0.8
 * Fix some crates' build on `no_std`
-* Restore the `unicase_support` feature for `phf_macros`
+* Restore the `unicase` feature for `phf_macros`
 * Allow using the owned `String` type for `phf` dynamic code generation
 * Add back `OrderedMap` and `OrderedSet`
 * (**breaking change**) Use `PhfBorrow` trait instead of `std::borrow::Borrow`

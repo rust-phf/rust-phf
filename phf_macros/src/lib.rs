@@ -8,11 +8,11 @@ use std::collections::HashSet;
 use std::hash::Hasher;
 use syn::parse::{self, Parse, ParseStream};
 use syn::punctuated::Punctuated;
-#[cfg(feature = "unicase_support")]
+#[cfg(feature = "unicase")]
 use syn::ExprLit;
 use syn::{parse_macro_input, Error, Expr, Lit, Token, UnOp};
-#[cfg(feature = "unicase_support")]
-use unicase::UniCase;
+#[cfg(feature = "unicase")]
+use unicase_::UniCase;
 
 #[derive(Hash, PartialEq, Eq, Clone)]
 enum ParsedKey {
@@ -30,7 +30,7 @@ enum ParsedKey {
     U64(u64),
     U128(u128),
     Bool(bool),
-    #[cfg(feature = "unicase_support")]
+    #[cfg(feature = "unicase")]
     UniCase(UniCase<String>),
 }
 
@@ -54,7 +54,7 @@ impl PhfHash for ParsedKey {
             ParsedKey::U64(s) => s.phf_hash(state),
             ParsedKey::U128(s) => s.phf_hash(state),
             ParsedKey::Bool(s) => s.phf_hash(state),
-            #[cfg(feature = "unicase_support")]
+            #[cfg(feature = "unicase")]
             ParsedKey::UniCase(s) => s.phf_hash(state),
         }
     }
@@ -124,7 +124,7 @@ impl ParsedKey {
                 }
             }
             Expr::Group(group) => ParsedKey::from_expr(&group.expr),
-            #[cfg(feature = "unicase_support")]
+            #[cfg(feature = "unicase")]
             Expr::Call(call) => if let Expr::Path(ep) = call.func.as_ref() {
                 let segments = &mut ep.path.segments.iter().rev();
                 let last = &segments.next()?.ident;

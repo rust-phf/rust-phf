@@ -6,6 +6,7 @@ license = "MIT"
 description = "Runtime support for perfect hash function data structures"
 repository = "https://github.com/sfackler/rust-phf"
 edition = "2018"
+readme = "../README.md"
 
 [lib]
 name = "phf"

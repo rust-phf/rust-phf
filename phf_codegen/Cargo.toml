@@ -6,6 +6,7 @@ license = "MIT"
 description = "Codegen library for PHF types"
 repository = "https://github.com/sfackler/rust-phf"
 edition = "2018"
+readme = "../README.md"
 
 [dependencies]
 phf_generator = "0.8.0"

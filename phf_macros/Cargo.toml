@@ -6,6 +6,8 @@ edition = "2018"
 license = "MIT"
 description = "Macros to generate types in the phf crate"
 repository = "https://github.com/sfackler/rust-phf"
+readme = "../README.md"
+include = ["src/lib.rs"]
 
 [lib]
 proc-macro = true

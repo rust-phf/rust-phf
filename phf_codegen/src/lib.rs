@@ -7,11 +7,9 @@
 //!
 //! # Examples
 //!
-//! build.rs
+//! build.rs:
 //!
 //! ```rust,no_run
-//! extern crate phf_codegen;
-//!
 //! use std::env;
 //! use std::fs::File;
 //! use std::io::{BufWriter, Write};
@@ -35,11 +33,9 @@
 //! }
 //! ```
 //!
-//! lib.rs
+//! lib.rs:
 //!
 //! ```ignore
-//! extern crate phf;
-//!
 //! #[derive(Clone)]
 //! enum Keyword {
 //!     Loop,
@@ -60,11 +56,9 @@
 //! Byte strings by default produce references to fixed-size arrays; the compiler needs a hint
 //! to coerce them to slices:
 //!
-//! build.rs
+//! build.rs:
 //!
 //! ```rust,no_run
-//! extern crate phf_codegen;
-//!
 //! use std::env;
 //! use std::fs::File;
 //! use std::io::{BufWriter, Write};
@@ -88,11 +82,9 @@
 //! }
 //! ```
 //!
-//! lib.rs
+//! lib.rs:
 //!
 //! ```rust,ignore
-//! extern crate phf;
-//!
 //! #[derive(Clone)]
 //! enum Keyword {
 //!     Loop,
@@ -131,7 +123,7 @@
 //! builder.entry("world", "2");
 //! // ...
 //! ```
-#![doc(html_root_url = "https://docs.rs/phf_codegen/0.7")]
+#![doc(html_root_url = "https://docs.rs/phf_codegen/0.9")]
 
 use phf_shared::{PhfHash, FmtConst};
 use std::collections::HashSet;

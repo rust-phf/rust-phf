@@ -14,10 +14,10 @@ a 100,000 entry map in roughly .4 seconds. By default statistics are not
 produced, but if you set the environment variable `PHF_STATS` it will issue
 a compiler note about how long it took.
 
+MSRV (minimum supported rust version) is Rust 1.46.
+
 Usage
 =====
-
-##### Release 0.8.0 requires Rust 1.32.0
 
 PHF data structures can be constucted via either the procedural 
 macros in the `phf_macros` crate or code generation supported by the 

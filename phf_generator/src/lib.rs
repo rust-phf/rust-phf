@@ -1,4 +1,4 @@
-#![doc(html_root_url="https://docs.rs/phf_generator/0.7")]
+#![doc(html_root_url="https://docs.rs/phf_generator/0.9")]
 use phf_shared::{PhfHash, HashKey};
 use rand::{SeedableRng, Rng};
 use rand::distributions::Standard;

@@ -28,7 +28,7 @@ jobs:
       - name: phf_macros UI test
         if: matrix.version == '1.40.0'
         working-directory: phf_macros
-        run: cargo test --features=unicase_support -- --ignored --test-threads=1
+        run: cargo test --features=unicase -- --ignored --test-threads=1
 
       - name: phf_codegen test
         run: cargo test -p phf_codegen_test

@@ -1,15 +1,16 @@
 [package]
 name = "phf_generator"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.8.0"
+version = "0.9.0"
 license = "MIT"
 description = "PHF generation logic"
 repository = "https://github.com/sfackler/rust-phf"
 edition = "2018"
+include = ["src/**/*"]
 
 [dependencies]
 rand = { version = "0.8", features = ["small_rng"] }
-phf_shared = { version = "0.8.0", default-features = false }
+phf_shared = { version = "0.9.0", default-features = false }
 # for stable black_box()
 criterion = { version = "0.3", optional = true }
 

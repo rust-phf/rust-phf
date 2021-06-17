@@ -44,7 +44,7 @@
 //!
 //! [#183]: https://github.com/rust-phf/rust-phf/issues/183
 //! [#196]: https://github.com/rust-phf/rust-phf/issues/196
-#![doc(html_root_url="https://docs.rs/phf/0.9")]
+#![doc(html_root_url = "https://docs.rs/phf/0.9")]
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -71,7 +71,7 @@ extern crate std as core;
 /// }
 /// ```
 #[::proc_macro_hack::proc_macro_hack]
-pub use phf_macros:: phf_map;
+pub use phf_macros::phf_map;
 
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`OrderedMap`].
@@ -111,20 +111,20 @@ pub use phf_macros::phf_ordered_set;
 
 use core::ops::Deref;
 
-pub use phf_shared::PhfHash;
 #[doc(inline)]
 pub use self::map::Map;
-#[doc(inline)]
-pub use self::set::Set;
 #[doc(inline)]
 pub use self::ordered_map::OrderedMap;
 #[doc(inline)]
 pub use self::ordered_set::OrderedSet;
+#[doc(inline)]
+pub use self::set::Set;
+pub use phf_shared::PhfHash;
 
 pub mod map;
-pub mod set;
 pub mod ordered_map;
 pub mod ordered_set;
+pub mod set;
 
 // WARNING: this is not considered part of phf's public API and is subject to
 // change at any time.

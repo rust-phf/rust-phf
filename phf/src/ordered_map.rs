@@ -124,21 +124,21 @@ impl<K, V> OrderedMap<K, V> {
     /// Returns an iterator over the key/value pairs in the map.
     ///
     /// Entries are returned in the same order in which they were defined.
-    pub fn entries<'a>(&'a self) -> Entries<'a, K, V> {
+    pub fn entries(&self) -> Entries<K, V> {
         Entries { iter: self.entries.iter() }
     }
 
     /// Returns an iterator over the keys in the map.
     ///
     /// Keys are returned in the same order in which they were defined.
-    pub fn keys<'a>(&'a self) -> Keys<'a, K, V> {
+    pub fn keys(&self) -> Keys<K, V> {
         Keys { iter: self.entries() }
     }
 
     /// Returns an iterator over the values in the map.
     ///
     /// Values are returned in the same order in which they were defined.
-    pub fn values<'a>(&'a self) -> Values<'a, K, V> {
+    pub fn values(&self) -> Values<K, V> {
         Values { iter: self.entries() }
     }
 }

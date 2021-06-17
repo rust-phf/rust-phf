@@ -1,6 +1,3 @@
-extern crate phf_codegen;
-extern crate unicase;
-
 use std::env;
 use std::fs::File;
 use std::io::{self, BufWriter, Write};

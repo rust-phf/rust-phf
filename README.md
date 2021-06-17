@@ -72,8 +72,6 @@ phf_codegen
 build.rs
 
 ```rust
-extern crate phf_codegen;
-
 use std::env;
 use std::fs::File;
 use std::io::{BufWriter, Write};
@@ -99,8 +97,6 @@ fn main() {
 lib.rs
 
 ```rust
-extern crate phf;
-
 #[derive(Clone)]
 enum Keyword {
     Loop,

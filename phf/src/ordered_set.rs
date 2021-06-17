@@ -73,7 +73,7 @@ impl<T> OrderedSet<T> {
     /// Returns an iterator over the values in the set.
     ///
     /// Values are returned in the same order in which they were defined.
-    pub fn iter<'a>(&'a self) -> Iter<'a, T> {
+    pub fn iter(&self) -> Iter<T> {
         Iter { iter: self.map.keys() }
     }
 }

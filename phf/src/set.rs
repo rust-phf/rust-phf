@@ -57,7 +57,7 @@ impl<T> Set<T> {
     /// Returns an iterator over the values in the set.
     ///
     /// Values are returned in an arbitrary but fixed order.
-    pub fn iter<'a>(&'a self) -> Iter<'a, T> {
+    pub fn iter(&self) -> Iter<T> {
         Iter { iter: self.map.keys() }
     }
 }

@@ -4,21 +4,16 @@
 #[cfg(feature = "std")]
 extern crate std as core;
 
-extern crate siphasher;
-
-#[cfg(feature = "unicase")]
-extern crate unicase;
-
 use core::fmt;
 use core::hash::{Hasher, Hash};
 use core::num::Wrapping;
 use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
 
+#[non_exhaustive]
 pub struct Hashes {
     pub g: u32,
     pub f1: u32,
     pub f2: u32,
-    _priv: (),
 }
 
 /// A central typedef for hash keys
@@ -43,7 +38,6 @@ pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
         g: (lower >> 32) as u32,
         f1: lower as u32,
         f2: upper as u32,
-        _priv: (),
     }
 }
 

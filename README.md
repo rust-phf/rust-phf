@@ -1,7 +1,6 @@
-Rust-PHF
-=========
+# Rust-PHF
 
-[![Build Status](https://travis-ci.org/sfackler/rust-phf.png?branch=master)](https://travis-ci.org/sfackler/rust-phf) [![Latest Version](https://img.shields.io/crates/v/phf.svg)](https://crates.io/crates/phf)
+[![CI](https://github.com/rust-phf/rust-phf/actions/workflows/ci.yml/badge.svg)](https://github.com/rust-phf/rust-phf/actions/workflows/ci.yml) [![Latest Version](https://img.shields.io/crates/v/phf.svg)](https://crates.io/crates/phf)
 
 [Documentation](https://docs.rs/phf)
 
@@ -16,8 +15,7 @@ a compiler note about how long it took.
 
 MSRV (minimum supported rust version) is Rust 1.46.
 
-Usage
-=====
+## Usage
 
 PHF data structures can be constucted via either the procedural 
 macros in the `phf_macros` crate or code generation supported by the 
@@ -33,8 +31,7 @@ will not work, set `default-features = false` for the dependency:
 phf = { version = "0.8", default-features = false }
 ```
 
-phf_macros
-===========
+### phf_macros
 
 ```rust
 use phf::phf_map;
@@ -66,10 +63,17 @@ pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
 phf = { version = "0.8", features = ["macros"] }
 ```
 
-phf_codegen
-===========
+#### Note
 
-build.rs
+Currently, the macro syntax has some limitations and may not
+work as you want. See [#183] or [#196] for example.
+
+[#183]: https://github.com/rust-phf/rust-phf/issues/183
+[#196]: https://github.com/rust-phf/rust-phf/issues/196
+
+### phf_codegen
+
+build.rs:
 
 ```rust
 use std::env;
@@ -94,7 +98,7 @@ fn main() {
 }
 ```
 
-lib.rs
+lib.rs:
 
 ```rust
 #[derive(Clone)]

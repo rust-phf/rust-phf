@@ -13,10 +13,10 @@ jobs:
       fail-fast: false
       matrix:
         # MSRV and nightly
-        version: [1.40.0, nightly]
+        version: [1.46.0, nightly]
     steps:
       - uses: actions/checkout@v2
-        
+
       - name: Set toolchain
         run: |
           rustup set profile minimal

@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod test {
+    use uncased::UncasedStr;
     use unicase::UniCase;
 
     include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
@@ -59,6 +60,14 @@ mod test {
         assert_eq!("a", UNICASE_MAP[&UniCase::new(&*local_str_1)]);
         assert_eq!("a", UNICASE_MAP[&UniCase::new(&*local_str_2)]);
         assert_eq!("b", UNICASE_MAP[&UniCase::new(&*local_str_3)]);
+    }
+
+    #[test]
+    fn uncased_map() {
+        assert_eq!("a", UNCASED_MAP[&UncasedStr::new("AbC")]);
+        assert_eq!("a", UNCASED_MAP[&UncasedStr::new("abc")]);
+        assert_eq!("b", UNCASED_MAP[&UncasedStr::new("DEf")]);
+        assert!(!UNCASED_MAP.contains_key(&UncasedStr::new("XyZ")));
     }
 
     #[test]

@@ -6,6 +6,7 @@ use std::fs::File;
 use std::io::{self, BufWriter, Write};
 use std::path::Path;
 
+use uncased::UncasedStr;
 use unicase::UniCase;
 
 fn main() -> io::Result<()> {
@@ -68,6 +69,15 @@ fn main() -> io::Result<()> {
         phf_codegen::Map::new()
             .entry(UniCase::new("abc"), "\"a\"")
             .entry(UniCase::new("DEF"), "\"b\"")
+            .build()
+    )?;
+
+    write!(
+        &mut file,
+        "static UNCASED_MAP: ::phf::Map<&'static ::uncased::UncasedStr, &'static str> = \n{};",
+        phf_codegen::Map::new()
+            .entry(UncasedStr::new("abc"), "\"a\"")
+            .entry(UncasedStr::new("DEF"), "\"b\"")
             .build()
     )?;
 

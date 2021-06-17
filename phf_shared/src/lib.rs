@@ -276,6 +276,33 @@ impl<'b, 'a: 'b, S: ?Sized + 'a> PhfBorrow<unicase::UniCase<&'b S>> for unicase:
     }
 }
 
+#[cfg(feature = "uncased")]
+impl PhfHash for uncased::UncasedStr {
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        self.hash(state)
+    }
+}
+
+#[cfg(feature = "uncased")]
+impl FmtConst for uncased::UncasedStr {
+    fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // transmute is not stable in const fns (rust-lang/rust#53605), so
+        // `UncasedStr::new` can't be a const fn itself, but we can inline the
+        // call to transmute here in the meantime.
+        f.write_str("unsafe { ::std::mem::transmute::<&'static str, &'static UncasedStr>(")?;
+        self.as_str().fmt_const(f)?;
+        f.write_str(") }")
+    }
+}
+
+#[cfg(feature = "uncased")]
+impl PhfBorrow<uncased::UncasedStr> for &uncased::UncasedStr {
+    fn borrow(&self) -> &uncased::UncasedStr {
+        self
+    }
+}
+
 macro_rules! sip_impl (
     (le $t:ty) => (
         impl PhfHash for $t {

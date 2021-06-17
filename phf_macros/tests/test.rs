@@ -1,6 +1,6 @@
 mod map {
-    use std::collections::{HashMap, HashSet};
     use phf::phf_map;
+    use std::collections::{HashMap, HashSet};
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::Map<&'static str, isize> = phf_map!(
@@ -35,7 +35,10 @@ mod map {
             "foo" => 10,
             "bar" => 11,
         );
-        let hash = MAP.entries().map(|(&k, &v)| (k, v)).collect::<HashMap<_, isize>>();
+        let hash = MAP
+            .entries()
+            .map(|(&k, &v)| (k, v))
+            .collect::<HashMap<_, isize>>();
         assert!(Some(&10) == hash.get(&("foo")));
         assert!(Some(&11) == hash.get(&("bar")));
         assert_eq!(2, hash.len());
@@ -252,8 +255,8 @@ mod map {
 }
 
 mod set {
-    use std::collections::HashSet;
     use phf::phf_set;
+    use std::collections::HashSet;
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::Set<&'static str> = phf_set! {
@@ -478,10 +481,7 @@ mod ordered_set {
 
     #[test]
     fn test_index() {
-        static MAP: phf::OrderedSet<&'static str> = phf_ordered_set!(
-            "foo",
-            "bar",
-        );
+        static MAP: phf::OrderedSet<&'static str> = phf_ordered_set!("foo", "bar",);
         assert_eq!(Some(&"foo"), MAP.index(0));
         assert_eq!(Some(&"bar"), MAP.index(1));
         assert_eq!(None, MAP.index(2));
@@ -509,9 +509,7 @@ mod ordered_set {
 
     #[test]
     fn test_into_iterator() {
-        static SET: phf::OrderedSet<&'static str> = phf_ordered_set!(
-            "foo",
-        );
+        static SET: phf::OrderedSet<&'static str> = phf_ordered_set!("foo",);
 
         for e in &SET {
             assert_eq!(&"foo", e);

@@ -1,6 +1,3 @@
-extern crate phf_codegen;
-extern crate unicase;
-
 use std::env;
 use std::fs::File;
 use std::io::{self, BufWriter, Write};
@@ -82,27 +79,37 @@ fn main() -> io::Result<()> {
     )?;
 
     //u32 is used here purely for a type that impls `Hash+PhfHash+Eq+fmt::Debug`, but is not required for the empty test itself
-    writeln!(&mut file,
-             "static EMPTY: ::phf::Map<u32, u32> = \n{};",
-             phf_codegen::Map::<u32>::new().build())?;
+    writeln!(
+        &mut file,
+        "static EMPTY: ::phf::Map<u32, u32> = \n{};",
+        phf_codegen::Map::<u32>::new().build()
+    )?;
 
-    writeln!(&mut file,
-             "static EMPTY_ORDERED: ::phf::OrderedMap<u32, u32> = \n{};",
-             phf_codegen::OrderedMap::<u32>::new().build())?;
+    writeln!(
+        &mut file,
+        "static EMPTY_ORDERED: ::phf::OrderedMap<u32, u32> = \n{};",
+        phf_codegen::OrderedMap::<u32>::new().build()
+    )?;
 
-    writeln!(&mut file, "static ARRAY_KEYS: ::phf::Map<[u8; 3], u32> = \n{};",
-             phf_codegen::Map::<[u8; 3]>::new()
-                 .entry(*b"foo", "0")
-                 .entry(*b"bar", "1")
-                 .entry(*b"baz", "2")
-                 .build())?;
+    writeln!(
+        &mut file,
+        "static ARRAY_KEYS: ::phf::Map<[u8; 3], u32> = \n{};",
+        phf_codegen::Map::<[u8; 3]>::new()
+            .entry(*b"foo", "0")
+            .entry(*b"bar", "1")
+            .entry(*b"baz", "2")
+            .build()
+    )?;
 
     // key type required here as it will infer `&'static [u8; 3]` instead
-    writeln!(&mut file, "static BYTE_STR_KEYS: ::phf::Map<&[u8], u32> = \n{};",
-             phf_codegen::Map::<&[u8]>::new()
-                 .entry(b"foo", "0")
-                 .entry(b"bar", "1")
-                 .entry(b"baz", "2")
-                 .entry(b"quux", "3")
-                 .build())
+    writeln!(
+        &mut file,
+        "static BYTE_STR_KEYS: ::phf::Map<&[u8], u32> = \n{};",
+        phf_codegen::Map::<&[u8]>::new()
+            .entry(b"foo", "0")
+            .entry(b"bar", "1")
+            .entry(b"baz", "2")
+            .entry(b"quux", "3")
+            .build()
+    )
 }

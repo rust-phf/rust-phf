@@ -8,11 +8,11 @@
 //! If the `macros` Cargo feature is enabled, the `phf_map`, `phf_set`,
 //! `phf_ordered_map`, and `phf_ordered_set` macros can be used to construct
 //! the PHF type. This method can be used with a stable compiler
-//! (`rustc` version 1.30+)
+//! (minimum supported rust version is 1.46).
 //!
 //! ```toml
 //! [dependencies]
-//! phf = { version = "0.7.24", features = ["macros"] }
+//! phf = { version = "0.9", features = ["macros"] }
 //! ```
 //!
 //! ```
@@ -34,9 +34,17 @@
 //! }
 //! ```
 //!
-//! (Alternatively, you can use the phf_codegen crate to generate PHF datatypes
-//! in a build script)
-#![doc(html_root_url="https://docs.rs/phf/0.7")]
+//! Alternatively, you can use the `phf_codegen` crate to generate PHF datatypes
+//! in a build script.
+//!
+//! ## Note
+//!
+//! Currently, the macro syntax has some limitations and may not
+//! work as you want. See [#183] or [#196] for example.
+//!
+//! [#183]: https://github.com/rust-phf/rust-phf/issues/183
+//! [#196]: https://github.com/rust-phf/rust-phf/issues/196
+#![doc(html_root_url = "https://docs.rs/phf/0.9")]
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -46,12 +54,12 @@ extern crate std as core;
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`Map`].
 ///
-/// Requires the `"macros"` feature.
+/// Requires the `macros` feature.
 ///
 /// # Example
 ///
-/// ```rust,edition2018
-/// use ::phf::{phf_map, Map};
+/// ```
+/// use phf::{phf_map, Map};
 ///
 /// static MY_MAP: Map<&'static str, u32> = phf_map! {
 ///     "hello" => 1,
@@ -63,67 +71,65 @@ extern crate std as core;
 /// }
 /// ```
 #[::proc_macro_hack::proc_macro_hack]
-pub use phf_macros:: phf_map;
+pub use phf_macros::phf_map;
 
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`OrderedMap`].
 ///
-/// Requires the `"macros"` feature. Same usage as [`phf_map`]`!`.
+/// Requires the `macros` feature. Same usage as [`phf_map`].
 #[::proc_macro_hack::proc_macro_hack]
 pub use phf_macros::phf_ordered_map;
 
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`Set`].
 ///
-/// Requires the `"macros"` feature.
+/// Requires the `macros` feature.
 ///
 /// # Example
 ///
-/// ```rust,edition2018
-/// use ::phf::{phf_set, Set};
+/// ```
+/// use phf::{phf_set, Set};
 ///
 /// static MY_SET: Set<&'static str> = phf_set! {
 ///     "hello world",
 ///     "hola mundo",
 /// };
 ///
-/// fn main ()
-/// {
+/// fn main () {
 ///     assert!(MY_SET.contains("hello world"));
 /// }
 /// ```
-#[::proc_macro_hack::proc_macro_hack]
+#[proc_macro_hack::proc_macro_hack]
 pub use phf_macros::phf_set;
 
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`OrderedSet`].
 ///
-/// Requires the `"macros"` feature. Same usage as [`phf_set`]`!`.
-#[::proc_macro_hack::proc_macro_hack]
+/// Requires the `macros` feature. Same usage as [`phf_set`].
+#[proc_macro_hack::proc_macro_hack]
 pub use phf_macros::phf_ordered_set;
-
 
 use core::ops::Deref;
 
-pub use phf_shared::PhfHash;
 #[doc(inline)]
 pub use self::map::Map;
-#[doc(inline)]
-pub use self::set::Set;
 #[doc(inline)]
 pub use self::ordered_map::OrderedMap;
 #[doc(inline)]
 pub use self::ordered_set::OrderedSet;
+#[doc(inline)]
+pub use self::set::Set;
+pub use phf_shared::PhfHash;
 
 pub mod map;
-pub mod set;
 pub mod ordered_map;
 pub mod ordered_set;
+pub mod set;
 
 // WARNING: this is not considered part of phf's public API and is subject to
 // change at any time.
 //
-// Basically Cow, but with the Owned version conditionally compiled
+// Basically Cow, but with the Owned version conditionally compiled.
 #[doc(hidden)]
 pub enum Slice<T: 'static> {
     Static(&'static [T]),

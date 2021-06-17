@@ -22,11 +22,17 @@ jobs:
           rustup set profile minimal
           rustup override set ${{ matrix.version }}
 
+      - name: Rustfmt check
+        if: matrix.version == '1.46.0'
+        run: |
+          rustup component add rustfmt
+          cargo fmt --all -- --check
+
       - name: Run `cargo test` on workspace
         run: cargo test --workspace
 
       - name: phf_macros UI test
-        if: matrix.version == '1.40.0'
+        if: matrix.version == '1.46.0'
         working-directory: phf_macros
         run: cargo test --features=unicase -- --ignored --test-threads=1
 

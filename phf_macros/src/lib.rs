@@ -36,8 +36,8 @@ enum ParsedKey {
 
 impl PhfHash for ParsedKey {
     fn phf_hash<H>(&self, state: &mut H)
-        where
-            H: Hasher,
+    where
+        H: Hasher,
     {
         match self {
             ParsedKey::Str(s) => s.phf_hash(state),
@@ -125,32 +125,34 @@ impl ParsedKey {
             }
             Expr::Group(group) => ParsedKey::from_expr(&group.expr),
             #[cfg(feature = "unicase")]
-            Expr::Call(call) => if let Expr::Path(ep) = call.func.as_ref() {
-                let segments = &mut ep.path.segments.iter().rev();
-                let last = &segments.next()?.ident;
-                let last_ahead = &segments.next()?.ident;
-                let is_unicode = last_ahead == "UniCase" && last == "unicode";
-                let is_ascii = last_ahead == "UniCase" && last == "ascii";
-                if call.args.len() == 1 && (is_unicode || is_ascii) {
-                    if let Some(Expr::Lit(ExprLit {
-                        attrs: _,
-                        lit: Lit::Str(s),
-                    })) = call.args.first()
-                    {
-                        let v = if is_unicode {
-                            UniCase::unicode(s.value())
+            Expr::Call(call) => {
+                if let Expr::Path(ep) = call.func.as_ref() {
+                    let segments = &mut ep.path.segments.iter().rev();
+                    let last = &segments.next()?.ident;
+                    let last_ahead = &segments.next()?.ident;
+                    let is_unicode = last_ahead == "UniCase" && last == "unicode";
+                    let is_ascii = last_ahead == "UniCase" && last == "ascii";
+                    if call.args.len() == 1 && (is_unicode || is_ascii) {
+                        if let Some(Expr::Lit(ExprLit {
+                            attrs: _,
+                            lit: Lit::Str(s),
+                        })) = call.args.first()
+                        {
+                            let v = if is_unicode {
+                                UniCase::unicode(s.value())
+                            } else {
+                                UniCase::ascii(s.value())
+                            };
+                            Some(ParsedKey::UniCase(v))
                         } else {
-                            UniCase::ascii(s.value())
-                        };
-                        Some(ParsedKey::UniCase(v))
+                            None
+                        }
                     } else {
                         None
                     }
                 } else {
                     None
                 }
-            } else {
-                None
             }
             _ => None,
         }
@@ -164,8 +166,8 @@ struct Key {
 
 impl PhfHash for Key {
     fn phf_hash<H>(&self, state: &mut H)
-        where
-            H: Hasher,
+    where
+        H: Hasher,
     {
         self.parsed.phf_hash(state)
     }
@@ -188,8 +190,8 @@ struct Entry {
 
 impl PhfHash for Entry {
     fn phf_hash<H>(&self, state: &mut H)
-        where
-            H: Hasher,
+    where
+        H: Hasher,
     {
         self.key.phf_hash(state)
     }

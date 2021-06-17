@@ -3,9 +3,9 @@
 extern crate test;
 
 mod map {
+    use phf::phf_map;
     use std::collections::{BTreeMap, HashMap};
     use test::Bencher;
-    use phf::phf_map;
 
     macro_rules! map_and_match {
         ($map:ident, $f:ident, $($key:expr => $value:expr,)+) => {
@@ -107,7 +107,6 @@ mod map {
             assert_eq!(map.get("potato"), None);
         })
     }
-
 
     #[bench]
     fn bench_hashmap_none(b: &mut Bencher) {

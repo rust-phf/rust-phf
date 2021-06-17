@@ -7,11 +7,9 @@
 //!
 //! # Examples
 //!
-//! build.rs
+//! build.rs:
 //!
 //! ```rust,no_run
-//! extern crate phf_codegen;
-//!
 //! use std::env;
 //! use std::fs::File;
 //! use std::io::{BufWriter, Write};
@@ -35,11 +33,9 @@
 //! }
 //! ```
 //!
-//! lib.rs
+//! lib.rs:
 //!
 //! ```ignore
-//! extern crate phf;
-//!
 //! #[derive(Clone)]
 //! enum Keyword {
 //!     Loop,
@@ -60,11 +56,9 @@
 //! Byte strings by default produce references to fixed-size arrays; the compiler needs a hint
 //! to coerce them to slices:
 //!
-//! build.rs
+//! build.rs:
 //!
 //! ```rust,no_run
-//! extern crate phf_codegen;
-//!
 //! use std::env;
 //! use std::fs::File;
 //! use std::io::{BufWriter, Write};
@@ -88,11 +82,9 @@
 //! }
 //! ```
 //!
-//! lib.rs
+//! lib.rs:
 //!
 //! ```rust,ignore
-//! extern crate phf;
-//!
 //! #[derive(Clone)]
 //! enum Keyword {
 //!     Loop,
@@ -131,9 +123,9 @@
 //! builder.entry("world", "2");
 //! // ...
 //! ```
-#![doc(html_root_url = "https://docs.rs/phf_codegen/0.7")]
+#![doc(html_root_url = "https://docs.rs/phf_codegen/0.9")]
 
-use phf_shared::{PhfHash, FmtConst};
+use phf_shared::{FmtConst, PhfHash};
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
@@ -221,45 +213,54 @@ pub struct DisplayMap<'a, K> {
     state: HashState,
     keys: &'a [K],
     values: &'a [String],
-
 }
 
 impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // funky formatting here for nice output
-        write!(f,
-               "{}::Map {{
+        write!(
+            f,
+            "{}::Map {{
     key: {:?},
     disps: {}::Slice::Static(&[",
-               self.path, self.state.key, self.path)?;
+            self.path, self.state.key, self.path
+        )?;
 
         // write map displacements
         for &(d1, d2) in &self.state.disps {
-            write!(f,
-                   "
+            write!(
+                f,
+                "
         ({}, {}),",
-                   d1,
-                   d2)?;
+                d1, d2
+            )?;
         }
 
-        write!(f,
-               "
+        write!(
+            f,
+            "
     ]),
-    entries: {}::Slice::Static(&[", self.path)?;
+    entries: {}::Slice::Static(&[",
+            self.path
+        )?;
 
         // write map entries
         for &idx in &self.state.map {
-            write!(f,
-                   "
+            write!(
+                f,
+                "
         ({}, {}),",
-                   Delegate(&self.keys[idx]),
-                   &self.values[idx])?;
+                Delegate(&self.keys[idx]),
+                &self.values[idx]
+            )?;
         }
 
-        write!(f,
-               "
+        write!(
+            f,
+            "
     ]),
-}}")
+}}"
+        )
     }
 }
 
@@ -271,9 +272,7 @@ pub struct Set<T> {
 impl<T: Hash + PhfHash + Eq + FmtConst> Set<T> {
     /// Constructs a new `phf::Set` builder.
     pub fn new() -> Set<T> {
-        Set {
-            map: Map::new(),
-        }
+        Set { map: Map::new() }
     }
 
     /// Set the path to the `phf` crate from the global namespace
@@ -296,7 +295,7 @@ impl<T: Hash + PhfHash + Eq + FmtConst> Set<T> {
     /// Panics if there are any duplicate keys.
     pub fn build(&self) -> DisplaySet<T> {
         DisplaySet {
-            inner: self.map.build()
+            inner: self.map.build(),
         }
     }
 }
@@ -380,43 +379,58 @@ pub struct DisplayOrderedMap<'a, K: 'a> {
 
 impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
-               "{}::OrderedMap {{
+        write!(
+            f,
+            "{}::OrderedMap {{
     key: {:?},
     disps: {}::Slice::Static(&[",
-               self.path, self.state.key, self.path)?;
+            self.path, self.state.key, self.path
+        )?;
         for &(d1, d2) in &self.state.disps {
-            write!(f,
-                   "
+            write!(
+                f,
+                "
         ({}, {}),",
-                   d1,
-                   d2)?;
+                d1, d2
+            )?;
         }
-        write!(f,
-               "
+        write!(
+            f,
+            "
     ]),
-    idxs: {}::Slice::Static(&[", self.path)?;
+    idxs: {}::Slice::Static(&[",
+            self.path
+        )?;
         for &idx in &self.state.map {
-            write!(f,
-                   "
+            write!(
+                f,
+                "
         {},",
-                   idx)?;
+                idx
+            )?;
         }
-        write!(f,
-               "
+        write!(
+            f,
+            "
     ]),
-    entries: {}::Slice::Static(&[", self.path)?;
+    entries: {}::Slice::Static(&[",
+            self.path
+        )?;
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
-            write!(f,
-                   "
+            write!(
+                f,
+                "
         ({}, {}),",
-                   Delegate(key),
-                   value)?;
+                Delegate(key),
+                value
+            )?;
         }
-        write!(f,
-               "
+        write!(
+            f,
+            "
     ]),
-}}")
+}}"
+        )
     }
 }
 
@@ -454,7 +468,7 @@ impl<T: Hash + PhfHash + Eq + FmtConst> OrderedSet<T> {
     /// Panics if there are any duplicate keys.
     pub fn build(&self) -> DisplayOrderedSet<T> {
         DisplayOrderedSet {
-            inner: self.map.build()
+            inner: self.map.build(),
         }
     }
 }
@@ -466,6 +480,10 @@ pub struct DisplayOrderedSet<'a, T: 'a> {
 
 impl<'a, T: FmtConst + 'a> fmt::Display for DisplayOrderedSet<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}::OrderedSet {{ map: {} }}", self.inner.path, self.inner)
+        write!(
+            f,
+            "{}::OrderedSet {{ map: {} }}",
+            self.inner.path, self.inner
+        )
     }
 }

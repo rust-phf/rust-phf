@@ -22,7 +22,7 @@ impl<T> fmt::Debug for Set<T>
 where
     T: fmt::Debug,
 {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_set().entries(self).finish()
     }
 }
@@ -62,7 +62,7 @@ impl<T> Set<T> {
     /// Returns an iterator over the values in the set.
     ///
     /// Values are returned in an arbitrary but fixed order.
-    pub fn iter(&self) -> Iter<T> {
+    pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             iter: self.map.keys(),
         }

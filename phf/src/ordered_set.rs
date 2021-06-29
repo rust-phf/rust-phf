@@ -23,7 +23,7 @@ impl<T> fmt::Debug for OrderedSet<T>
 where
     T: fmt::Debug,
 {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_set().entries(self).finish()
     }
 }
@@ -79,7 +79,7 @@ impl<T> OrderedSet<T> {
     /// Returns an iterator over the values in the set.
     ///
     /// Values are returned in the same order in which they were defined.
-    pub fn iter(&self) -> Iter<T> {
+    pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             iter: self.map.keys(),
         }
@@ -119,7 +119,7 @@ impl<'a, T> IntoIterator for &'a OrderedSet<T> {
 }
 
 /// An iterator over the values in a `OrderedSet`.
-pub struct Iter<'a, T: 'a> {
+pub struct Iter<'a, T> {
     iter: ordered_map::Keys<'a, T, ()>,
 }
 

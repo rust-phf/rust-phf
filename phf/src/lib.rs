@@ -8,7 +8,8 @@
 //! If the `macros` Cargo feature is enabled, the `phf_map`, `phf_set`,
 //! `phf_ordered_map`, and `phf_ordered_set` macros can be used to construct
 //! the PHF type. This method can be used with a stable compiler
-//! (minimum supported rust version is 1.46).
+//! (minimum supported rust version is 1.41, or 1.46 if you use the `uncased`
+//! feature).
 //!
 //! ```toml
 //! [dependencies]

@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         # MSRV and nightly
-        version: [1.46.0, nightly]
+        version: [1.41.0, 1.46.0, nightly]
     steps:
       - uses: actions/checkout@v2
 
@@ -23,20 +23,21 @@ jobs:
           rustup override set ${{ matrix.version }}
 
       - name: Rustfmt check
-        if: matrix.version == '1.46.0'
+        if: matrix.version == '1.41.0'
         run: |
           rustup component add rustfmt
           cargo fmt --all -- --check
 
       - name: Run `cargo test` on workspace
-        run: cargo test --workspace
+        run: cargo test --workspace --exclude=phf_codegen_test
 
       - name: phf_macros UI test
-        if: matrix.version == '1.46.0'
+        if: matrix.version == '1.41.0'
         working-directory: phf_macros
         run: cargo test --features=unicase -- --ignored --test-threads=1
 
       - name: phf_codegen test
+        if: matrix.version != '1.41.0' # `uncased` requires 1.46 or higher.
         run: cargo test -p phf_codegen_test
 
       - name: no_std build check

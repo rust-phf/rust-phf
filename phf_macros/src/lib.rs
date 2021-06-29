@@ -1,3 +1,4 @@
+// FIXME: Remove `extern crate` below when we bump MSRV to 1.42 or higher.
 extern crate proc_macro;
 
 use phf_generator::HashState;
@@ -174,7 +175,7 @@ impl PhfHash for Key {
 }
 
 impl Parse for Key {
-    fn parse(input: ParseStream) -> parse::Result<Key> {
+    fn parse(input: ParseStream<'_>) -> parse::Result<Key> {
         let expr = input.parse()?;
         let parsed = ParsedKey::from_expr(&expr)
             .ok_or_else(|| Error::new_spanned(&expr, "unsupported key expression"))?;
@@ -198,7 +199,7 @@ impl PhfHash for Entry {
 }
 
 impl Parse for Entry {
-    fn parse(input: ParseStream) -> parse::Result<Entry> {
+    fn parse(input: ParseStream<'_>) -> parse::Result<Entry> {
         let key = input.parse()?;
         input.parse::<Token![=>]>()?;
         let value = input.parse()?;
@@ -209,7 +210,7 @@ impl Parse for Entry {
 struct Map(Vec<Entry>);
 
 impl Parse for Map {
-    fn parse(input: ParseStream) -> parse::Result<Map> {
+    fn parse(input: ParseStream<'_>) -> parse::Result<Map> {
         let parsed = Punctuated::<Entry, Token![,]>::parse_terminated(input)?;
         let map = parsed.into_iter().collect::<Vec<_>>();
         check_duplicates(&map)?;
@@ -220,7 +221,7 @@ impl Parse for Map {
 struct Set(Vec<Entry>);
 
 impl Parse for Set {
-    fn parse(input: ParseStream) -> parse::Result<Set> {
+    fn parse(input: ParseStream<'_>) -> parse::Result<Set> {
         let parsed = Punctuated::<Key, Token![,]>::parse_terminated(input)?;
         let set = parsed
             .into_iter()

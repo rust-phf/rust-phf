@@ -135,7 +135,7 @@ use phf_generator::HashState;
 struct Delegate<T>(T);
 
 impl<T: FmtConst> fmt::Display for Delegate<T> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt_const(f)
     }
 }
@@ -188,7 +188,7 @@ impl<K: Hash + PhfHash + Eq + FmtConst> Map<K> {
     /// # Panics
     ///
     /// Panics if there are any duplicate keys.
-    pub fn build(&self) -> DisplayMap<K> {
+    pub fn build(&self) -> DisplayMap<'_, K> {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
@@ -216,7 +216,7 @@ pub struct DisplayMap<'a, K> {
 }
 
 impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // funky formatting here for nice output
         write!(
             f,
@@ -293,7 +293,7 @@ impl<T: Hash + PhfHash + Eq + FmtConst> Set<T> {
     /// # Panics
     ///
     /// Panics if there are any duplicate keys.
-    pub fn build(&self) -> DisplaySet<T> {
+    pub fn build(&self) -> DisplaySet<'_, T> {
         DisplaySet {
             inner: self.map.build(),
         }
@@ -301,12 +301,12 @@ impl<T: Hash + PhfHash + Eq + FmtConst> Set<T> {
 }
 
 /// An adapter for printing a [`Set`](Set).
-pub struct DisplaySet<'a, T: 'a> {
+pub struct DisplaySet<'a, T> {
     inner: DisplayMap<'a, T>,
 }
 
 impl<'a, T: FmtConst + 'a> fmt::Display for DisplaySet<'a, T> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}::Set {{ map: {} }}", self.inner.path, self.inner)
     }
 }
@@ -350,7 +350,7 @@ impl<K: Hash + PhfHash + Eq + FmtConst> OrderedMap<K> {
     /// # Panics
     ///
     /// Panics if there are any duplicate keys.
-    pub fn build(&self) -> DisplayOrderedMap<K> {
+    pub fn build(&self) -> DisplayOrderedMap<'_, K> {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
@@ -370,7 +370,7 @@ impl<K: Hash + PhfHash + Eq + FmtConst> OrderedMap<K> {
 }
 
 /// An adapter for printing a [`OrderedMap`](OrderedMap).
-pub struct DisplayOrderedMap<'a, K: 'a> {
+pub struct DisplayOrderedMap<'a, K> {
     path: &'a str,
     state: HashState,
     keys: &'a [K],
@@ -378,7 +378,7 @@ pub struct DisplayOrderedMap<'a, K: 'a> {
 }
 
 impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{}::OrderedMap {{
@@ -466,7 +466,7 @@ impl<T: Hash + PhfHash + Eq + FmtConst> OrderedSet<T> {
     /// # Panics
     ///
     /// Panics if there are any duplicate keys.
-    pub fn build(&self) -> DisplayOrderedSet<T> {
+    pub fn build(&self) -> DisplayOrderedSet<'_, T> {
         DisplayOrderedSet {
             inner: self.map.build(),
         }
@@ -474,12 +474,12 @@ impl<T: Hash + PhfHash + Eq + FmtConst> OrderedSet<T> {
 }
 
 /// An adapter for printing a [`OrderedSet`](OrderedSet).
-pub struct DisplayOrderedSet<'a, T: 'a> {
+pub struct DisplayOrderedSet<'a, T> {
     inner: DisplayOrderedMap<'a, T>,
 }
 
 impl<'a, T: FmtConst + 'a> fmt::Display for DisplayOrderedSet<'a, T> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{}::OrderedSet {{ map: {} }}",

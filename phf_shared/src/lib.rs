@@ -78,7 +78,7 @@ pub trait PhfHash {
 /// Trait for printing types with `const` constructors, used by `phf_codegen` and `phf_macros`.
 pub trait FmtConst {
     /// Print a `const` expression representing this value.
-    fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result;
+    fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result;
 }
 
 /// Identical to `std::borrow::Borrow` except omitting blanket impls to facilitate other
@@ -131,7 +131,7 @@ pub trait PhfBorrow<B: ?Sized> {
 macro_rules! delegate_debug (
     ($ty:ty) => {
         impl FmtConst for $ty {
-            fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 write!(f, "{:?}", self)
             }
         }
@@ -220,7 +220,7 @@ impl<'a, T: 'a + PhfHash + ?Sized> PhfHash for &'a T {
 }
 
 impl<'a, T: 'a + FmtConst + ?Sized> FmtConst for &'a T {
-    fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         (*self).fmt_const(f)
     }
 }
@@ -253,7 +253,7 @@ impl PhfHash for [u8] {
 
 impl FmtConst for [u8] {
     #[inline]
-    fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // slices need a leading reference
         write!(f, "&{:?}", self)
     }
@@ -275,7 +275,7 @@ impl<S> FmtConst for unicase::UniCase<S>
 where
     S: AsRef<str>,
 {
-    fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.is_ascii() {
             f.write_str("UniCase::ascii(")?;
         } else {
@@ -304,7 +304,7 @@ impl PhfHash for uncased::UncasedStr {
 
 #[cfg(feature = "uncased")]
 impl FmtConst for uncased::UncasedStr {
-    fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // transmute is not stable in const fns (rust-lang/rust#53605), so
         // `UncasedStr::new` can't be a const fn itself, but we can inline the
         // call to transmute here in the meantime.
@@ -360,7 +360,7 @@ impl PhfHash for char {
 }
 
 // minimize duplicated code since formatting drags in quite a bit
-fn fmt_array(array: &[u8], f: &mut fmt::Formatter) -> fmt::Result {
+fn fmt_array(array: &[u8], f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(f, "{:?}", array)
 }
 
@@ -374,7 +374,7 @@ macro_rules! array_impl (
         }
 
         impl FmtConst for [$t; $n] {
-            fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 fmt_array(self, f)
             }
         }

@@ -33,7 +33,7 @@ where
     K: fmt::Debug,
     V: fmt::Debug,
 {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_map().entries(self.entries()).finish()
     }
 }
@@ -140,7 +140,7 @@ impl<K, V> OrderedMap<K, V> {
     /// Returns an iterator over the key/value pairs in the map.
     ///
     /// Entries are returned in the same order in which they were defined.
-    pub fn entries(&self) -> Entries<K, V> {
+    pub fn entries(&self) -> Entries<'_, K, V> {
         Entries {
             iter: self.entries.iter(),
         }
@@ -149,7 +149,7 @@ impl<K, V> OrderedMap<K, V> {
     /// Returns an iterator over the keys in the map.
     ///
     /// Keys are returned in the same order in which they were defined.
-    pub fn keys(&self) -> Keys<K, V> {
+    pub fn keys(&self) -> Keys<'_, K, V> {
         Keys {
             iter: self.entries(),
         }
@@ -158,7 +158,7 @@ impl<K, V> OrderedMap<K, V> {
     /// Returns an iterator over the values in the map.
     ///
     /// Values are returned in the same order in which they were defined.
-    pub fn values(&self) -> Values<K, V> {
+    pub fn values(&self) -> Values<'_, K, V> {
         Values {
             iter: self.entries(),
         }
@@ -175,7 +175,7 @@ impl<'a, K, V> IntoIterator for &'a OrderedMap<K, V> {
 }
 
 /// An iterator over the entries in a `OrderedMap`.
-pub struct Entries<'a, K: 'a, V: 'a> {
+pub struct Entries<'a, K, V> {
     iter: slice::Iter<'a, (K, V)>,
 }
 
@@ -200,7 +200,7 @@ impl<'a, K, V> DoubleEndedIterator for Entries<'a, K, V> {
 impl<'a, K, V> ExactSizeIterator for Entries<'a, K, V> {}
 
 /// An iterator over the keys in a `OrderedMap`.
-pub struct Keys<'a, K: 'a, V: 'a> {
+pub struct Keys<'a, K, V> {
     iter: Entries<'a, K, V>,
 }
 
@@ -225,7 +225,7 @@ impl<'a, K, V> DoubleEndedIterator for Keys<'a, K, V> {
 impl<'a, K, V> ExactSizeIterator for Keys<'a, K, V> {}
 
 /// An iterator over the values in a `OrderedMap`.
-pub struct Values<'a, K: 'a, V: 'a> {
+pub struct Values<'a, K, V> {
     iter: Entries<'a, K, V>,
 }
 

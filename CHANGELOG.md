@@ -2,7 +2,7 @@
 
 ## 0.9.0
 
-* Our MSRV is now 1.46.0 (because of dependencies)
+* Our MSRV is now 1.41 or 1.46 (because of dependencies)
 * `rand` dependency has been upgraded to 0.8
 * Fix some crates' build on `no_std`
 * Restore the `unicase` feature for `phf_macros`

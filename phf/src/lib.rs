@@ -138,6 +138,18 @@ pub enum Slice<T: 'static> {
     Dynamic(Vec<T>),
 }
 
+// NOTE: we need this because `Deref::deref` is not a `const-fn` so we can't use
+// `len` as written in `Map`/`Set`/`OrderedMap`/`OrderedSet` since it involves
+// an implicit indirection
+#[cfg(not(feature = "std"))]
+impl<T> Slice<T> {
+    pub(crate) const fn len(&self) -> usize {
+        match self {
+            Self::Static(slice) => slice.len(),
+        }
+    }
+}
+
 impl<T> Deref for Slice<T> {
     type Target = [T];
 

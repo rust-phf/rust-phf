@@ -29,12 +29,26 @@ where
 
 impl<T> Set<T> {
     /// Returns the number of elements in the `Set`.
+    #[cfg(feature = "std")]
     pub fn len(&self) -> usize {
         self.map.len()
     }
 
+    /// Returns the number of elements in the `Set`.
+    #[cfg(not(feature = "std"))]
+    pub const fn len(&self) -> usize {
+        self.map.len()
+    }
+
     /// Returns true if the `Set` contains no elements.
+    #[cfg(feature = "std")]
     pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Returns true if the `Set` contains no elements.
+    #[cfg(not(feature = "std"))]
+    pub const fn is_empty(&self) -> bool {
         self.len() == 0
     }
 

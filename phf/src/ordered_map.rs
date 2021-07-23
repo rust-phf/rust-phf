@@ -52,12 +52,26 @@ where
 
 impl<K, V> OrderedMap<K, V> {
     /// Returns the number of entries in the `Map`.
+    #[cfg(feature = "std")]
     pub fn len(&self) -> usize {
         self.entries.len()
     }
 
+    /// Returns the number of entries in the `Map`.
+    #[cfg(not(feature = "std"))]
+    pub const fn len(&self) -> usize {
+        self.entries.len()
+    }
+
     /// Returns true if the `Map` is empty.
+    #[cfg(feature = "std")]
     pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Returns true if the `Map` is empty.
+    #[cfg(not(feature = "std"))]
+    pub const fn is_empty(&self) -> bool {
         self.len() == 0
     }
 

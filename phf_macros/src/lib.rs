@@ -257,8 +257,8 @@ fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
     quote! {
         phf::Map {
             key: #key,
-            disps: phf::Slice::Static(&[#(#disps),*]),
-            entries: phf::Slice::Static(&[#(#entries),*]),
+            disps: &[#(#disps),*],
+            entries: &[#(#entries),*],
         }
     }
 }
@@ -276,9 +276,9 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
     quote! {
         phf::OrderedMap {
             key: #key,
-            disps: phf::Slice::Static(&[#(#disps),*]),
-            idxs: phf::Slice::Static(&[#(#idxs),*]),
-            entries: phf::Slice::Static(&[#(#entries),*]),
+            disps: &[#(#disps),*],
+            idxs: &[#(#idxs),*],
+            entries: &[#(#entries),*],
         }
     }
 }

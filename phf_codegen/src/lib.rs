@@ -222,8 +222,8 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
             f,
             "{}::Map {{
     key: {:?},
-    disps: {}::Slice::Static(&[",
-            self.path, self.state.key, self.path
+    disps: &[",
+            self.path, self.state.key
         )?;
 
         // write map displacements
@@ -239,9 +239,8 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
         write!(
             f,
             "
-    ]),
-    entries: {}::Slice::Static(&[",
-            self.path
+    ],
+    entries: &[",
         )?;
 
         // write map entries
@@ -258,7 +257,7 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
         write!(
             f,
             "
-    ]),
+    ],
 }}"
         )
     }
@@ -383,8 +382,8 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
             f,
             "{}::OrderedMap {{
     key: {:?},
-    disps: {}::Slice::Static(&[",
-            self.path, self.state.key, self.path
+    disps: &[",
+            self.path, self.state.key
         )?;
         for &(d1, d2) in &self.state.disps {
             write!(
@@ -397,9 +396,8 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
         write!(
             f,
             "
-    ]),
-    idxs: {}::Slice::Static(&[",
-            self.path
+    ],
+    idxs: &[",
         )?;
         for &idx in &self.state.map {
             write!(
@@ -412,9 +410,8 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
         write!(
             f,
             "
-    ]),
-    entries: {}::Slice::Static(&[",
-            self.path
+    ],
+    entries: &[",
         )?;
         for (key, value) in self.keys.iter().zip(self.values.iter()) {
             write!(
@@ -428,7 +425,7 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
         write!(
             f,
             "
-    ]),
+    ],
 }}"
         )
     }

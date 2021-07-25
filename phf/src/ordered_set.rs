@@ -30,25 +30,13 @@ where
 
 impl<T> OrderedSet<T> {
     /// Returns the number of elements in the `OrderedSet`.
-    #[cfg(feature = "std")]
-    pub fn len(&self) -> usize {
-        self.map.len()
-    }
-
-    /// Returns the number of elements in the `OrderedSet`.
-    #[cfg(not(feature = "std"))]
+    #[inline]
     pub const fn len(&self) -> usize {
         self.map.len()
     }
 
     /// Returns true if the `OrderedSet` contains no elements.
-    #[cfg(feature = "std")]
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    /// Returns true if the `OrderedSet` contains no elements.
-    #[cfg(not(feature = "std"))]
+    #[inline]
     pub const fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -81,7 +69,7 @@ impl<T> OrderedSet<T> {
         self.map.index(index).map(|(k, &())| k)
     }
 
-    /// Returns true if `value` is in the `Set`.
+    /// Returns true if `value` is in the `OrderedSet`.
     pub fn contains<U: ?Sized>(&self, value: &U) -> bool
     where
         U: Eq + PhfHash,

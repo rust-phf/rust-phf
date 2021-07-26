@@ -1,5 +1,4 @@
 //! An immutable map constructed at compile time.
-use crate::Slice;
 use core::fmt;
 use core::iter::IntoIterator;
 use core::ops::Index;
@@ -17,9 +16,9 @@ pub struct Map<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub key: HashKey,
     #[doc(hidden)]
-    pub disps: Slice<(u32, u32)>,
+    pub disps: &'static [(u32, u32)],
     #[doc(hidden)]
-    pub entries: Slice<(K, V)>,
+    pub entries: &'static [(K, V)],
 }
 
 impl<K, V> fmt::Debug for Map<K, V>
@@ -45,14 +44,16 @@ where
 }
 
 impl<K, V> Map<K, V> {
-    /// Returns true if the `Map` is empty.
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
+    /// Returns the number of entries in the `Map`.
+    #[inline]
+    pub const fn len(&self) -> usize {
+        self.entries.len()
     }
 
-    /// Returns the number of entries in the `Map`.
-    pub fn len(&self) -> usize {
-        self.entries.len()
+    /// Returns true if the `Map` is empty.
+    #[inline]
+    pub const fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     /// Determines if `key` is in the `Map`.
@@ -91,7 +92,7 @@ impl<K, V> Map<K, V> {
         T: Eq + PhfHash,
         K: PhfBorrow<T>,
     {
-        if self.disps.len() == 0 {
+        if self.disps.is_empty() {
             return None;
         } //Prevent panic on empty map
         let hashes = phf_shared::hash(key, &self.key);

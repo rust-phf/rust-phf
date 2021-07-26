@@ -30,12 +30,14 @@ where
 
 impl<T> OrderedSet<T> {
     /// Returns the number of elements in the `OrderedSet`.
-    pub fn len(&self) -> usize {
+    #[inline]
+    pub const fn len(&self) -> usize {
         self.map.len()
     }
 
     /// Returns true if the `OrderedSet` contains no elements.
-    pub fn is_empty(&self) -> bool {
+    #[inline]
+    pub const fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
@@ -67,7 +69,7 @@ impl<T> OrderedSet<T> {
         self.map.index(index).map(|(k, &())| k)
     }
 
-    /// Returns true if `value` is in the `Set`.
+    /// Returns true if `value` is in the `OrderedSet`.
     pub fn contains<U: ?Sized>(&self, value: &U) -> bool
     where
         U: Eq + PhfHash,

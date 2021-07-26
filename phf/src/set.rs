@@ -29,12 +29,14 @@ where
 
 impl<T> Set<T> {
     /// Returns the number of elements in the `Set`.
-    pub fn len(&self) -> usize {
+    #[inline]
+    pub const fn len(&self) -> usize {
         self.map.len()
     }
 
     /// Returns true if the `Set` contains no elements.
-    pub fn is_empty(&self) -> bool {
+    #[inline]
+    pub const fn is_empty(&self) -> bool {
         self.len() == 0
     }
 

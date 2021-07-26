@@ -110,8 +110,6 @@ pub use phf_macros::phf_set;
 #[proc_macro_hack::proc_macro_hack]
 pub use phf_macros::phf_ordered_set;
 
-use core::ops::Deref;
-
 #[doc(inline)]
 pub use self::map::Map;
 #[doc(inline)]
@@ -126,26 +124,3 @@ pub mod map;
 pub mod ordered_map;
 pub mod ordered_set;
 pub mod set;
-
-// WARNING: this is not considered part of phf's public API and is subject to
-// change at any time.
-//
-// Basically Cow, but with the Owned version conditionally compiled.
-#[doc(hidden)]
-pub enum Slice<T: 'static> {
-    Static(&'static [T]),
-    #[cfg(feature = "std")]
-    Dynamic(Vec<T>),
-}
-
-impl<T> Deref for Slice<T> {
-    type Target = [T];
-
-    fn deref(&self) -> &[T] {
-        match *self {
-            Slice::Static(t) => t,
-            #[cfg(feature = "std")]
-            Slice::Dynamic(ref t) => t,
-        }
-    }
-}

@@ -5,8 +5,6 @@ use core::ops::Index;
 use core::slice;
 use phf_shared::{self, HashKey, PhfBorrow, PhfHash};
 
-use crate::Slice;
-
 /// An order-preserving immutable map constructed at compile time.
 ///
 /// Unlike a `Map`, iteration order is guaranteed to match the definition
@@ -21,11 +19,11 @@ pub struct OrderedMap<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub key: HashKey,
     #[doc(hidden)]
-    pub disps: Slice<(u32, u32)>,
+    pub disps: &'static [(u32, u32)],
     #[doc(hidden)]
-    pub idxs: Slice<usize>,
+    pub idxs: &'static [usize],
     #[doc(hidden)]
-    pub entries: Slice<(K, V)>,
+    pub entries: &'static [(K, V)],
 }
 
 impl<K, V> fmt::Debug for OrderedMap<K, V>
@@ -51,13 +49,15 @@ where
 }
 
 impl<K, V> OrderedMap<K, V> {
-    /// Returns the number of entries in the `Map`.
-    pub fn len(&self) -> usize {
+    /// Returns the number of entries in the `OrderedMap`.
+    #[inline]
+    pub const fn len(&self) -> usize {
         self.entries.len()
     }
 
-    /// Returns true if the `Map` is empty.
-    pub fn is_empty(&self) -> bool {
+    /// Returns true if the `OrderedMap` is empty.
+    #[inline]
+    pub const fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
@@ -82,7 +82,7 @@ impl<K, V> OrderedMap<K, V> {
         self.get_entry(key).map(|e| e.0)
     }
 
-    /// Determines if `key` is in the `Map`.
+    /// Determines if `key` is in the `OrderedMap`.
     pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool
     where
         T: Eq + PhfHash,
@@ -121,7 +121,7 @@ impl<K, V> OrderedMap<K, V> {
         T: Eq + PhfHash,
         K: PhfBorrow<T>,
     {
-        if self.disps.len() == 0 {
+        if self.disps.is_empty() {
             return None;
         } //Prevent panic on empty map
         let hashes = phf_shared::hash(key, &self.key);

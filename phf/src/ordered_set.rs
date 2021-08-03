@@ -1,6 +1,7 @@
 //! An order-preserving immutable set constructed at compile time.
 use crate::{ordered_map, OrderedMap, PhfHash};
 use core::fmt;
+use core::iter::FusedIterator;
 use core::iter::IntoIterator;
 use phf_shared::PhfBorrow;
 
@@ -125,6 +126,24 @@ pub struct Iter<'a, T> {
     iter: ordered_map::Keys<'a, T, ()>,
 }
 
+impl<'a, T> Clone for Iter<'a, T> {
+    #[inline]
+    fn clone(&self) -> Self {
+        Self {
+            iter: self.iter.clone(),
+        }
+    }
+}
+
+impl<'a, T> fmt::Debug for Iter<'a, T>
+where
+    T: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_list().entries(self.clone()).finish()
+    }
+}
+
 impl<'a, T> Iterator for Iter<'a, T> {
     type Item = &'a T;
 
@@ -147,3 +166,5 @@ impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
 }
 
 impl<'a, T> ExactSizeIterator for Iter<'a, T> {}
+
+impl<'a, T> FusedIterator for Iter<'a, T> {}

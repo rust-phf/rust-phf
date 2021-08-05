@@ -7,7 +7,6 @@ extern crate std as core;
 use core::fmt;
 use core::hash::{Hash, Hasher};
 use core::iter;
-use core::num::Wrapping;
 use rand::distributions;
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
@@ -60,13 +59,13 @@ pub struct Hashes {
 impl Hashes {
     /// Computes the base index in a range of length `len`.
     #[inline]
-    pub fn index(&self, len: usize) -> usize {
+    pub const fn index(&self, len: usize) -> usize {
         (self.g % (len as u32)) as usize
     }
 
     /// Returns a shared reference to an element from `entries` using the base index.
     #[inline]
-    pub fn get<'t, T>(&self, entries: &'t [T]) -> &'t T {
+    pub const fn get<'t, T>(&self, entries: &'t [T]) -> &'t T {
         &entries[self.index(entries.len())]
     }
 
@@ -77,19 +76,19 @@ impl Hashes {
     }
 
     #[inline]
-    fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
-        (Wrapping(d2) + Wrapping(f1) * Wrapping(d1) + Wrapping(f2)).0
+    const fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
+        f2.wrapping_add(d2.wrapping_add(f1.wrapping_mul(d1)))
     }
 
     /// Computes the displaced index in a range of length `len`.
     #[inline]
-    pub fn displaced_index(&self, len: usize, d: Displacement) -> usize {
+    pub const fn displaced_index(&self, len: usize, d: Displacement) -> usize {
         (Self::displace(self.f1, self.f2, d.0, d.1) % (len as u32)) as usize
     }
 
     /// Returns a shared reference to an element from `entries` using the displacements `disps`.
     #[inline]
-    pub fn displaced_get<'t, T>(&self, entries: &'t [T], disps: &[Displacement]) -> &'t T {
+    pub const fn displaced_get<'t, T>(&self, entries: &'t [T], disps: &[Displacement]) -> &'t T {
         &entries[self.displaced_index(entries.len(), *self.get(disps))]
     }
 

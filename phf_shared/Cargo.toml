@@ -7,16 +7,27 @@ description = "Support code shared by PHF libraries"
 repository = "https://github.com/sfackler/rust-phf"
 edition = "2018"
 
-[lib]
-name = "phf_shared"
-path = "src/lib.rs"
-test = false
-
 [features]
 default = ["std"]
+macros = ["proc-macro2", "quote"]
 std = []
 
 [dependencies]
+criterion = { version = "0.3", optional = true }
+proc-macro2 = { version = "1", optional = true }
+quote = { version = "1", optional = true }
+rand = { version = "0.8.4", features = ["small_rng"], default-features = false }
 siphasher = "0.3"
-unicase = { version = "2.4.0", optional = true }
 uncased = { version = "0.9.6", optional = true, default-features = false }
+unicase = { version = "2.4.0", optional = true }
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "benches"
+harness = false
+
+[[bin]]
+name = "gen_hash_test"
+required-features = ["criterion"]

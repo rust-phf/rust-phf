@@ -124,19 +124,31 @@
 //! // ...
 //! ```
 #![doc(html_root_url = "https://docs.rs/phf_codegen/0.9")]
+#![allow(clippy::new_without_default)]
 
-use phf_shared::{FmtConst, PhfHash};
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 
-use phf_generator::HashState;
+use phf_shared::{
+    generate_hash, DefaultHasher, FmtConst, FmtConstPath, HashState, PhfHash, PhfHasher,
+};
 
 struct Delegate<T>(T);
 
 impl<T: FmtConst> fmt::Display for Delegate<T> {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt_const(f)
+    }
+}
+
+struct DelegatePath<'p, T>(T, &'p str);
+
+impl<'p, T: FmtConstPath> fmt::Display for DelegatePath<'p, T> {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt_const_with_path(self.1, f)
     }
 }
 
@@ -145,6 +157,7 @@ pub struct Map<K> {
     keys: Vec<K>,
     values: Vec<String>,
     path: String,
+    hasher_path: String,
 }
 
 impl<K: Hash + PhfHash + Eq + FmtConst> Map<K> {
@@ -163,13 +176,20 @@ impl<K: Hash + PhfHash + Eq + FmtConst> Map<K> {
         Map {
             keys: vec![],
             values: vec![],
-            path: String::from("::phf"),
+            path: "::phf".to_owned(),
+            hasher_path: String::new(),
         }
     }
 
-    /// Set the path to the `phf` crate from the global namespace
+    /// Set the path to the `phf` crate from the global namespace.
     pub fn phf_path(&mut self, path: &str) -> &mut Map<K> {
         self.path = path.to_owned();
+        self
+    }
+
+    /// Set the path of the hasher.
+    pub fn hasher_path(&mut self, path: &str) -> &mut Map<K> {
+        self.hasher_path = path.to_owned();
         self
     }
 
@@ -188,7 +208,14 @@ impl<K: Hash + PhfHash + Eq + FmtConst> Map<K> {
     /// # Panics
     ///
     /// Panics if there are any duplicate keys.
-    pub fn build(&self) -> DisplayMap<'_, K> {
+    ///
+    /// # Hasher
+    ///
+    /// This constructor uses any custom hasher which implements [`PhfHasher`] and [`FmtConstPath`].
+    pub fn build_with_hasher<G>(&self) -> DisplayMap<'_, K, G>
+    where
+        G: FmtConstPath + PhfHasher,
+    {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
@@ -196,43 +223,71 @@ impl<K: Hash + PhfHash + Eq + FmtConst> Map<K> {
             }
         }
 
-        let state = phf_generator::generate_hash(&self.keys);
+        let state = generate_hash(&self.keys);
+
+        let hasher_path = if self.hasher_path.is_empty() {
+            <G as FmtConstPath>::DEFAULT_PATH
+        } else {
+            &self.hasher_path
+        };
 
         DisplayMap {
             path: &self.path,
+            hasher_path,
             keys: &self.keys,
             values: &self.values,
             state,
         }
     }
+
+    /// Calculate the hash parameters and return a struct implementing
+    /// [`Display`](::std::fmt::Display) which will print the constructed `phf::Map`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if there are any duplicate keys.
+    ///
+    /// # Hasher
+    ///
+    /// This constructor uses the [default hasher](DefaultHasher). See
+    /// [`build_with_hasher`](Self::build_with_hasher) to use a custom hasher.
+    pub fn build(&self) -> DisplayMap<'_, K> {
+        self.build_with_hasher()
+    }
 }
 
 /// An adapter for printing a [`Map`](Map).
-pub struct DisplayMap<'a, K> {
+pub struct DisplayMap<'a, K, G = DefaultHasher> {
     path: &'a str,
-    state: HashState,
+    hasher_path: &'a str,
+    state: HashState<G>,
     keys: &'a [K],
     values: &'a [String],
 }
 
-impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
+impl<'a, K, G> fmt::Display for DisplayMap<'a, K, G>
+where
+    K: FmtConst + 'a,
+    G: FmtConstPath,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // funky formatting here for nice output
         write!(
             f,
             "{}::Map {{
-    key: {:?},
+    hasher: {},
     disps: &[",
-            self.path, self.state.key
+            self.path,
+            DelegatePath(&self.state.hasher, self.hasher_path)
         )?;
 
         // write map displacements
-        for &(d1, d2) in &self.state.disps {
+        for &d in &self.state.disps {
             write!(
                 f,
                 "
-        ({}, {}),",
-                d1, d2
+        {:?},",
+                d
             )?;
         }
 
@@ -280,6 +335,12 @@ impl<T: Hash + PhfHash + Eq + FmtConst> Set<T> {
         self
     }
 
+    /// Set the path of the hasher.
+    pub fn hasher_path(&mut self, path: &str) -> &mut Set<T> {
+        self.map.hasher_path = path.to_owned();
+        self
+    }
+
     /// Adds an entry to the builder.
     pub fn entry(&mut self, entry: T) -> &mut Set<T> {
         self.map.entry(entry, "()");
@@ -292,19 +353,45 @@ impl<T: Hash + PhfHash + Eq + FmtConst> Set<T> {
     /// # Panics
     ///
     /// Panics if there are any duplicate keys.
-    pub fn build(&self) -> DisplaySet<'_, T> {
+    ///
+    /// # Hasher
+    ///
+    /// This constructor uses any custom hasher which implements [`PhfHasher`] and [`FmtConstPath`].
+    pub fn build_with_hasher<G>(&self) -> DisplaySet<'_, T, G>
+    where
+        G: FmtConstPath + PhfHasher,
+    {
         DisplaySet {
-            inner: self.map.build(),
+            inner: self.map.build_with_hasher(),
         }
+    }
+
+    /// Calculate the hash parameters and return a struct implementing
+    /// [`Display`](::std::fmt::Display) which will print the constructed `phf::Set`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if there are any duplicate keys.
+    ///
+    /// # Hasher
+    ///
+    /// This constructor uses the [default hasher](DefaultHasher). See
+    /// [`build_with_hasher`](Self::build_with_hasher) to use a custom hasher.
+    pub fn build(&self) -> DisplaySet<'_, T> {
+        self.build_with_hasher()
     }
 }
 
 /// An adapter for printing a [`Set`](Set).
-pub struct DisplaySet<'a, T> {
-    inner: DisplayMap<'a, T>,
+pub struct DisplaySet<'a, T, G = DefaultHasher> {
+    inner: DisplayMap<'a, T, G>,
 }
 
-impl<'a, T: FmtConst + 'a> fmt::Display for DisplaySet<'a, T> {
+impl<'a, T, G> fmt::Display for DisplaySet<'a, T, G>
+where
+    T: FmtConst + 'a,
+    G: FmtConstPath,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}::Set {{ map: {} }}", self.inner.path, self.inner)
     }
@@ -315,6 +402,7 @@ pub struct OrderedMap<K> {
     keys: Vec<K>,
     values: Vec<String>,
     path: String,
+    hasher_path: String,
 }
 
 impl<K: Hash + PhfHash + Eq + FmtConst> OrderedMap<K> {
@@ -323,13 +411,20 @@ impl<K: Hash + PhfHash + Eq + FmtConst> OrderedMap<K> {
         OrderedMap {
             keys: vec![],
             values: vec![],
-            path: String::from("::phf"),
+            path: "::phf".to_owned(),
+            hasher_path: String::new(),
         }
     }
 
-    /// Set the path to the `phf` crate from the global namespace
+    /// Set the path to the `phf` crate from the global namespace.
     pub fn phf_path(&mut self, path: &str) -> &mut OrderedMap<K> {
         self.path = path.to_owned();
+        self
+    }
+
+    /// Set the path of the hasher.
+    pub fn hasher_path(&mut self, path: &str) -> &mut OrderedMap<K> {
+        self.hasher_path = path.to_owned();
         self
     }
 
@@ -349,7 +444,14 @@ impl<K: Hash + PhfHash + Eq + FmtConst> OrderedMap<K> {
     /// # Panics
     ///
     /// Panics if there are any duplicate keys.
-    pub fn build(&self) -> DisplayOrderedMap<'_, K> {
+    ///
+    /// # Hasher
+    ///
+    /// This constructor uses any custom hasher which implements [`PhfHasher`] and [`FmtConstPath`].
+    pub fn build_with_hasher<G>(&self) -> DisplayOrderedMap<'_, K, G>
+    where
+        G: FmtConstPath + PhfHasher,
+    {
         let mut set = HashSet::new();
         for key in &self.keys {
             if !set.insert(key) {
@@ -357,40 +459,69 @@ impl<K: Hash + PhfHash + Eq + FmtConst> OrderedMap<K> {
             }
         }
 
-        let state = phf_generator::generate_hash(&self.keys);
+        let state = generate_hash(&self.keys);
+
+        let hasher_path = if self.hasher_path.is_empty() {
+            <G as FmtConstPath>::DEFAULT_PATH
+        } else {
+            &self.hasher_path
+        };
 
         DisplayOrderedMap {
             path: &self.path,
+            hasher_path,
             state,
             keys: &self.keys,
             values: &self.values,
         }
     }
+
+    /// Calculate the hash parameters and return a struct implementing
+    /// [`Display`](::std::fmt::Display) which will print the constructed
+    /// `phf::OrderedMap`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if there are any duplicate keys.
+    ///
+    /// # Hasher
+    ///
+    /// This constructor uses the [default hasher](DefaultHasher). See
+    /// [`build_with_hasher`](Self::build_with_hasher) to use a custom hasher.
+    pub fn build(&self) -> DisplayOrderedMap<'_, K> {
+        self.build_with_hasher()
+    }
 }
 
 /// An adapter for printing a [`OrderedMap`](OrderedMap).
-pub struct DisplayOrderedMap<'a, K> {
+pub struct DisplayOrderedMap<'a, K, G = DefaultHasher> {
     path: &'a str,
-    state: HashState,
+    hasher_path: &'a str,
+    state: HashState<G>,
     keys: &'a [K],
     values: &'a [String],
 }
 
-impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
+impl<'a, K, G> fmt::Display for DisplayOrderedMap<'a, K, G>
+where
+    K: FmtConst + 'a,
+    G: FmtConstPath,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{}::OrderedMap {{
-    key: {:?},
+    hasher: {},
     disps: &[",
-            self.path, self.state.key
+            self.path,
+            DelegatePath(&self.state.hasher, self.hasher_path)
         )?;
-        for &(d1, d2) in &self.state.disps {
+        for &d in &self.state.disps {
             write!(
                 f,
                 "
-        ({}, {}),",
-                d1, d2
+        {:?},",
+                d
             )?;
         }
         write!(
@@ -450,6 +581,12 @@ impl<T: Hash + PhfHash + Eq + FmtConst> OrderedSet<T> {
         self
     }
 
+    /// Set the path of the hasher.
+    pub fn hasher_path(&mut self, path: &str) -> &mut OrderedSet<T> {
+        self.map.hasher_path = path.to_owned();
+        self
+    }
+
     /// Adds an entry to the builder.
     pub fn entry(&mut self, entry: T) -> &mut OrderedSet<T> {
         self.map.entry(entry, "()");
@@ -463,19 +600,46 @@ impl<T: Hash + PhfHash + Eq + FmtConst> OrderedSet<T> {
     /// # Panics
     ///
     /// Panics if there are any duplicate keys.
-    pub fn build(&self) -> DisplayOrderedSet<'_, T> {
+    ///
+    /// # Hasher
+    ///
+    /// This constructor uses any custom hasher which implements [`PhfHasher`] and [`FmtConstPath`].
+    pub fn build_with_hasher<G>(&self) -> DisplayOrderedSet<'_, T, G>
+    where
+        G: FmtConstPath + PhfHasher,
+    {
         DisplayOrderedSet {
-            inner: self.map.build(),
+            inner: self.map.build_with_hasher(),
         }
+    }
+
+    /// Calculate the hash parameters and return a struct implementing
+    /// [`Display`](::std::fmt::Display) which will print the constructed
+    /// `phf::OrderedSet`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if there are any duplicate keys.
+    ///
+    /// # Hasher
+    ///
+    /// This constructor uses the [default hasher](DefaultHasher). See
+    /// [`build_with_hasher`](Self::build_with_hasher) to use a custom hasher.
+    pub fn build(&self) -> DisplayOrderedSet<'_, T> {
+        self.build_with_hasher()
     }
 }
 
 /// An adapter for printing a [`OrderedSet`](OrderedSet).
-pub struct DisplayOrderedSet<'a, T> {
-    inner: DisplayOrderedMap<'a, T>,
+pub struct DisplayOrderedSet<'a, T, G = DefaultHasher> {
+    inner: DisplayOrderedMap<'a, T, G>,
 }
 
-impl<'a, T: FmtConst + 'a> fmt::Display for DisplayOrderedSet<'a, T> {
+impl<'a, T, G> fmt::Display for DisplayOrderedSet<'a, T, G>
+where
+    T: FmtConst + 'a,
+    G: FmtConstPath,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,

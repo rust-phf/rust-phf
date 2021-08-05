@@ -111,6 +111,8 @@ pub use phf_macros::phf_set;
 pub use phf_macros::phf_ordered_set;
 
 #[doc(inline)]
+pub use self::hash::{PhfHash, PhfHasher};
+#[doc(inline)]
 pub use self::map::Map;
 #[doc(inline)]
 pub use self::ordered_map::OrderedMap;
@@ -118,8 +120,10 @@ pub use self::ordered_map::OrderedMap;
 pub use self::ordered_set::OrderedSet;
 #[doc(inline)]
 pub use self::set::Set;
-pub use phf_shared::PhfHash;
+#[doc(inline)]
+pub use phf_shared::PhfBorrow;
 
+pub mod hash;
 pub mod map;
 pub mod ordered_map;
 pub mod ordered_set;

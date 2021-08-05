@@ -5,7 +5,9 @@ use rand::distributions::Standard;
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
-use phf_generator::generate_hash;
+use phf_shared::{generate_hash, SipHasher};
+
+// TODO: generate more generic test suite as we add more hashers
 
 fn gen_vec(len: usize) -> Vec<u64> {
     SmallRng::seed_from_u64(0xAAAAAAAAAAAAAAAA)
@@ -16,7 +18,7 @@ fn gen_vec(len: usize) -> Vec<u64> {
 
 fn bench_hash<M: Measurement>(b: &mut Bencher<M>, len: &usize) {
     let vec = gen_vec(*len);
-    b.iter(|| generate_hash(&vec))
+    b.iter(|| generate_hash::<_, SipHasher>(&vec))
 }
 
 fn gen_hash_small(c: &mut Criterion) {

@@ -1,10 +1,8 @@
 //! An immutable set constructed at compile time.
+
+use crate::{hash::DefaultHasher, map, Map, PhfBorrow, PhfHash, PhfHasher};
 use core::fmt;
 use core::iter::IntoIterator;
-
-use phf_shared::{PhfBorrow, PhfHash};
-
-use crate::{map, Map};
 
 /// An immutable set constructed at compile time.
 ///
@@ -13,12 +11,15 @@ use crate::{map, Map};
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_set!` macro and code generation. They are subject to change at any
 /// time and should never be accessed directly.
-pub struct Set<T: 'static> {
+pub struct Set<T, G = DefaultHasher>
+where
+    T: 'static,
+{
     #[doc(hidden)]
-    pub map: Map<T, ()>,
+    pub map: Map<T, (), G>,
 }
 
-impl<T> fmt::Debug for Set<T>
+impl<T, G> fmt::Debug for Set<T, G>
 where
     T: fmt::Debug,
 {
@@ -27,7 +28,7 @@ where
     }
 }
 
-impl<T> Set<T> {
+impl<T, G> Set<T, G> {
     /// Returns the number of elements in the `Set`.
     #[inline]
     pub const fn len(&self) -> usize {
@@ -40,10 +41,26 @@ impl<T> Set<T> {
         self.len() == 0
     }
 
+    /// Returns an iterator over the values in the set.
+    ///
+    /// Values are returned in an arbitrary but fixed order.
+    #[inline]
+    pub fn iter(&self) -> Iter<'_, T> {
+        Iter {
+            iter: self.map.keys(),
+        }
+    }
+}
+
+impl<T, G> Set<T, G>
+where
+    G: PhfHasher,
+{
     /// Returns a reference to the set's internal static instance of the given
     /// key.
     ///
     /// This can be useful for interning schemes.
+    #[inline]
     pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T>
     where
         U: Eq + PhfHash,
@@ -53,6 +70,7 @@ impl<T> Set<T> {
     }
 
     /// Returns true if `value` is in the `Set`.
+    #[inline]
     pub fn contains<U: ?Sized>(&self, value: &U) -> bool
     where
         U: Eq + PhfHash,
@@ -60,41 +78,39 @@ impl<T> Set<T> {
     {
         self.map.contains_key(value)
     }
-
-    /// Returns an iterator over the values in the set.
-    ///
-    /// Values are returned in an arbitrary but fixed order.
-    pub fn iter(&self) -> Iter<'_, T> {
-        Iter {
-            iter: self.map.keys(),
-        }
-    }
 }
 
-impl<T> Set<T>
+impl<T, G> Set<T, G>
 where
     T: Eq + PhfHash + PhfBorrow<T>,
+    G: PhfHasher,
 {
+    // TODO: Can we compare against `Set<T, G1>`?
+
     /// Returns true if `other` shares no elements with `self`.
-    pub fn is_disjoint(&self, other: &Set<T>) -> bool {
+    #[inline]
+    pub fn is_disjoint(&self, other: &Set<T, G>) -> bool {
         !self.iter().any(|value| other.contains(value))
     }
 
     /// Returns true if `other` contains all values in `self`.
-    pub fn is_subset(&self, other: &Set<T>) -> bool {
+    #[inline]
+    pub fn is_subset(&self, other: &Set<T, G>) -> bool {
         self.iter().all(|value| other.contains(value))
     }
 
     /// Returns true if `self` contains all values in `other`.
-    pub fn is_superset(&self, other: &Set<T>) -> bool {
+    #[inline]
+    pub fn is_superset(&self, other: &Set<T, G>) -> bool {
         other.is_subset(self)
     }
 }
 
-impl<'a, T> IntoIterator for &'a Set<T> {
+impl<'a, T, G> IntoIterator for &'a Set<T, G> {
     type Item = &'a T;
     type IntoIter = Iter<'a, T>;
 
+    #[inline]
     fn into_iter(self) -> Iter<'a, T> {
         self.iter()
     }
@@ -108,16 +124,19 @@ pub struct Iter<'a, T: 'static> {
 impl<'a, T> Iterator for Iter<'a, T> {
     type Item = &'a T;
 
+    #[inline]
     fn next(&mut self) -> Option<&'a T> {
         self.iter.next()
     }
 
+    #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
     }
 }
 
 impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
+    #[inline]
     fn next_back(&mut self) -> Option<&'a T> {
         self.iter.next_back()
     }

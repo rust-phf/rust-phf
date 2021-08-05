@@ -1,9 +1,10 @@
 //! An order-preserving immutable set constructed at compile time.
-use crate::{ordered_map, OrderedMap, PhfHash};
+
+use crate::hash::DefaultHasher;
+use crate::{ordered_map, OrderedMap, PhfBorrow, PhfHash, PhfHasher};
 use core::fmt;
 use core::iter::FusedIterator;
 use core::iter::IntoIterator;
-use phf_shared::PhfBorrow;
 
 /// An order-preserving immutable set constructed at compile time.
 ///
@@ -15,12 +16,15 @@ use phf_shared::PhfBorrow;
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_ordered_set!` macro and code generation. They are subject to change at
 /// any time and should never be accessed directly.
-pub struct OrderedSet<T: 'static> {
+pub struct OrderedSet<T, G = DefaultHasher>
+where
+    T: 'static,
+{
     #[doc(hidden)]
-    pub map: OrderedMap<T, ()>,
+    pub map: OrderedMap<T, (), G>,
 }
 
-impl<T> fmt::Debug for OrderedSet<T>
+impl<T, G> fmt::Debug for OrderedSet<T, G>
 where
     T: fmt::Debug,
 {
@@ -29,7 +33,7 @@ where
     }
 }
 
-impl<T> OrderedSet<T> {
+impl<T, G> OrderedSet<T, G> {
     /// Returns the number of elements in the `OrderedSet`.
     #[inline]
     pub const fn len(&self) -> usize {
@@ -42,10 +46,26 @@ impl<T> OrderedSet<T> {
         self.len() == 0
     }
 
+    /// Returns an iterator over the values in the set.
+    ///
+    /// Values are returned in the same order in which they were defined.
+    #[inline]
+    pub fn iter(&self) -> Iter<'_, T> {
+        Iter {
+            iter: self.map.keys(),
+        }
+    }
+}
+
+impl<T, G> OrderedSet<T, G>
+where
+    G: PhfHasher,
+{
     /// Returns a reference to the set's internal static instance of the given
     /// key.
     ///
     /// This can be useful for interning schemes.
+    #[inline]
     pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T>
     where
         U: Eq + PhfHash,
@@ -56,6 +76,7 @@ impl<T> OrderedSet<T> {
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered set.
+    #[inline]
     pub fn get_index<U: ?Sized>(&self, key: &U) -> Option<usize>
     where
         U: Eq + PhfHash,
@@ -66,11 +87,13 @@ impl<T> OrderedSet<T> {
 
     /// Returns a reference to the key at an index
     /// within the list used to initialize the ordered set. See `.get_index(key)`.
+    #[inline]
     pub fn index(&self, index: usize) -> Option<&T> {
         self.map.index(index).map(|(k, &())| k)
     }
 
     /// Returns true if `value` is in the `OrderedSet`.
+    #[inline]
     pub fn contains<U: ?Sized>(&self, value: &U) -> bool
     where
         U: Eq + PhfHash,
@@ -78,44 +101,39 @@ impl<T> OrderedSet<T> {
     {
         self.map.contains_key(value)
     }
-
-    /// Returns an iterator over the values in the set.
-    ///
-    /// Values are returned in the same order in which they were defined.
-    pub fn iter(&self) -> Iter<'_, T> {
-        Iter {
-            iter: self.map.keys(),
-        }
-    }
 }
 
-impl<T> OrderedSet<T>
+impl<T, G> OrderedSet<T, G>
 where
     T: Eq + PhfHash + PhfBorrow<T>,
+    G: PhfHasher,
 {
+    // TODO: Can we compare against `OrderedSet<T, G1>`?
+
     /// Returns true if `other` shares no elements with `self`.
     #[inline]
-    pub fn is_disjoint(&self, other: &OrderedSet<T>) -> bool {
+    pub fn is_disjoint(&self, other: &OrderedSet<T, G>) -> bool {
         !self.iter().any(|value| other.contains(value))
     }
 
     /// Returns true if `other` contains all values in `self`.
     #[inline]
-    pub fn is_subset(&self, other: &OrderedSet<T>) -> bool {
+    pub fn is_subset(&self, other: &OrderedSet<T, G>) -> bool {
         self.iter().all(|value| other.contains(value))
     }
 
     /// Returns true if `self` contains all values in `other`.
     #[inline]
-    pub fn is_superset(&self, other: &OrderedSet<T>) -> bool {
+    pub fn is_superset(&self, other: &OrderedSet<T, G>) -> bool {
         other.is_subset(self)
     }
 }
 
-impl<'a, T> IntoIterator for &'a OrderedSet<T> {
+impl<'a, T, G> IntoIterator for &'a OrderedSet<T, G> {
     type Item = &'a T;
     type IntoIter = Iter<'a, T>;
 
+    #[inline]
     fn into_iter(self) -> Iter<'a, T> {
         self.iter()
     }

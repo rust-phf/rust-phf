@@ -1,10 +1,9 @@
 // FIXME: Remove `extern crate` below when we bump MSRV to 1.42 or higher.
 extern crate proc_macro;
 
-use phf_generator::HashState;
-use phf_shared::PhfHash;
+use phf_shared::{generate_hash, DefaultHasher, HashState, PhfHash};
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{quote, ToTokens};
 use std::collections::HashSet;
 use std::hash::Hasher;
 use syn::parse::{self, Parse, ParseStream};
@@ -13,7 +12,7 @@ use syn::punctuated::Punctuated;
 use syn::ExprLit;
 use syn::{parse_macro_input, Error, Expr, Lit, Token, UnOp};
 #[cfg(feature = "unicase")]
-use unicase_::UniCase;
+use unicase::UniCase;
 
 #[derive(Hash, PartialEq, Eq, Clone)]
 enum ParsedKey {
@@ -245,37 +244,41 @@ fn check_duplicates(entries: &[Entry]) -> parse::Result<()> {
     Ok(())
 }
 
-fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
-    let key = state.key;
-    let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
+fn build_map<G>(entries: &[Entry], state: HashState<G>) -> proc_macro2::TokenStream
+where
+    G: ToTokens,
+{
+    let hasher = state.hasher;
+    let disps = state.disps.iter().map(|(d1, d2)| quote!((#d1, #d2)));
     let entries = state.map.iter().map(|&idx| {
         let key = &entries[idx].key.expr;
         let value = &entries[idx].value;
         quote!((#key, #value))
     });
-
     quote! {
         phf::Map {
-            key: #key,
+            hasher: #hasher,
             disps: &[#(#disps),*],
             entries: &[#(#entries),*],
         }
     }
 }
 
-fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
-    let key = state.key;
-    let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
+fn build_ordered_map<G>(entries: &[Entry], state: HashState<G>) -> proc_macro2::TokenStream
+where
+    G: ToTokens,
+{
+    let hasher = state.hasher;
+    let disps = state.disps.iter().map(|(d1, d2)| quote!((#d1, #d2)));
     let idxs = state.map.iter().map(|idx| quote!(#idx));
     let entries = entries.iter().map(|entry| {
         let key = &entry.key.expr;
         let value = &entry.value;
         quote!((#key, #value))
     });
-
     quote! {
         phf::OrderedMap {
-            key: #key,
+            hasher: #hasher,
             disps: &[#(#disps),*],
             idxs: &[#(#idxs),*],
             entries: &[#(#entries),*],
@@ -285,34 +288,34 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
 
 #[::proc_macro_hack::proc_macro_hack]
 pub fn phf_map(input: TokenStream) -> TokenStream {
+    // TODO: parse the hasher from the input stream
     let map = parse_macro_input!(input as Map);
-    let state = phf_generator::generate_hash(&map.0);
-
-    build_map(&map.0, state).into()
+    let state = generate_hash(&map.0);
+    build_map::<DefaultHasher>(&map.0, state).into()
 }
 
 #[::proc_macro_hack::proc_macro_hack]
 pub fn phf_set(input: TokenStream) -> TokenStream {
+    // TODO: parse the hasher from the input stream
     let set = parse_macro_input!(input as Set);
-    let state = phf_generator::generate_hash(&set.0);
-
-    let map = build_map(&set.0, state);
+    let state = generate_hash(&set.0);
+    let map = build_map::<DefaultHasher>(&set.0, state);
     quote!(phf::Set { map: #map }).into()
 }
 
 #[::proc_macro_hack::proc_macro_hack]
 pub fn phf_ordered_map(input: TokenStream) -> TokenStream {
+    // TODO: parse the hasher from the input stream
     let map = parse_macro_input!(input as Map);
-    let state = phf_generator::generate_hash(&map.0);
-
-    build_ordered_map(&map.0, state).into()
+    let state = generate_hash(&map.0);
+    build_ordered_map::<DefaultHasher>(&map.0, state).into()
 }
 
 #[::proc_macro_hack::proc_macro_hack]
 pub fn phf_ordered_set(input: TokenStream) -> TokenStream {
+    // TODO: parse the hasher from the input stream
     let set = parse_macro_input!(input as Set);
-    let state = phf_generator::generate_hash(&set.0);
-
-    let map = build_ordered_map(&set.0, state);
+    let state = generate_hash(&set.0);
+    let map = build_ordered_map::<DefaultHasher>(&set.0, state);
     quote!(phf::OrderedSet { map: #map }).into()
 }

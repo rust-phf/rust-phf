@@ -3,7 +3,6 @@ members = [
     "phf",
     "phf_codegen",
     "phf_codegen/test",
-    "phf_generator",
     "phf_macros",
     "phf_shared"
 ]
@@ -11,6 +10,5 @@ members = [
 [patch.crates-io]
 phf = { path = "phf" }
 phf_codegen = { path = "./phf_codegen" }
-phf_generator = { path = "./phf_generator" }
 phf_macros = { path = "./phf_macros" }
 phf_shared = { path = "./phf_shared" }

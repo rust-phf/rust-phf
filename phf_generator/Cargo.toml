@@ -11,10 +11,10 @@ edition = "2018"
 rand = { version = "0.8", features = ["small_rng"] }
 phf_shared = { version = "0.9.0", default-features = false }
 # for stable black_box()
-criterion = { version = "0.3", optional = true }
+criterion = { version = "=0.3.4", optional = true }
 
 [dev-dependencies]
-criterion = "0.3"
+criterion = "=0.3.4"
 
 [[bench]]
 name = "benches"

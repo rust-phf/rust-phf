@@ -1,5 +1,6 @@
 //! An immutable map constructed at compile time.
 use core::fmt;
+use core::iter::FusedIterator;
 use core::iter::IntoIterator;
 use core::ops::Index;
 use core::slice;
@@ -148,6 +149,25 @@ pub struct Entries<'a, K, V> {
     iter: slice::Iter<'a, (K, V)>,
 }
 
+impl<'a, K, V> Clone for Entries<'a, K, V> {
+    #[inline]
+    fn clone(&self) -> Self {
+        Self {
+            iter: self.iter.clone(),
+        }
+    }
+}
+
+impl<'a, K, V> fmt::Debug for Entries<'a, K, V>
+where
+    K: fmt::Debug,
+    V: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_list().entries(self.clone()).finish()
+    }
+}
+
 impl<'a, K, V> Iterator for Entries<'a, K, V> {
     type Item = (&'a K, &'a V);
 
@@ -168,9 +188,29 @@ impl<'a, K, V> DoubleEndedIterator for Entries<'a, K, V> {
 
 impl<'a, K, V> ExactSizeIterator for Entries<'a, K, V> {}
 
+impl<'a, K, V> FusedIterator for Entries<'a, K, V> {}
+
 /// An iterator over the keys in a `Map`.
 pub struct Keys<'a, K, V> {
     iter: Entries<'a, K, V>,
+}
+
+impl<'a, K, V> Clone for Keys<'a, K, V> {
+    #[inline]
+    fn clone(&self) -> Self {
+        Self {
+            iter: self.iter.clone(),
+        }
+    }
+}
+
+impl<'a, K, V> fmt::Debug for Keys<'a, K, V>
+where
+    K: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_list().entries(self.clone()).finish()
+    }
 }
 
 impl<'a, K, V> Iterator for Keys<'a, K, V> {
@@ -193,9 +233,29 @@ impl<'a, K, V> DoubleEndedIterator for Keys<'a, K, V> {
 
 impl<'a, K, V> ExactSizeIterator for Keys<'a, K, V> {}
 
+impl<'a, K, V> FusedIterator for Keys<'a, K, V> {}
+
 /// An iterator over the values in a `Map`.
 pub struct Values<'a, K, V> {
     iter: Entries<'a, K, V>,
+}
+
+impl<'a, K, V> Clone for Values<'a, K, V> {
+    #[inline]
+    fn clone(&self) -> Self {
+        Self {
+            iter: self.iter.clone(),
+        }
+    }
+}
+
+impl<'a, K, V> fmt::Debug for Values<'a, K, V>
+where
+    V: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_list().entries(self.clone()).finish()
+    }
 }
 
 impl<'a, K, V> Iterator for Values<'a, K, V> {
@@ -217,3 +277,5 @@ impl<'a, K, V> DoubleEndedIterator for Values<'a, K, V> {
 }
 
 impl<'a, K, V> ExactSizeIterator for Values<'a, K, V> {}
+
+impl<'a, K, V> FusedIterator for Values<'a, K, V> {}

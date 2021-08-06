@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.1
+
+* (phf-generator): Pin `criterion` version to keep MSRV
+* Constify `len` and `is_empty` ([#224])
+* Implement `Clone`, `Debug`, and `FusedIterator` ([#226])
+
+[#224]: https://github.com/rust-phf/rust-phf/pull/224
+[#226]: https://github.com/rust-phf/rust-phf/pull/226
+
 ## 0.9.0
 
 * Our MSRV is now 1.41 or 1.46 (because of dependencies)

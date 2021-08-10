@@ -1,13 +1,20 @@
 # Changelog
 
-## 0.9.1
+## 0.10.0
 
-* (phf-generator): Pin `criterion` version to keep MSRV
 * Constify `len` and `is_empty` ([#224])
 * Implement `Clone`, `Debug`, and `FusedIterator` ([#226])
 
 [#224]: https://github.com/rust-phf/rust-phf/pull/224
 [#226]: https://github.com/rust-phf/rust-phf/pull/226
+
+## 0.9.1
+
+**Yanked except for `phf-generator`, use 0.10.0 instead.**
+
+* (phf-generator): Pin `criterion` version to keep MSRV
+* Constify `len` and `is_empty` ([#224]) (**yanked**)
+* Implement `Clone`, `Debug`, and `FusedIterator` ([#226]) (**yanked**)
 
 ## 0.9.0
 

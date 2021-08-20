@@ -123,7 +123,7 @@
 //! builder.entry("world", "2");
 //! // ...
 //! ```
-#![doc(html_root_url = "https://docs.rs/phf_codegen/0.9")]
+#![doc(html_root_url = "https://docs.rs/phf_codegen/0.10")]
 
 use phf_shared::{FmtConst, PhfHash};
 use std::collections::HashSet;

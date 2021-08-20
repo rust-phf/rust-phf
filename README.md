@@ -13,7 +13,7 @@ a 100,000 entry map in roughly .4 seconds. By default statistics are not
 produced, but if you set the environment variable `PHF_STATS` it will issue
 a compiler note about how long it took.
 
-MSRV (minimum supported rust version) is Rust 1.41, or 1.46 if you use the `uncased` feature.
+MSRV (minimum supported rust version) is Rust 1.46.
 
 ## Usage
 

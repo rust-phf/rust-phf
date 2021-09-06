@@ -308,7 +308,7 @@ impl FmtConst for uncased::UncasedStr {
         // transmute is not stable in const fns (rust-lang/rust#53605), so
         // `UncasedStr::new` can't be a const fn itself, but we can inline the
         // call to transmute here in the meantime.
-        f.write_str("unsafe { ::std::mem::transmute::<&'static str, &'static UncasedStr>(")?;
+        f.write_str("unsafe { ::core::mem::transmute::<&'static str, &'static UncasedStr>(")?;
         self.as_str().fmt_const(f)?;
         f.write_str(") }")
     }

@@ -17,12 +17,12 @@ MSRV (minimum supported rust version) is Rust 1.46.
 
 ## Usage
 
-PHF data structures can be constucted via either the procedural 
-macros in the `phf_macros` crate or code generation supported by the 
+PHF data structures can be constructed via either the procedural
+macros in the `phf_macros` crate or code generation supported by the
 `phf_codegen` crate.
 
 To compile the `phf` crate with a dependency on
-libcore instead of libstd, enabling use in environments where libstd 
+libcore instead of libstd, enabling use in environments where libstd
 will not work, set `default-features = false` for the dependency:
 
 ```toml

@@ -1,3 +1,7 @@
+//! See [the `phf` crate's documentation][phf] for details.
+//!
+//! [phf]: https://docs.rs/phf
+
 #![doc(html_root_url = "https://docs.rs/phf_generator/0.10")]
 use phf_shared::{HashKey, PhfHash};
 use rand::distributions::Standard;

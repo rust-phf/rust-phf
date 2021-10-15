@@ -1,3 +1,7 @@
+//! See [the `phf` crate's documentation][phf] for details.
+//!
+//! [phf]: https://docs.rs/phf
+
 #![doc(html_root_url = "https://docs.rs/phf_shared/0.10")]
 #![cfg_attr(not(feature = "std"), no_std)]
 

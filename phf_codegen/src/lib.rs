@@ -5,7 +5,11 @@
 //! generate a Rust source file that will be included in a library at build
 //! time.
 //!
-//! # Examples
+//! For more information about `rust-phf` crates, see [the `phf` crate's documentation][phf].
+//!
+//! [phf]: https://docs.rs/phf
+//!
+//! ## Examples
 //!
 //! build.rs:
 //!
@@ -52,7 +56,7 @@
 //! }
 //! ```
 //!
-//! ##### Byte-String Keys
+//! ### Byte-String Keys
 //! Byte strings by default produce references to fixed-size arrays; the compiler needs a hint
 //! to coerce them to slices:
 //!
@@ -101,7 +105,7 @@
 //! }
 //! ```
 //!
-//! # Note
+//! ## Note
 //!
 //! The compiler's stack will overflow when processing extremely long method
 //! chains (500+ calls). When generating large PHF data structures, consider
@@ -123,6 +127,7 @@
 //! builder.entry("world", "2");
 //! // ...
 //! ```
+
 #![doc(html_root_url = "https://docs.rs/phf_codegen/0.10")]
 
 use phf_shared::{FmtConst, PhfHash};

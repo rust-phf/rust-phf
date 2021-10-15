@@ -1,3 +1,8 @@
+//! A set of macros to generate Rust source for PHF data structures at compile time.
+//! See [the `phf` crate's documentation][phf] for details.
+//!
+//! [phf]: https://docs.rs/phf
+
 // FIXME: Remove `extern crate` below when we bump MSRV to 1.42 or higher.
 extern crate proc_macro;
 

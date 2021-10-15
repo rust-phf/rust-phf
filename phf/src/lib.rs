@@ -1,42 +1,67 @@
-//! Compile-time generated maps and sets.
+//! Rust-PHF is a library to generate efficient lookup tables at compile time using
+//! [perfect hash functions](http://en.wikipedia.org/wiki/Perfect_hash_function).
 //!
-//! The `phf::Map` and `phf::Set` types have roughly comparable performance to
-//! a standard hash table, but can be generated as compile-time static values.
+//! It currently uses the
+//! [CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) and can generate
+//! a 100,000 entry map in roughly .4 seconds. By default statistics are not
+//! produced, but if you set the environment variable `PHF_STATS` it will issue
+//! a compiler note about how long it took.
 //!
-//! # Usage
+//! MSRV (minimum supported rust version) is Rust 1.46.
 //!
-//! If the `macros` Cargo feature is enabled, the `phf_map`, `phf_set`,
-//! `phf_ordered_map`, and `phf_ordered_set` macros can be used to construct
-//! the PHF type. This method can be used with a stable compiler
-//! (minimum supported rust version is 1.46.
-//! feature).
+//! ## Usage
 //!
-//! ```toml
+//! PHF data structures can be constructed via either the procedural
+//! macros in the `phf_macros` crate or code generation supported by the
+//! `phf_codegen` crate. If you prefer macros, you can easily use them by
+//! enabling the `macros` feature of the `phf` crate, like:
+//!
+//!```toml
 //! [dependencies]
 //! phf = { version = "0.10", features = ["macros"] }
 //! ```
 //!
+//! To compile the `phf` crate with a dependency on
+//! libcore instead of libstd, enabling use in environments where libstd
+//! will not work, set `default-features = false` for the dependency:
+//!
+//! ```toml
+//! [dependencies]
+//! # to use `phf` in `no_std` environments
+//! phf = { version = "0.10", default-features = false }
 //! ```
-//! use phf::{phf_map, phf_set};
 //!
-//! static MY_MAP: phf::Map<&'static str, u32> = phf_map! {
-//!     "hello" => 1,
-//!     "world" => 2,
+//! ## Example (with the `macros` feature enabled)
+//!
+//! ```rust
+//! use phf::phf_map;
+//!
+//! #[derive(Clone)]
+//! pub enum Keyword {
+//!     Loop,
+//!     Continue,
+//!     Break,
+//!     Fn,
+//!     Extern,
+//! }
+//!
+//! static KEYWORDS: phf::Map<&'static str, Keyword> = phf_map! {
+//!     "loop" => Keyword::Loop,
+//!     "continue" => Keyword::Continue,
+//!     "break" => Keyword::Break,
+//!     "fn" => Keyword::Fn,
+//!     "extern" => Keyword::Extern,
 //! };
 //!
-//! static MY_SET: phf::Set<&'static str> = phf_set! {
-//!     "hello world",
-//!     "hola mundo",
-//! };
-//!
-//! fn main() {
-//!     assert_eq!(MY_MAP["hello"], 1);
-//!     assert!(MY_SET.contains("hello world"));
+//! pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
+//!     KEYWORDS.get(keyword).cloned()
 //! }
 //! ```
 //!
-//! Alternatively, you can use the `phf_codegen` crate to generate PHF datatypes
+//! Alternatively, you can use the [`phf_codegen`] crate to generate PHF datatypes
 //! in a build script.
+//!
+//! [`phf_codegen`]: https://docs.rs/phf_codegen
 //!
 //! ## Note
 //!
@@ -45,6 +70,7 @@
 //!
 //! [#183]: https://github.com/rust-phf/rust-phf/issues/183
 //! [#196]: https://github.com/rust-phf/rust-phf/issues/196
+
 #![doc(html_root_url = "https://docs.rs/phf/0.10")]
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]

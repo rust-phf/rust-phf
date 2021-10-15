@@ -24,8 +24,3 @@ unicase_ = { package = "unicase", version = "2.4.0", optional = true }
 
 phf_generator = "0.10.0"
 phf_shared = { version = "0.10.0", default-features = false }
-
-[dev-dependencies]
-trybuild = "1.0"
-phf = { version = "0.10", features = ["macros", "unicase"] }
-unicase_ = { package = "unicase", version = "2.4.0" }

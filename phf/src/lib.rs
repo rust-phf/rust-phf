@@ -97,14 +97,14 @@ extern crate std as core;
 ///     assert_eq!(MY_MAP["hello"], 1);
 /// }
 /// ```
-#[::proc_macro_hack::proc_macro_hack]
+#[proc_macro_hack::proc_macro_hack]
 pub use phf_macros::phf_map;
 
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`OrderedMap`].
 ///
 /// Requires the `macros` feature. Same usage as [`phf_map`].
-#[::proc_macro_hack::proc_macro_hack]
+#[proc_macro_hack::proc_macro_hack]
 pub use phf_macros::phf_ordered_map;
 
 #[cfg(feature = "macros")]

@@ -240,10 +240,9 @@ mod map {
         }
     }
 
-    #[cfg(feature = "unicase")]
     #[test]
     fn test_unicase() {
-        use unicase_::UniCase;
+        use unicase::UniCase;
         static MAP: phf::Map<UniCase<&'static str>, isize> = phf_map!(
             UniCase::ascii("FOO") => 10,
             UniCase::unicode("Bar") => 11,

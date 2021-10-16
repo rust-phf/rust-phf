@@ -1,4 +1,4 @@
-use unicase_::UniCase;
+use unicase::UniCase;
 use phf::phf_map;
 
 static MAP: phf::Map<UniCase<&'static str>, isize> = phf_map!(

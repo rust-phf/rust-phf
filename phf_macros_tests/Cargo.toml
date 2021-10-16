@@ -1,0 +1,15 @@
+[package]
+name = "phf_macros_tests"
+version = "0.1.0"
+authors = ["Yuki Okushi <jtitor@2k36.org>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[dev-dependencies]
+trybuild = "1.0"
+phf = { version = "0.10", features = ["macros"] }
+phf_macros = { version = "0.10", features = ["unicase"] }
+unicase = "2.4.0"

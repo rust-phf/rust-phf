@@ -2,7 +2,8 @@
 //!
 //! [phf]: https://docs.rs/phf
 
-#![feature(const_trait_impl)] // XXX: Temporary until stabilization.
+// XXX: Temporary until stabilization.
+#![feature(const_fn_trait_bound, const_mut_refs, const_trait_impl)]
 #![doc(html_root_url = "https://docs.rs/phf_shared/0.10")]
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -10,7 +11,7 @@
 extern crate std as core;
 
 use core::fmt;
-use core::hash::{Hash, Hasher};
+use core::hash::Hasher;
 use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
 
 #[non_exhaustive]
@@ -66,11 +67,28 @@ pub const fn get_index(hashes: &Hashes, disps: &[(u32, u32)], len: usize) -> u32
 /// between the host and target when cross compiling.
 pub trait PhfHash {
     /// Feeds the value into the state given, updating the hasher as necessary.
+    #[cfg(not(feature = "const-api"))]
     fn phf_hash<H: Hasher>(&self, state: &mut H);
 
+    /// Feeds the value into the state given, updating the hasher as necessary.
+    #[cfg(feature = "const-api")]
+    fn phf_hash<H: ~const Hasher>(&self, state: &mut H);
+
     /// Feeds a slice of this type into the state provided.
-    //#[default_method_body_is_const]
+    #[cfg(not(feature = "const-api"))]
     fn phf_hash_slice<H: Hasher>(data: &[Self], state: &mut H)
+    where
+        Self: Sized,
+    {
+        for piece in data {
+            piece.phf_hash(state);
+        }
+    }
+
+    /// Feeds a slice of this type into the state provided.
+    #[cfg(feature = "const-api")]
+    #[default_method_body_is_const]
+    fn phf_hash_slice<H: ~const Hasher>(data: &[Self], state: &mut H)
     where
         Self: Sized,
     {
@@ -198,14 +216,14 @@ impl_reflexive!(
     [u8]
 );
 
-#[cfg(all(feature = "std", not(feature = "const-api")))]
+#[cfg(feature = "std")]
 impl PhfBorrow<str> for String {
     fn borrow(&self) -> &str {
         self
     }
 }
 
-#[cfg(all(feature = "std", not(feature = "const-api")))]
+#[cfg(feature = "std")]
 impl PhfBorrow<[u8]> for Vec<u8> {
     fn borrow(&self) -> &[u8] {
         self
@@ -231,7 +249,15 @@ impl PhfHash for Vec<u8> {
     }
 }
 
+#[cfg(not(feature = "const-api"))]
 impl<'a, T: 'a + PhfHash + ?Sized> PhfHash for &'a T {
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        (*self).phf_hash(state)
+    }
+}
+
+#[cfg(feature = "const-api")]
+impl<'a, T: 'a + ~const PhfHash + ?Sized> const PhfHash for &'a T {
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
         (*self).phf_hash(state)
     }
@@ -271,6 +297,7 @@ impl<'a> PhfBorrow<[u8]> for &'a [u8] {
     }
 }
 
+#[cfg(not(feature = "const-api"))]
 impl PhfHash for str {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
@@ -278,9 +305,26 @@ impl PhfHash for str {
     }
 }
 
+#[cfg(feature = "const-api")]
+impl const PhfHash for str {
+    #[inline]
+    fn phf_hash<H: ~const Hasher>(&self, state: &mut H) {
+        self.as_bytes().phf_hash(state)
+    }
+}
+
+#[cfg(not(feature = "const-api"))]
 impl PhfHash for [u8] {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        state.write(self);
+    }
+}
+
+#[cfg(feature = "const-api")]
+impl const PhfHash for [u8] {
+    #[inline]
+    fn phf_hash<H: ~const Hasher>(&self, state: &mut H) {
         state.write(self);
     }
 }
@@ -362,41 +406,85 @@ impl const PhfBorrow<uncased::UncasedStr> for &uncased::UncasedStr {
     }
 }
 
-macro_rules! sip_impl (
-    (le $t:ty) => (
+// XXX: Macro can be simplified once const Hash trait impls
+//      landed in upstream Rust.
+macro_rules! sip_impl {
+    (le $t:ty, $meth:ident) => {
+        #[cfg(not(feature = "const-api"))]
         impl PhfHash for $t {
             #[inline]
             fn phf_hash<H: Hasher>(&self, state: &mut H) {
-                self.to_le().hash(state);
+                state.$meth(self.to_le());
             }
         }
-    );
-    ($t:ty) => (
+
+        #[cfg(feature = "const-api")]
+        impl const PhfHash for $t {
+            #[inline]
+            fn phf_hash<H: ~const Hasher>(&self, state: &mut H) {
+                state.$meth(self.to_le());
+            }
+        }
+    };
+    ($t:ty, $meth:ident) => {
+        #[cfg(not(feature = "const-api"))]
         impl PhfHash for $t {
             #[inline]
             fn phf_hash<H: Hasher>(&self, state: &mut H) {
-                self.hash(state);
+                state.$meth(*self);
             }
         }
-    )
-);
 
-sip_impl!(u8);
-sip_impl!(i8);
-sip_impl!(le u16);
-sip_impl!(le i16);
-sip_impl!(le u32);
-sip_impl!(le i32);
-sip_impl!(le u64);
-sip_impl!(le i64);
-sip_impl!(le u128);
-sip_impl!(le i128);
-sip_impl!(bool);
+        #[cfg(feature = "const-api")]
+        impl const PhfHash for $t {
+            #[inline]
+            fn phf_hash<H: ~const Hasher>(&self, state: &mut H) {
+                state.$meth(*self);
+            }
+        }
+    };
+}
 
+sip_impl!(u8, write_u8);
+sip_impl!(i8, write_i8);
+sip_impl!(le u16, write_u16);
+sip_impl!(le i16, write_i16);
+sip_impl!(le u32, write_u32);
+sip_impl!(le i32, write_i32);
+sip_impl!(le u64, write_u64);
+sip_impl!(le i64, write_i64);
+sip_impl!(le u128, write_u128);
+sip_impl!(le i128, write_i128);
+
+#[cfg(not(feature = "const-api"))]
+impl PhfHash for bool {
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        state.write_u8(*self as u8);
+    }
+}
+
+#[cfg(feature = "const-api")]
+impl const PhfHash for bool {
+    #[inline]
+    fn phf_hash<H: ~const Hasher>(&self, state: &mut H) {
+        state.write_u8(*self as u8);
+    }
+}
+
+#[cfg(not(feature = "const-api"))]
 impl PhfHash for char {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
-        (*self as u32).phf_hash(state)
+        state.write_u32(*self as u32);
+    }
+}
+
+#[cfg(feature = "const-api")]
+impl const PhfHash for char {
+    #[inline]
+    fn phf_hash<H: ~const Hasher>(&self, state: &mut H) {
+        state.write_u32(*self as u32);
     }
 }
 
@@ -407,9 +495,18 @@ fn fmt_array(array: &[u8], f: &mut fmt::Formatter<'_>) -> fmt::Result {
 
 macro_rules! array_impl (
     ($t:ty, $n:expr) => (
+        #[cfg(not(feature = "const-api"))]
         impl PhfHash for [$t; $n] {
             #[inline]
             fn phf_hash<H: Hasher>(&self, state: &mut H) {
+                state.write(self);
+            }
+        }
+
+        #[cfg(feature = "const-api")]
+        impl const PhfHash for [$t; $n] {
+            #[inline]
+            fn phf_hash<H: ~const Hasher>(&self, state: &mut H) {
                 state.write(self);
             }
         }

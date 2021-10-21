@@ -13,7 +13,7 @@ extern crate std as core;
 mod siphasher;
 
 use core::fmt;
-use core::hash::Hasher;
+use core::hash::{Hash, Hasher};
 use siphasher::{Hash128, Hasher128, SipHasher13};
 
 #[non_exhaustive]

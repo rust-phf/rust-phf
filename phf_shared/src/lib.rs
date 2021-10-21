@@ -3,16 +3,18 @@
 //! [phf]: https://docs.rs/phf
 
 // XXX: Temporary until stabilization.
-#![feature(const_fn_trait_bound, const_mut_refs, const_trait_impl)]
+#![feature(const_fn_trait_bound, const_mut_refs, const_panic, const_trait_impl)]
 #![doc(html_root_url = "https://docs.rs/phf_shared/0.10")]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(feature = "std")]
 extern crate std as core;
 
+mod siphasher;
+
 use core::fmt;
 use core::hash::Hasher;
-use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
+use siphasher::{Hash128, Hasher128, SipHasher13};
 
 #[non_exhaustive]
 pub struct Hashes {
@@ -32,8 +34,28 @@ pub const fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 }
 
 /// `key` is from `phf_generator::HashState`.
+#[cfg(not(feature = "const-api"))]
 #[inline]
 pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
+    let mut hasher = SipHasher13::new_with_keys(0, *key);
+    x.phf_hash(&mut hasher);
+
+    let Hash128 {
+        h1: lower,
+        h2: upper,
+    } = hasher.finish128();
+
+    Hashes {
+        g: (lower >> 32) as u32,
+        f1: lower as u32,
+        f2: upper as u32,
+    }
+}
+
+/// `key` is from `phf_generator::HashState`.
+#[cfg(feature = "const-api")]
+#[inline]
+pub const fn hash<T: ?Sized + ~const PhfHash>(x: &T, key: &HashKey) -> Hashes {
     let mut hasher = SipHasher13::new_with_keys(0, *key);
     x.phf_hash(&mut hasher);
 

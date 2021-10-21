@@ -4,7 +4,7 @@
 
 // XXX: Temporary until stabilization.
 #![feature(const_fn_trait_bound, const_mut_refs, const_panic, const_trait_impl)]
-#![doc(html_root_url = "https://docs.rs/phf_shared/0.10")]
+#![doc(html_root_url = "https://docs.rs/phf_shared/0.11")]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(feature = "std")]

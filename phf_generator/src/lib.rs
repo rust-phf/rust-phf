@@ -11,7 +11,7 @@
     const_mut_refs,
     generic_const_exprs
 )]
-#![doc(html_root_url = "https://docs.rs/phf_generator/0.10")]
+#![doc(html_root_url = "https://docs.rs/phf_generator/0.11")]
 
 pub mod rng;
 

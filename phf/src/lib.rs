@@ -71,7 +71,7 @@
 //! [#183]: https://github.com/rust-phf/rust-phf/issues/183
 //! [#196]: https://github.com/rust-phf/rust-phf/issues/196
 
-#![doc(html_root_url = "https://docs.rs/phf/0.10")]
+#![doc(html_root_url = "https://docs.rs/phf/0.11")]
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 

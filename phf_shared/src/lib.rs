@@ -2,6 +2,7 @@
 //!
 //! [phf]: https://docs.rs/phf
 
+#![feature(const_trait_impl)] // XXX: Temporary until stabilization.
 #![doc(html_root_url = "https://docs.rs/phf_shared/0.10")]
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -10,7 +11,6 @@ extern crate std as core;
 
 use core::fmt;
 use core::hash::{Hash, Hasher};
-use core::num::Wrapping;
 use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
 
 #[non_exhaustive]
@@ -26,8 +26,8 @@ pub struct Hashes {
 pub type HashKey = u64;
 
 #[inline]
-pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
-    (Wrapping(d2) + Wrapping(f1) * Wrapping(d1) + Wrapping(f2)).0
+pub const fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
+    d2.wrapping_add(f1).wrapping_mul(d1).wrapping_add(f2)
 }
 
 /// `key` is from `phf_generator::HashState`.
@@ -54,7 +54,7 @@ pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
 /// * `disps` is from `phf_generator::HashState::disps`.
 /// * `len` is the length of `phf_generator::HashState::map`.
 #[inline]
-pub fn get_index(hashes: &Hashes, disps: &[(u32, u32)], len: usize) -> u32 {
+pub const fn get_index(hashes: &Hashes, disps: &[(u32, u32)], len: usize) -> u32 {
     let (d1, d2) = disps[(hashes.g % (disps.len() as u32)) as usize];
     displace(hashes.f1, hashes.f2, d1, d2) % (len as u32)
 }
@@ -69,17 +69,21 @@ pub trait PhfHash {
     fn phf_hash<H: Hasher>(&self, state: &mut H);
 
     /// Feeds a slice of this type into the state provided.
+    //#[default_method_body_is_const]
     fn phf_hash_slice<H: Hasher>(data: &[Self], state: &mut H)
     where
         Self: Sized,
     {
-        for piece in data {
-            piece.phf_hash(state);
+        let mut i = 0;
+        while i < data.len() {
+            data[i].phf_hash(state);
+            i += 1;
         }
     }
 }
 
 /// Trait for printing types with `const` constructors, used by `phf_codegen` and `phf_macros`.
+// TODO: Is a const variant of this trait needed?
 pub trait FmtConst {
     /// Print a `const` expression representing this value.
     fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result;
@@ -159,11 +163,21 @@ delegate_debug!(bool);
 /// `impl PhfBorrow<T> for T`
 macro_rules! impl_reflexive(
     ($($t:ty),*) => (
-        $(impl PhfBorrow<$t> for $t {
-            fn borrow(&self) -> &$t {
-                self
+        $(
+            #[cfg(not(feature = "const-api"))]
+            impl PhfBorrow<$t> for $t {
+                fn borrow(&self) -> &$t {
+                    self
+                }
             }
-        })*
+
+            #[cfg(feature = "const-api")]
+            impl const PhfBorrow<$t> for $t {
+                fn borrow(&self) -> &$t {
+                    self
+                }
+            }
+        )*
     )
 );
 
@@ -184,14 +198,14 @@ impl_reflexive!(
     [u8]
 );
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", not(feature = "const-api")))]
 impl PhfBorrow<str> for String {
     fn borrow(&self) -> &str {
         self
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", not(feature = "const-api")))]
 impl PhfBorrow<[u8]> for Vec<u8> {
     fn borrow(&self) -> &[u8] {
         self
@@ -229,12 +243,28 @@ impl<'a, T: 'a + FmtConst + ?Sized> FmtConst for &'a T {
     }
 }
 
+#[cfg(not(feature = "const-api"))]
 impl<'a> PhfBorrow<str> for &'a str {
     fn borrow(&self) -> &str {
         self
     }
 }
 
+#[cfg(feature = "const-api")]
+impl<'a> const PhfBorrow<str> for &'a str {
+    fn borrow(&self) -> &str {
+        self
+    }
+}
+
+#[cfg(not(feature = "const-api"))]
+impl<'a> PhfBorrow<[u8]> for &'a [u8] {
+    fn borrow(&self) -> &[u8] {
+        self
+    }
+}
+
+#[cfg(feature = "const-api")]
 impl<'a> PhfBorrow<[u8]> for &'a [u8] {
     fn borrow(&self) -> &[u8] {
         self
@@ -318,8 +348,15 @@ impl FmtConst for uncased::UncasedStr {
     }
 }
 
-#[cfg(feature = "uncased")]
+#[cfg(all(feature = "uncased", not(feature = "const-api")))]
 impl PhfBorrow<uncased::UncasedStr> for &uncased::UncasedStr {
+    fn borrow(&self) -> &uncased::UncasedStr {
+        self
+    }
+}
+
+#[cfg(all(feature = "uncased", feature = "const-api"))]
+impl const PhfBorrow<uncased::UncasedStr> for &uncased::UncasedStr {
     fn borrow(&self) -> &uncased::UncasedStr {
         self
     }
@@ -383,7 +420,15 @@ macro_rules! array_impl (
             }
         }
 
+        #[cfg(not(feature = "const-api"))]
         impl PhfBorrow<[$t]> for [$t; $n] {
+            fn borrow(&self) -> &[$t] {
+                self
+            }
+        }
+
+        #[cfg(feature = "const-api")]
+        impl const PhfBorrow<[$t]> for [$t; $n] {
             fn borrow(&self) -> &[$t] {
                 self
             }

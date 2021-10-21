@@ -15,6 +15,8 @@ a compiler note about how long it took.
 
 MSRV (minimum supported rust version) is Rust 1.46.
 
+TODO: Carify MSRV when building with const feature.
+
 ## Usage
 
 PHF data structures can be constructed via either the procedural

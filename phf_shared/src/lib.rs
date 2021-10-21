@@ -23,6 +23,13 @@ pub struct Hashes {
     pub f2: u32,
 }
 
+impl const Default for Hashes {
+    #[inline(always)]
+    fn default() -> Self {
+        Self { g: 0, f1: 0, f2: 0 }
+    }
+}
+
 /// A central typedef for hash keys
 ///
 /// Makes experimentation easier by only needing to be updated here.

@@ -71,6 +71,9 @@
 //! [#183]: https://github.com/rust-phf/rust-phf/issues/183
 //! [#196]: https://github.com/rust-phf/rust-phf/issues/196
 
+// XXX: Remove on stabilization.
+#![allow(incomplete_features)]
+#![feature(generic_const_exprs, const_trait_impl)]
 #![doc(html_root_url = "https://docs.rs/phf/0.11")]
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -82,6 +85,37 @@ extern crate std as core;
 #[cfg(feature = "macros")]
 #[doc(hidden)]
 pub extern crate phf_macros as __phf_macros;
+
+#[cfg(feature = "macros")]
+impl<Key: 'static, Value: 'static, const N: usize> const
+    From<&'static ([(Key, Value); N], phf_generator::HashState<N>)> for Map<Key, Value>
+where
+    [(); (N + phf_generator::DEFAULT_LAMBDA - 1) / phf_generator::DEFAULT_LAMBDA]: Sized,
+{
+    fn from(v: &'static ([(Key, Value); N], phf_generator::HashState<N>)) -> Self {
+        Self {
+            key: v.1.key,
+            disps: &*v.1.disps,
+            entries: &v.0,
+        }
+    }
+}
+
+#[cfg(feature = "macros")]
+impl<Key: 'static, Value: 'static, const N: usize> const
+    From<&'static ([(Key, Value); N], phf_generator::HashState<N>)> for OrderedMap<Key, Value>
+where
+    [(); (N + phf_generator::DEFAULT_LAMBDA - 1) / phf_generator::DEFAULT_LAMBDA]: Sized,
+{
+    fn from(v: &'static ([(Key, Value); N], phf_generator::HashState<N>)) -> Self {
+        Self {
+            key: v.1.key,
+            disps: &*v.1.disps,
+            idxs: &*v.1.map,
+            entries: &v.0,
+        }
+    }
+}
 
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`Map`].
@@ -102,13 +136,25 @@ pub extern crate phf_macros as __phf_macros;
 ///     assert_eq!(MY_MAP["hello"], 1);
 /// }
 /// ```
-pub use phf_macros::phf_map;
+#[macro_export]
+macro_rules! phf_map {
+    ($($($key:tt)* => $($value:tt)*),* $(,)*) => {
+        Map::from(&$crate::__phf_macros::phf_map(&[$(($($key)*, $($value)*)),*]))
+    };
+}
 
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`OrderedMap`].
 ///
 /// Requires the `macros` feature. Same usage as [`phf_map`].
-pub use phf_macros::phf_ordered_map;
+#[macro_export]
+macro_rules! phf_ordered_map {
+    ($($($key:tt)* => $($value:tt)*),* $(,)*) => {
+        OrderedMap::from(
+            &$crate::__phf_macros::phf_ordered_map(&[$(($($key)*, $($value)*)),*]),
+        )
+    };
+}
 
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`Set`].
@@ -129,13 +175,27 @@ pub use phf_macros::phf_ordered_map;
 ///     assert!(MY_SET.contains("hello world"));
 /// }
 /// ```
-pub use phf_macros::phf_set;
+#[macro_export]
+macro_rules! phf_set {
+    ($($($key:tt)*),* $(,)*) => {
+        Set {
+            map: Map::from($crate::__phf_macros::phf_set(&[$($($key)*),*])),
+        }
+    };
+}
 
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`OrderedSet`].
 ///
 /// Requires the `macros` feature. Same usage as [`phf_set`].
-pub use phf_macros::phf_ordered_set;
+#[macro_export]
+macro_rules! phf_ordered_set {
+    ($($($key:tt)*),* $(,)*) => {
+        OrderedSet {
+            map: OrderedMap::from($crate::__phf_macros::phf_ordered_set(&[$($($key)*),*])),
+        }
+    };
+}
 
 #[doc(inline)]
 pub use self::map::Map;

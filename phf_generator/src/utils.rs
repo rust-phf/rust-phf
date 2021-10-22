@@ -1,3 +1,5 @@
+use core::ops::Deref;
+
 #[derive(Clone, Copy)]
 pub struct ArrayVec<T: Copy, const N: usize> {
     arr: [T; N],
@@ -51,5 +53,14 @@ impl<T: Copy, const N: usize> ArrayVec<T, N> {
     pub const fn set(&mut self, i: usize, value: T) {
         assert!(i <= self.len);
         self.arr[i] = value;
+    }
+}
+
+impl<T: Copy, const N: usize> const Deref for ArrayVec<T, N> {
+    type Target = [T; N];
+
+    #[inline(always)]
+    fn deref(&self) -> &Self::Target {
+        &self.arr
     }
 }

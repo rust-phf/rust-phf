@@ -10,7 +10,7 @@
 
 //! A const-compatible implementation of SipHash with a 128-bit output.
 
-use std::{hash, mem, ptr};
+use core::{hash, mem, ptr};
 
 /// A 128-bit (2x64) hash output.
 #[derive(Debug, Clone, Copy, Default)]

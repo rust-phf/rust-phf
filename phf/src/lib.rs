@@ -139,7 +139,7 @@ where
 #[macro_export]
 macro_rules! phf_map {
     ($($($key:tt)* => $($value:tt)*),* $(,)*) => {
-        Map::from(&$crate::__phf_macros::phf_map(&[$(($($key)*, $($value)*)),*]))
+        $crate::Map::from(&$crate::__phf_macros::phf_map(&[$(($($key)*, $($value)*)),*]))
     };
 }
 
@@ -150,7 +150,7 @@ macro_rules! phf_map {
 #[macro_export]
 macro_rules! phf_ordered_map {
     ($($($key:tt)* => $($value:tt)*),* $(,)*) => {
-        OrderedMap::from(
+        $crate::OrderedMap::from(
             &$crate::__phf_macros::phf_ordered_map(&[$(($($key)*, $($value)*)),*]),
         )
     };
@@ -178,8 +178,8 @@ macro_rules! phf_ordered_map {
 #[macro_export]
 macro_rules! phf_set {
     ($($($key:tt)*),* $(,)*) => {
-        Set {
-            map: Map::from($crate::__phf_macros::phf_set(&[$($($key)*),*])),
+        $crate::Set {
+            map: $crate::Map::from($crate::__phf_macros::phf_set(&[$($($key)*),*])),
         }
     };
 }
@@ -191,8 +191,10 @@ macro_rules! phf_set {
 #[macro_export]
 macro_rules! phf_ordered_set {
     ($($($key:tt)*),* $(,)*) => {
-        OrderedSet {
-            map: OrderedMap::from($crate::__phf_macros::phf_ordered_set(&[$($($key)*),*])),
+        $crate::OrderedSet {
+            map: $crate::OrderedMap::from(
+                $crate::__phf_macros::phf_ordered_set(&[$($($key)*),*]),
+            ),
         }
     };
 }

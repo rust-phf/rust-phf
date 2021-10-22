@@ -125,7 +125,6 @@ where
     // buckets.sort_by(|a, b| a.keys.len().cmp(&b.keys.len()).reverse());
     // TODO
 
-    // table_len = N
     let mut map: ArrayVec<Option<usize>, N> = ArrayVec::new(None);
     let mut disps: ArrayVec<(u32, u32), { (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA }> =
         ArrayVec::new((0, 0));

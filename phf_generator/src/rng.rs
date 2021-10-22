@@ -21,7 +21,7 @@ impl Rng {
 
     /// Generates a pseudo-random [`u64`] value and alters the
     /// internal state.
-    /// 
+    ///
     /// This method may be called repeatedly on the same [`Rng`]
     /// instance to produce several random numbers.
     #[inline]
@@ -30,6 +30,32 @@ impl Rng {
 
         let t: u128 = (self.seed as u128).wrapping_mul((self.seed ^ 0xe7037ed1a0b428db) as u128);
         (t.wrapping_shr(64) ^ t) as u64
+    }
+
+    /// Generates a pseudo-random [`char`] value and alters the
+    /// internal state.
+    /// 
+    /// This method may be called repeatedly on the same [`Rng`]
+    /// to produce a random string.
+    #[inline]
+    pub const fn generate_alphanumeric(&mut self) -> char {
+        const CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const NCHARS: u32 = CHARS.len() as u32;
+
+        // Adapted from https://lemire.me/blog/2016/06/30/fast-random-shuffling/
+        let mut r = self.generate() as u32;
+        let mut hi = (((r as u64) * (NCHARS as u64)) >> 32) as u32;
+        let mut lo = r.wrapping_mul(NCHARS);
+        if lo < NCHARS {
+            let t = NCHARS.wrapping_neg() % NCHARS;
+            while lo < t {
+                r = self.generate() as u32;
+                hi = (((r as u64) * (NCHARS as u64)) >> 32) as u32;
+                lo = r.wrapping_mul(NCHARS);
+            }
+        }
+
+        CHARS[hi as usize] as char
     }
 }
 

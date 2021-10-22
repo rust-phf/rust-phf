@@ -21,14 +21,15 @@ mod utils;
 use phf_shared::{HashKey, PhfHash};
 use rng::Rng;
 
-const DEFAULT_LAMBDA: usize = 5;
+#[doc(hidden)]
+pub const DEFAULT_LAMBDA: usize = 5;
 
 const FIXED_SEED: u64 = 1234567890;
 
 #[cfg(feature = "const-api")]
 pub struct HashState<const N: usize>
 where
-    utils::ArrayVec<(), { (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA }>: Sized,
+    [(); (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA]: Sized,
 {
     pub key: HashKey,
     pub disps: utils::ArrayVec<(u32, u32), { (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA }>,
@@ -45,7 +46,7 @@ pub struct HashState {
 #[cfg(feature = "const-api")]
 pub const fn generate_hash<H: ~const PhfHash, const N: usize>(entries: &[H; N]) -> HashState<N>
 where
-    utils::ArrayVec<(), { (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA }>: Sized,
+    [(); (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA]: Sized,
 {
     let mut rng = Rng::new(FIXED_SEED);
     loop {
@@ -73,7 +74,7 @@ const fn try_generate_hash<H: ~const PhfHash, const N: usize>(
     key: HashKey,
 ) -> Option<HashState<N>>
 where
-    utils::ArrayVec<(), { (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA }>: Sized,
+    [(); (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA]: Sized,
 {
     use utils::ArrayVec;
 

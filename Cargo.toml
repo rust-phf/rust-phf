@@ -1,8 +1,11 @@
 [workspace]
 members = [
     "phf",
-    "phf_codegen",
-    "phf_codegen/test",
+    # TODO: Re-enable when a possibility is found to build all of phf_codegen's
+    # dependencies *WITHOUT* the `const-api` cargo feature, but everything else
+    # either with or without, depending on feature opt-ins.
+    #"phf_codegen",
+    #"phf_codegen/test",
     "phf_generator",
     "phf_macros",
     "phf_macros_tests",

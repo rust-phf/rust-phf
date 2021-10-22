@@ -122,8 +122,54 @@ where
     }
 
     // Sort descending
-    // buckets.sort_by(|a, b| a.keys.len().cmp(&b.keys.len()).reverse());
-    // TODO
+    {
+        const fn partition<const N: usize>(
+            buckets: &mut [Bucket<N>],
+            mut start: usize,
+            mut end: usize,
+        ) -> usize {
+            let pivot_idx = start;
+            let pivot = buckets[start];
+
+            while start < end {
+                // Increment start until an element smaller than pivot is found.
+                while start < buckets.len() && pivot.keys.len() <= buckets[start].keys.len() {
+                    start += 1;
+                }
+
+                // Decrement end until an element greater than pivot is found.
+                while pivot.keys.len() > buckets[end].keys.len() {
+                    end -= 1;
+                }
+
+                // If start and end have not crossed each other, swap them.
+                if start < end {
+                    let temp = buckets[start];
+                    buckets[start] = buckets[end];
+                    buckets[end] = temp;
+                }
+            }
+
+            // Swap pivot element and end to put pivot in its correct place.
+            let temp = buckets[end];
+            buckets[end] = buckets[pivot_idx];
+            buckets[pivot_idx] = temp;
+
+            end
+        }
+
+        const fn quick_sort<const N: usize>(start: usize, end: usize, buckets: &mut [Bucket<N>]) {
+            if start < end {
+                let part = partition(buckets, start, end);
+
+                // Sort elements before and after partition.
+                quick_sort(start, part - 1, buckets);
+                quick_sort(part + 1, end, buckets);
+            }
+        }
+
+        quick_sort(0, buckets.len(), &mut buckets)
+    }
 
     let mut map: ArrayVec<Option<usize>, N> = ArrayVec::new(None);
     let mut disps: ArrayVec<(u32, u32), { (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA }> =

@@ -16,6 +16,7 @@ use core::fmt;
 use core::hash::{Hash, Hasher};
 use siphasher::{Hash128, Hasher128, SipHasher13};
 
+#[derive(Clone, Copy)]
 #[non_exhaustive]
 pub struct Hashes {
     pub g: u32,

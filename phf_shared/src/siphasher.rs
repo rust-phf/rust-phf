@@ -12,7 +12,6 @@
 
 use core::{hash, mem, ptr};
 
-/// A 128-bit (2x64) hash output.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Hash128 {
     pub h1: u64,
@@ -21,7 +20,7 @@ pub struct Hash128 {
 
 impl const From<u128> for Hash128 {
     fn from(v: u128) -> Self {
-        Hash128 {
+        Self {
             h1: v as u64,
             h2: (v >> 64) as u64,
         }
@@ -29,8 +28,8 @@ impl const From<u128> for Hash128 {
 }
 
 impl const From<Hash128> for u128 {
-    fn from(h: Hash128) -> u128 {
-        (h.h1 as u128) | ((h.h2 as u128) << 64)
+    fn from(v: Hash128) -> Self {
+        (v.h1 as u128) | ((v.h2 as u128) << 64)
     }
 }
 
@@ -41,7 +40,7 @@ pub struct SipHasher13 {
     k1: u64,
     length: usize, // how many bytes we've processed
     state: State,  // hash State
-    tail: u64,     // uncompressed bytes le
+    tail: u64,     // unprocessed bytes le
     ntail: usize,  // how many bytes in tail are valid
 }
 
@@ -96,11 +95,11 @@ impl State {
 #[inline]
 const fn u8to64_le(buf: &[u8], start: usize, len: usize) -> u64 {
     debug_assert!(len < 8);
-    let mut i = 0; // current byte index (from LSB) in the output u64.
+    let mut i = 0; // current byte index (from LSB) in the output u64
     let mut out = 0;
     if i + 3 < len {
         out = u32::from_le_bytes([
-            buf[start + i + 0],
+            buf[start + i],
             buf[start + i + 1],
             buf[start + i + 2],
             buf[start + i + 3],
@@ -108,7 +107,7 @@ const fn u8to64_le(buf: &[u8], start: usize, len: usize) -> u64 {
         i += 4;
     }
     if i + 1 < len {
-        out |= (u16::from_le_bytes([buf[start + i + 0], buf[start + i + 1]]) as u64) << (i * 8);
+        out |= (u16::from_le_bytes([buf[start + i], buf[start + i + 1]]) as u64) << (i * 8);
         i += 2;
     }
     if i < len {
@@ -119,16 +118,11 @@ const fn u8to64_le(buf: &[u8], start: usize, len: usize) -> u64 {
     out
 }
 
-pub trait Hasher128 {
-    /// Returns a 128-bit hash
-    fn finish128(&self) -> Hash128;
-}
-
 impl SipHasher13 {
-    /// Creates a `SipHasher13` that is keyed off the provided keys.
-    #[inline]
-    pub const fn new_with_keys(key0: u64, key1: u64) -> SipHasher13 {
-        let mut state = Self {
+    /// Creates a new `SipHasher13` that is keyed off the provided keys.
+    #[inline(always)]
+    pub const fn new_with_keys(key0: u64, key1: u64) -> Self {
+        let mut state = SipHasher13 {
             k0: key0,
             k1: key1,
             length: 0,
@@ -145,7 +139,7 @@ impl SipHasher13 {
         state
     }
 
-    #[inline(always)]
+    #[inline]
     const fn reset(&mut self) {
         self.length = 0;
         self.state.v0 = self.k0 ^ 0x736f6d6570736575;
@@ -192,7 +186,9 @@ impl SipHasher13 {
         self.tail = if needed < 8 { x >> (8 * needed) } else { 0 };
     }
 
-    const fn finish128(&self) -> Hash128 {
+    /// Return a 128-bit hash
+    #[inline]
+    pub const fn finish128(&self) -> Hash128 {
         let mut state = self.state;
 
         let b: u64 = ((self.length as u64 & 0xff) << 56) | self.tail;
@@ -213,18 +209,60 @@ impl SipHasher13 {
     }
 }
 
-impl const Hasher128 for SipHasher13 {
-    /// Return a 128-bit hash
-    #[inline]
-    fn finish128(&self) -> Hash128 {
-        Self::finish128(self)
-    }
-}
-
 impl const hash::Hasher for SipHasher13 {
     #[inline]
-    fn write_usize(&mut self, i: usize) {
-        self.short_write::<usize>(i.to_le() as u64);
+    fn finish(&self) -> u64 {
+        self.finish128().h2
+    }
+
+    #[inline]
+    fn write(&mut self, msg: &[u8]) {
+        let length = msg.len();
+        self.length += length;
+
+        let mut needed = 0;
+
+        if self.ntail != 0 {
+            needed = 8 - self.ntail;
+            if length < needed {
+                self.tail |= u8to64_le(msg, 0, length) << (8 * self.ntail);
+                self.ntail += length;
+                return;
+            } else {
+                self.tail |= u8to64_le(msg, 0, needed) << (8 * self.ntail);
+                self.state.v3 ^= self.tail;
+                self.state.c_rounds();
+                self.state.v0 ^= self.tail;
+                self.ntail = 0;
+            }
+        }
+
+        // Buffered tail is now flushed, process new input.
+        let len = length - needed;
+        let left = len & 0x7;
+
+        let mut i = needed;
+        while i < len - left {
+            let mi = u64::from_le_bytes([
+                msg[i],
+                msg[i + 1],
+                msg[i + 2],
+                msg[i + 3],
+                msg[i + 4],
+                msg[i + 5],
+                msg[i + 6],
+                msg[i + 7],
+            ]);
+
+            self.state.v3 ^= mi;
+            self.state.c_rounds();
+            self.state.v0 ^= mi;
+
+            i += 8;
+        }
+
+        self.tail = u8to64_le(msg, i, left);
+        self.ntail = left;
     }
 
     #[inline]
@@ -234,7 +272,6 @@ impl const hash::Hasher for SipHasher13 {
 
     #[inline]
     fn write_u16(&mut self, i: u16) {
-        // TODO: Is this correct?
         self.short_write::<u16>(i.to_le() as u64);
     }
 
@@ -254,88 +291,38 @@ impl const hash::Hasher for SipHasher13 {
     }
 
     #[inline]
-    fn write_isize(&mut self, i: isize) {
-        self.write_usize(i as usize);
+    fn write_usize(&mut self, i: usize) {
+        self.short_write::<usize>(i.to_le() as u64);
     }
 
     #[inline]
     fn write_i8(&mut self, i: i8) {
-        self.write_u8(i as u8);
+        self.write_u8(i as u8)
     }
 
     #[inline]
     fn write_i16(&mut self, i: i16) {
-        self.write_u16(i as u16);
+        self.write_u16(i as u16)
     }
 
     #[inline]
     fn write_i32(&mut self, i: i32) {
-        self.write_u32(i as u32);
+        self.write_u32(i as u32)
     }
 
     #[inline]
     fn write_i64(&mut self, i: i64) {
-        self.write_u64(i as u64);
+        self.write_u64(i as u64)
     }
 
     #[inline]
     fn write_i128(&mut self, i: i128) {
-        self.write_u128(i as u128);
+        self.write_u128(i as u128)
     }
 
     #[inline]
-    fn write(&mut self, bytes: &[u8]) {
-        let length = bytes.len();
-        self.length += length;
-
-        let mut needed = 0;
-
-        if self.ntail != 0 {
-            needed = 8 - self.ntail;
-            if length < needed {
-                self.tail |= u8to64_le(bytes, 0, length) << (8 * self.ntail);
-                self.ntail += length;
-                return;
-            } else {
-                self.tail |= u8to64_le(bytes, 0, needed) << (8 * self.ntail);
-                self.state.v3 ^= self.tail;
-                self.state.c_rounds();
-                self.state.v0 ^= self.tail;
-                self.ntail = 0;
-            }
-        }
-
-        // Buffered tail is now flushed, process new input.
-        let len = length - needed;
-        let left = len & 0x7;
-
-        let mut i = needed;
-        while i < len - left {
-            let mi = u64::from_le_bytes([
-                bytes[i + 0],
-                bytes[i + 1],
-                bytes[i + 2],
-                bytes[i + 3],
-                bytes[i + 4],
-                bytes[i + 5],
-                bytes[i + 6],
-                bytes[i + 7],
-            ]);
-
-            self.state.v3 ^= mi;
-            self.state.c_rounds();
-            self.state.v0 ^= mi;
-
-            i += 8;
-        }
-
-        self.tail = u8to64_le(bytes, i, left);
-        self.ntail = left;
-    }
-
-    #[inline]
-    fn finish(&self) -> u64 {
-        self.finish128().h2
+    fn write_isize(&mut self, i: isize) {
+        self.write_usize(i as usize)
     }
 }
 
@@ -351,27 +338,11 @@ impl Hash128 {
         }
         bytes
     }
-
-    /// Convert into a `u128`
-    #[inline]
-    pub const fn as_u128(&self) -> u128 {
-        let h1 = self.h1.to_le();
-        let h2 = self.h2.to_le();
-        h1 as u128 | ((h2 as u128) << 64)
-    }
-
-    /// Convert into `(u64, u64)`
-    #[inline]
-    pub const fn as_u64(&self) -> (u64, u64) {
-        let h1 = self.h1.to_le();
-        let h2 = self.h2.to_le();
-        (h1, h2)
-    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{Hasher128, SipHasher13};
+    use super::SipHasher13;
     use std::hash::{Hash, Hasher};
 
     // Hash just the bytes of the slice, without length prefix
@@ -385,7 +356,7 @@ mod tests {
         }
     }
 
-    fn hash_with<H: Hasher + Hasher128, T: Hash>(mut st: H, x: &T) -> [u8; 16] {
+    fn hash_with<T: Hash>(mut st: SipHasher13, x: &T) -> [u8; 16] {
         x.hash(&mut st);
         st.finish128().as_bytes()
     }

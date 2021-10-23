@@ -87,33 +87,33 @@ extern crate std as core;
 pub extern crate phf_macros as __phf_macros;
 
 #[cfg(feature = "macros")]
-impl<Key: 'static, Value: 'static, const N: usize> const
-    From<&'static ([(Key, Value); N], phf_generator::HashState<N>)> for Map<Key, Value>
+#[doc(hidden)]
+pub const fn build_map<Key: 'static, Value: 'static, const N: usize>(
+    state: &'static ([(Key, Value); N], phf_generator::HashState<N>),
+) -> Map<Key, Value>
 where
     [(); (N + phf_generator::DEFAULT_LAMBDA - 1) / phf_generator::DEFAULT_LAMBDA]: Sized,
 {
-    fn from(v: &'static ([(Key, Value); N], phf_generator::HashState<N>)) -> Self {
-        Self {
-            key: v.1.key,
-            disps: &*v.1.disps,
-            entries: &v.0,
-        }
+    Map {
+        key: state.1.key,
+        disps: &*state.1.disps,
+        entries: &state.0,
     }
 }
 
 #[cfg(feature = "macros")]
-impl<Key: 'static, Value: 'static, const N: usize> const
-    From<&'static ([(Key, Value); N], phf_generator::HashState<N>)> for OrderedMap<Key, Value>
+#[doc(hidden)]
+pub const fn build_ordered_map<Key: 'static, Value: 'static, const N: usize>(
+    state: &'static ([(Key, Value); N], phf_generator::HashState<N>),
+) -> OrderedMap<Key, Value>
 where
     [(); (N + phf_generator::DEFAULT_LAMBDA - 1) / phf_generator::DEFAULT_LAMBDA]: Sized,
 {
-    fn from(v: &'static ([(Key, Value); N], phf_generator::HashState<N>)) -> Self {
-        Self {
-            key: v.1.key,
-            disps: &*v.1.disps,
-            idxs: &*v.1.map,
-            entries: &v.0,
-        }
+    OrderedMap {
+        key: state.1.key,
+        disps: &*state.1.disps,
+        idxs: &*state.1.map,
+        entries: &state.0,
     }
 }
 
@@ -138,8 +138,8 @@ where
 /// ```
 #[macro_export]
 macro_rules! phf_map {
-    ($($($key:tt)* => $($value:tt)*),* $(,)*) => {
-        $crate::Map::from(&$crate::__phf_macros::phf_map(&[$(($($key)*, $($value)*)),*]))
+    ($($key:expr => $value:expr),* $(,)*) => {
+        $crate::build_map(&$crate::__phf_macros::phf_map(&[$(($key, $value)),*]))
     };
 }
 
@@ -149,9 +149,9 @@ macro_rules! phf_map {
 /// Requires the `macros` feature. Same usage as [`phf_map`].
 #[macro_export]
 macro_rules! phf_ordered_map {
-    ($($($key:tt)* => $($value:tt)*),* $(,)*) => {
-        $crate::OrderedMap::from(
-            &$crate::__phf_macros::phf_ordered_map(&[$(($($key)*, $($value)*)),*]),
+    ($($key:expr => $value:expr),* $(,)*) => {
+        $crate::build_ordered_map(
+            &$crate::__phf_macros::phf_ordered_map(&[$(($key, $value)),*]),
         )
     };
 }
@@ -177,9 +177,9 @@ macro_rules! phf_ordered_map {
 /// ```
 #[macro_export]
 macro_rules! phf_set {
-    ($($($key:tt)*),* $(,)*) => {
+    ($($key:expr),* $(,)*) => {
         $crate::Set {
-            map: $crate::Map::from($crate::__phf_macros::phf_set(&[$($($key)*),*])),
+            map: $crate::build_map(&$crate::__phf_macros::phf_set(&[$($key),*])),
         }
     };
 }
@@ -190,10 +190,10 @@ macro_rules! phf_set {
 /// Requires the `macros` feature. Same usage as [`phf_set`].
 #[macro_export]
 macro_rules! phf_ordered_set {
-    ($($($key:tt)*),* $(,)*) => {
+    ($($key:expr),* $(,)*) => {
         $crate::OrderedSet {
-            map: $crate::OrderedMap::from(
-                $crate::__phf_macros::phf_ordered_set(&[$($($key)*),*]),
+            map: $crate::build_ordered_map(
+                &$crate::__phf_macros::phf_ordered_set(&[$($key),*]),
             ),
         }
     };

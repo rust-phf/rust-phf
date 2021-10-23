@@ -21,6 +21,8 @@ mod utils;
 use phf_shared::{HashKey, PhfHash};
 use rng::Rng;
 
+// We need `DEFAULT_LAMBDA` as part of the stable public API to formalize
+// where clauses for the const API on map and set generation methods.
 #[doc(hidden)]
 pub const DEFAULT_LAMBDA: usize = 5;
 
@@ -88,7 +90,7 @@ where
         fn default() -> Self {
             Bucket {
                 idx: 0,
-                keys: ArrayVec::new(0),
+                keys: ArrayVec::new_empty(0),
             }
         }
     }
@@ -123,57 +125,31 @@ where
 
     // Sort descending
     {
-        const fn partition<const N: usize>(
-            buckets: &mut [Bucket<N>],
-            mut start: usize,
-            mut end: usize,
-        ) -> usize {
-            let pivot_idx = start;
-            let pivot = buckets[start];
+        // This is a bubble sort. Given that it is executed at compile-time
+        // without any runtime overhead over relatively few entries from
+        // hand-written macro literals, its minimal and robust implementation
+        // is good enough for us and the const evaluation engine.
+        let mut swapped = true;
+        while swapped {
+            swapped = false;
+            let mut i = 1;
+            while i < buckets.len() {
+                if buckets[i - 1].keys.len() < buckets[i].keys.len() {
+                    // Swap elements
+                    let temp = buckets[i - 1];
+                    buckets[i - 1] = buckets[i];
+                    buckets[i] = temp;
 
-            while start < end {
-                // Increment start until an element smaller than pivot is found.
-                while start < buckets.len() && pivot.keys.len() <= buckets[start].keys.len() {
-                    start += 1;
+                    swapped = true;
                 }
-
-                // Decrement end until an element greater than pivot is found.
-                while pivot.keys.len() > buckets[end].keys.len() {
-                    end -= 1;
-                }
-
-                // If start and end have not crossed each other, swap them.
-                if start < end {
-                    let temp = buckets[start];
-                    buckets[start] = buckets[end];
-                    buckets[end] = temp;
-                }
-            }
-
-            // Swap pivot element and end to put pivot in its correct place.
-            let temp = buckets[end];
-            buckets[end] = buckets[pivot_idx];
-            buckets[pivot_idx] = temp;
-
-            end
-        }
-
-        const fn quick_sort<const N: usize>(start: usize, end: usize, buckets: &mut [Bucket<N>]) {
-            if start < end {
-                let part = partition(buckets, start, end);
-
-                // Sort elements before and after partition.
-                quick_sort(start, part - 1, buckets);
-                quick_sort(part + 1, end, buckets);
+                i += 1;
             }
         }
-
-        quick_sort(0, buckets.len(), &mut buckets)
     }
 
-    let mut map: ArrayVec<Option<usize>, N> = ArrayVec::new(None);
+    let mut map: ArrayVec<Option<usize>, N> = ArrayVec::new_full(None);
     let mut disps: ArrayVec<(u32, u32), { (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA }> =
-        ArrayVec::new((0, 0));
+        ArrayVec::new_full((0, 0));
 
     // store whether an element from the bucket being placed is
     // located at a certain position, to allow for efficient overlap
@@ -188,12 +164,12 @@ where
     // the actual values corresponding to the markers above, as
     // (index, key) pairs, for adding to the main map, once we've
     // chosen the right disps.
-    let mut values_to_add: ArrayVec<(usize, usize), N> = ArrayVec::new((0, 0));
+    let mut values_to_add: ArrayVec<(usize, usize), N> = ArrayVec::new_empty((0, 0));
 
-    let mut i1 = 0;
-    'buckets: while i1 < buckets.len() {
-        let bucket = &buckets[i1];
-        i1 += 1;
+    let mut i = 0;
+    'buckets: while i < buckets.len() {
+        let bucket = &buckets[i];
+        i += 1;
 
         let mut d1 = 0;
         while d1 < N {
@@ -202,9 +178,9 @@ where
                 values_to_add.clear();
                 generation += 1;
 
-                let mut i2 = 0;
-                while i2 < bucket.keys.len() {
-                    let key = bucket.keys.get(i2);
+                let mut j = 0;
+                while j < bucket.keys.len() {
+                    let key = bucket.keys[j];
                     let idx =
                         (phf_shared::displace(hashes[key].f1, hashes[key].f2, d1 as u32, d2 as u32)
                             % (N as u32)) as usize;
@@ -214,16 +190,16 @@ where
                     }
                     try_map[idx] = generation;
                     values_to_add.push((idx, key));
-                    i2 += 1;
+                    j += 1;
                 }
 
                 // We've picked a good set of disps
                 disps.set(bucket.idx, (d1 as u32, d2 as u32));
-                i2 = 0;
-                while i2 < values_to_add.len() {
-                    let &(idx, key) = values_to_add.get_ref(i2);
+                j = 0;
+                while j < values_to_add.len() {
+                    let (idx, key) = values_to_add.get(j);
                     map.set(idx, Some(key));
-                    i2 += 1;
+                    j += 1;
                 }
                 continue 'buckets;
             }
@@ -238,7 +214,7 @@ where
         key,
         disps,
         map: {
-            let mut result: ArrayVec<usize, N> = ArrayVec::new(0);
+            let mut result: ArrayVec<usize, N> = ArrayVec::new_full(0);
             let mut i = 0;
             while i < map.len() {
                 result.set(i, map.get(i).unwrap());

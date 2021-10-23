@@ -13,7 +13,7 @@ extern crate std as core;
 mod siphasher;
 
 use core::fmt;
-use core::hash::{Hash, Hasher};
+use core::hash::Hasher;
 use siphasher::{Hash128, Hasher128, SipHasher13};
 
 #[derive(Clone, Copy)]
@@ -38,7 +38,7 @@ pub type HashKey = u64;
 
 #[inline]
 pub const fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
-    d2.wrapping_add(f1).wrapping_mul(d1).wrapping_add(f2)
+    d2.wrapping_add(f1.wrapping_mul(d1)).wrapping_add(f2)
 }
 
 /// `key` is from `phf_generator::HashState`.
@@ -367,14 +367,14 @@ impl FmtConst for [u8] {
     }
 }
 
-#[cfg(feature = "unicase")]
+#[cfg(all(feature = "unicase", not(feature = "const-api")))]
 impl<S> PhfHash for unicase::UniCase<S>
 where
-    unicase::UniCase<S>: Hash,
+    unicase::UniCase<S>: core::hash::Hash,
 {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
-        self.hash(state)
+        <Self as core::hash::Hash>::hash(self, state)
     }
 }
 
@@ -402,7 +402,7 @@ impl<'b, 'a: 'b, S: ?Sized + 'a> PhfBorrow<unicase::UniCase<&'b S>> for unicase:
     }
 }
 
-#[cfg(feature = "uncased")]
+#[cfg(all(feature = "uncased", not(feature = "const-api")))]
 impl PhfHash for uncased::UncasedStr {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {

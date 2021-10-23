@@ -17,10 +17,7 @@
     maybe_uninit_uninit_array
 )]
 
-use std::{
-    hash::{Hash, Hasher},
-    mem::{transmute_copy, MaybeUninit},
-};
+use std::mem::{transmute_copy, MaybeUninit};
 
 use phf_generator::{HashState, DEFAULT_LAMBDA};
 use phf_shared::PhfHash;
@@ -28,11 +25,6 @@ use phf_shared::PhfHash;
 const unsafe fn const_array_assume_init<T, const N: usize>(array: &[MaybeUninit<T>; N]) -> [T; N] {
     transmute_copy(array)
 }
-
-// `Key` struct previously; arbitrary hashable expression now.
-// `Entry` struct previously; tuple of `Key` and an arbitrary expression as value; hashable by key
-// `Map` struct previously; duplicates-checked Vec of `Entry`s.
-// `Set` struct previously; duplicates-checked Vec of `Entry`s with real key and hacked `()` as value.
 
 const fn check_duplicates<Key, Value, const N: usize>(_entries: &[(Key, Value); N]) {
     // TODO: Implement this and enable `const_panic` feature.
@@ -48,16 +40,7 @@ const fn check_duplicates<Key, Value, const N: usize>(_entries: &[(Key, Value); 
     Ok(())
 }*/
 
-pub struct Entry<'a, Key, Value>(&'a (Key, Value));
-
-impl<'a, Key: ~const Hash, Value> const PhfHash for Entry<'a, Key, Value> {
-    #[inline]
-    fn phf_hash<H: ~const Hasher>(&self, state: &mut H) {
-        self.0 .0.hash(state)
-    }
-}
-
-pub const fn phf_map<Key: ~const Hash, Value, const N: usize>(
+pub const fn phf_map<Key: ~const PhfHash, Value, const N: usize>(
     entries: &[(Key, Value); N],
 ) -> ([(Key, Value); N], HashState<N>)
 where
@@ -70,7 +53,7 @@ where
     let mut keys = MaybeUninit::uninit_array::<N>();
     let mut i = 0;
     while i < entries.len() {
-        keys[i].write(Entry(&entries[i]));
+        keys[i].write(&entries[i].0);
         i += 1;
     }
     let state = phf_generator::generate_hash(unsafe { &const_array_assume_init(&keys) });
@@ -86,7 +69,7 @@ where
     (unsafe { const_array_assume_init(&ordered_entries) }, state)
 }
 
-pub const fn phf_ordered_map<Key: ~const Hash, Value, const N: usize>(
+pub const fn phf_ordered_map<Key: ~const PhfHash, Value, const N: usize>(
     entries: &[(Key, Value); N],
 ) -> ([(Key, Value); N], HashState<N>)
 where
@@ -99,7 +82,7 @@ where
     let mut keys = MaybeUninit::uninit_array::<N>();
     let mut i = 0;
     while i < entries.len() {
-        keys[i].write(Entry(&entries[i]));
+        keys[i].write(&entries[i].0);
         i += 1;
     }
     let state = phf_generator::generate_hash(unsafe { &const_array_assume_init(&keys) });
@@ -108,7 +91,7 @@ where
     (*entries, state)
 }
 
-pub const fn phf_set<Key: ~const Hash, const N: usize>(
+pub const fn phf_set<Key: ~const PhfHash, const N: usize>(
     entries: &[Key; N],
 ) -> ([(Key, ()); N], HashState<N>)
 where
@@ -125,7 +108,7 @@ where
     phf_map(unsafe { &const_array_assume_init(&map_entries) })
 }
 
-pub const fn phf_ordered_set<Key: ~const Hash, const N: usize>(
+pub const fn phf_ordered_set<Key: ~const PhfHash, const N: usize>(
     entries: &[Key; N],
 ) -> ([(Key, ()); N], HashState<N>)
 where

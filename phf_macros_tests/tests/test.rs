@@ -247,10 +247,6 @@ mod map {
             5 + 4 + 3 => 1,
         };
 
-        for (k, v) in &MAP {
-            println!("{} {}", k, v);
-        }
-
         assert_eq!(MAP.get(&3), Some(&0));
         assert_eq!(MAP.get(&12), Some(&1));
         assert_eq!(MAP.get(&4), None);

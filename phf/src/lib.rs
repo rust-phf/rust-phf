@@ -36,7 +36,7 @@
 //! ```rust
 //! use phf::phf_map;
 //!
-//! #[derive(Clone)]
+//! #[derive(Clone, Copy)]
 //! pub enum Keyword {
 //!     Loop,
 //!     Continue,

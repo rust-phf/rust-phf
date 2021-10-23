@@ -40,7 +40,6 @@ where
 {
     check_duplicates(entries);
 
-    // Produce a hash state over all the keys in our map.
     let mut keys = MaybeUninit::uninit_array::<N>();
     let mut i = 0;
     while i < entries.len() {
@@ -49,7 +48,6 @@ where
     }
     let state = phf_generator::generate_hash(unsafe { &const_array_assume_init(&keys) });
 
-    // Reorder all the entries as per state's map.
     let mut ordered_entries = MaybeUninit::uninit_array::<N>();
     i = 0;
     while i < state.map.len() {
@@ -69,7 +67,6 @@ where
 {
     check_duplicates(entries);
 
-    // Produce a hash state over all the keys in our map.
     let mut keys = MaybeUninit::uninit_array::<N>();
     let mut i = 0;
     while i < entries.len() {
@@ -78,7 +75,6 @@ where
     }
     let state = phf_generator::generate_hash(unsafe { &const_array_assume_init(&keys) });
 
-    // We don't need to do any sorting here.
     (*entries, state)
 }
 

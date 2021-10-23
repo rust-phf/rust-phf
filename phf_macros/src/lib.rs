@@ -17,7 +17,7 @@
     maybe_uninit_uninit_array
 )]
 
-use std::mem::{transmute_copy, MaybeUninit};
+use core::mem::{transmute_copy, MaybeUninit};
 
 use phf_generator::{HashState, DEFAULT_LAMBDA};
 use phf_shared::PhfHash;
@@ -27,18 +27,9 @@ const unsafe fn const_array_assume_init<T, const N: usize>(array: &[MaybeUninit<
 }
 
 const fn check_duplicates<Key, Value, const N: usize>(_entries: &[(Key, Value); N]) {
-    // TODO: Implement this and enable `const_panic` feature.
+    // TODO: Implement once we can compare keys in const fn and produce
+    //       a formatted panic message that points out the duplicate key.
 }
-
-/*fn check_duplicates(entries: &[Entry]) -> parse::Result<()> {
-    let mut keys = HashSet::new();
-    for entry in entries {
-        if !keys.insert(&entry.key.parsed) {
-            return Err(Error::new_spanned(&entry.key.expr, "duplicate key"));
-        }
-    }
-    Ok(())
-}*/
 
 pub const fn phf_map<Key: ~const PhfHash, Value, const N: usize>(
     entries: &[(Key, Value); N],

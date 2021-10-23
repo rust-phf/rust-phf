@@ -254,8 +254,8 @@ mod map {
 
     #[test]
     fn test_nested_map() {
-        static MAP: phf::Map<&'static str, &'static phf::Map<&'static str, u16>> = phf_map! {
-            "nested" => &phf_map! {
+        static MAP: phf::Map<&'static str, phf::Map<&'static str, u16>> = phf_map! {
+            "nested" => phf_map! {
                 "map" => 1337,
             },
         };

@@ -10,6 +10,7 @@
     const_maybe_uninit_write,
     const_mut_refs,
     const_ptr_read,
+    const_panic,
     const_refs_to_cell,
     const_trait_impl,
     const_transmute_copy,
@@ -51,7 +52,8 @@ where
     let mut ordered_entries = MaybeUninit::uninit_array::<N>();
     i = 0;
     while i < state.map.len() {
-        ordered_entries[i].write(entries[i]);
+        let idx = state.map[i];
+        ordered_entries[i].write(entries[idx]);
         i += 1;
     }
 

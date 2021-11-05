@@ -83,6 +83,11 @@ extern crate std as core;
 ///
 /// Requires the `macros` feature.
 ///
+/// Supported key expressions are:
+/// - literals: bools, (byte) strings, bytes, chars, and integers (these must have a type suffix)
+/// - arrays of `u8` integers
+/// - `UniCase::unicode(string)` or `UniCase::ascii(string)` if the `unicase` feature is enabled
+///
 /// # Example
 ///
 /// ```

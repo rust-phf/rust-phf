@@ -6,11 +6,11 @@ build = "build.rs"
 edition = "2018"
 
 [dependencies]
-phf = { version = "0.10.0", features = ["uncased", "unicase"] }
+phf = { version = "0.11.0", features = ["uncased", "unicase"] }
 uncased = { version = "0.9.6", default-features = false }
 unicase = "2.4.0"
 
 [build-dependencies]
-phf_codegen = { version = "0.10.0", path = ".." }
+phf_codegen = { version = "0.11.0", path = ".." }
 unicase = "2.4.0"
 uncased = { version = "0.9.6", default-features = false }

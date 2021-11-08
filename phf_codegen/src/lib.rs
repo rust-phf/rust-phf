@@ -128,7 +128,7 @@
 //! // ...
 //! ```
 
-#![doc(html_root_url = "https://docs.rs/phf_codegen/0.10")]
+#![doc(html_root_url = "https://docs.rs/phf_codegen/0.11")]
 
 use phf_shared::{FmtConst, PhfHash};
 use std::collections::HashSet;

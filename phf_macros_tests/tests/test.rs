@@ -241,6 +241,33 @@ mod map {
     }
 
     #[test]
+    fn test_constexpr_keys() {
+        static MAP: phf::Map<u8, isize> = phf_map! {
+            stringify!(abc).len() as u8 => 0,
+            5 + 4 + 3 => 1,
+        };
+
+        assert_eq!(MAP.get(&3), Some(&0));
+        assert_eq!(MAP.get(&12), Some(&1));
+        assert_eq!(MAP.get(&4), None);
+    }
+
+    #[test]
+    fn test_nested_map() {
+        static MAP: phf::Map<&'static str, phf::Map<&'static str, u16>> = phf_map! {
+            "nested" => phf_map! {
+                "map" => 1337,
+            },
+        };
+
+        assert_eq!(
+            MAP.get(&"nested").and_then(|m| m.get(&"map")),
+            Some(&1337)
+        );
+    }
+
+    // FIXME: Re-enable when UniCase is hashable as const fn.
+    /*#[test]
     fn test_unicase() {
         use unicase::UniCase;
         static MAP: phf::Map<UniCase<&'static str>, isize> = phf_map!(
@@ -250,7 +277,7 @@ mod map {
         assert!(Some(&10) == MAP.get(&UniCase::new("FOo")));
         assert!(Some(&11) == MAP.get(&UniCase::new("bar")));
         assert_eq!(None, MAP.get(&UniCase::new("asdf")));
-    }
+    }*/
 }
 
 mod set {

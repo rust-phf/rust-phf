@@ -2,29 +2,230 @@
 //!
 //! [phf]: https://docs.rs/phf
 
-#![doc(html_root_url = "https://docs.rs/phf_generator/0.10")]
-use phf_shared::{HashKey, PhfHash};
-use rand::distributions::Standard;
-use rand::rngs::SmallRng;
-use rand::{Rng, SeedableRng};
+// XXX: Temporary until stabilization.
+#![allow(incomplete_features)]
+#![feature(
+    const_fn_trait_bound,
+    const_option,
+    const_panic,
+    const_trait_impl,
+    const_mut_refs,
+    generic_const_exprs
+)]
+#![doc(html_root_url = "https://docs.rs/phf_generator/0.11")]
 
-const DEFAULT_LAMBDA: usize = 5;
+pub mod rng;
+#[cfg(feature = "const-api")]
+mod utils;
+
+use phf_shared::{HashKey, PhfHash};
+use rng::Rng;
+
+// We need `DEFAULT_LAMBDA` as part of the stable public API to formalize
+// where clauses for the const API on map and set generation methods.
+#[doc(hidden)]
+pub const DEFAULT_LAMBDA: usize = 5;
 
 const FIXED_SEED: u64 = 1234567890;
 
+#[cfg(feature = "const-api")]
+pub struct HashState<const N: usize>
+where
+    [(); (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA]: Sized,
+{
+    pub key: HashKey,
+    pub disps: utils::ArrayVec<(u32, u32), { (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA }>,
+    pub map: utils::ArrayVec<usize, N>,
+}
+
+#[cfg(not(feature = "const-api"))]
 pub struct HashState {
     pub key: HashKey,
     pub disps: Vec<(u32, u32)>,
     pub map: Vec<usize>,
 }
 
-pub fn generate_hash<H: PhfHash>(entries: &[H]) -> HashState {
-    SmallRng::seed_from_u64(FIXED_SEED)
-        .sample_iter(Standard)
-        .find_map(|key| try_generate_hash(entries, key))
-        .expect("failed to solve PHF")
+#[cfg(feature = "const-api")]
+pub const fn generate_hash<H: ~const PhfHash, const N: usize>(entries: &[H; N]) -> HashState<N>
+where
+    [(); (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA]: Sized,
+{
+    let mut rng = Rng::new(FIXED_SEED);
+    loop {
+        match try_generate_hash(entries, rng.generate()) {
+            Some(state) => break state,
+            None => continue,
+        }
+    }
 }
 
+#[cfg(not(feature = "const-api"))]
+pub fn generate_hash<H: PhfHash>(entries: &[H]) -> HashState {
+    let mut rng = Rng::new(FIXED_SEED);
+    loop {
+        match try_generate_hash(entries, rng.generate()) {
+            Some(state) => break state,
+            None => continue,
+        }
+    }
+}
+
+#[cfg(feature = "const-api")]
+const fn try_generate_hash<H: ~const PhfHash, const N: usize>(
+    entries: &[H; N],
+    key: HashKey,
+) -> Option<HashState<N>>
+where
+    [(); (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA]: Sized,
+{
+    use utils::ArrayVec;
+
+    #[derive(Clone, Copy)]
+    struct Bucket<const N: usize> {
+        idx: usize,
+        keys: ArrayVec<usize, N>,
+    }
+
+    impl<const N: usize> const Default for Bucket<N> {
+        fn default() -> Self {
+            Bucket {
+                idx: 0,
+                keys: ArrayVec::new_empty(0),
+            }
+        }
+    }
+
+    let hashes = {
+        let mut hashes = [phf_shared::Hashes::default(); N];
+        let mut i = 0;
+        while i < N {
+            hashes[i] = phf_shared::hash(&entries[i], &key);
+            i += 1;
+        }
+        hashes
+    };
+
+    let mut buckets = {
+        let mut buckets = [Bucket::<N>::default(); { (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA }];
+        let mut i = 0;
+        while i < buckets.len() {
+            buckets[i].idx = i;
+            i += 1;
+        }
+        buckets
+    };
+
+    let mut i = 0;
+    while i < hashes.len() {
+        buckets[(hashes[i].g % (buckets.len() as u32)) as usize]
+            .keys
+            .push(i);
+        i += 1;
+    }
+
+    // Sort descending
+    {
+        // This is a bubble sort. Given that it is executed at compile-time
+        // without any runtime overhead over relatively few entries from
+        // hand-written macro literals, its minimal and robust implementation
+        // is good enough for us and the const evaluation engine.
+        let mut swapped = true;
+        while swapped {
+            swapped = false;
+            let mut i = 1;
+            while i < buckets.len() {
+                if buckets[i - 1].keys.len() < buckets[i].keys.len() {
+                    // Swap elements
+                    let temp = buckets[i - 1];
+                    buckets[i - 1] = buckets[i];
+                    buckets[i] = temp;
+
+                    swapped = true;
+                }
+                i += 1;
+            }
+        }
+    }
+
+    let mut map: ArrayVec<Option<usize>, N> = ArrayVec::new_full(None);
+    let mut disps: ArrayVec<(u32, u32), { (N + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA }> =
+        ArrayVec::new_full((0, 0));
+
+    // store whether an element from the bucket being placed is
+    // located at a certain position, to allow for efficient overlap
+    // checks. It works by storing the generation in each cell and
+    // each new placement-attempt is a new generation, so you can tell
+    // if this is legitimately full by checking that the generations
+    // are equal. (A u64 is far too large to overflow in a reasonable
+    // time for current hardware.)
+    let mut try_map = [0u64; N];
+    let mut generation = 0u64;
+
+    // the actual values corresponding to the markers above, as
+    // (index, key) pairs, for adding to the main map, once we've
+    // chosen the right disps.
+    let mut values_to_add: ArrayVec<(usize, usize), N> = ArrayVec::new_empty((0, 0));
+
+    let mut i = 0;
+    'buckets: while i < buckets.len() {
+        let bucket = &buckets[i];
+        i += 1;
+
+        let mut d1 = 0;
+        while d1 < N {
+            let mut d2 = 0;
+            'disps: while d2 < N {
+                values_to_add.clear();
+                generation += 1;
+
+                let mut j = 0;
+                while j < bucket.keys.len() {
+                    let key = bucket.keys[j];
+                    let idx =
+                        (phf_shared::displace(hashes[key].f1, hashes[key].f2, d1 as u32, d2 as u32)
+                            % (N as u32)) as usize;
+                    if map.get_ref(idx).is_some() || try_map[idx] == generation {
+                        d2 += 1;
+                        continue 'disps;
+                    }
+                    try_map[idx] = generation;
+                    values_to_add.push((idx, key));
+                    j += 1;
+                }
+
+                // We've picked a good set of disps
+                disps.set(bucket.idx, (d1 as u32, d2 as u32));
+                j = 0;
+                while j < values_to_add.len() {
+                    let (idx, key) = values_to_add.get(j);
+                    map.set(idx, Some(key));
+                    j += 1;
+                }
+                continue 'buckets;
+            }
+            d1 += 1;
+        }
+
+        // Unable to find displacements for a bucket
+        return None;
+    }
+
+    Some(HashState {
+        key,
+        disps,
+        map: {
+            let mut result: ArrayVec<usize, N> = ArrayVec::new_full(0);
+            let mut i = 0;
+            while i < map.len() {
+                result.set(i, map.get(i).unwrap());
+                i += 1;
+            }
+            result
+        },
+    })
+}
+
+#[cfg(not(feature = "const-api"))]
 fn try_generate_hash<H: PhfHash>(entries: &[H], key: HashKey) -> Option<HashState> {
     struct Bucket {
         idx: usize,

@@ -5,6 +5,8 @@ use core::iter::IntoIterator;
 use core::ops::Index;
 use core::slice;
 use phf_shared::{self, HashKey, PhfBorrow, PhfHash};
+#[cfg(feature = "serde")]
+use serde::ser::{Serialize, SerializeMap, Serializer};
 
 /// An immutable map constructed at compile time.
 ///
@@ -279,3 +281,21 @@ impl<'a, K, V> DoubleEndedIterator for Values<'a, K, V> {
 impl<'a, K, V> ExactSizeIterator for Values<'a, K, V> {}
 
 impl<'a, K, V> FusedIterator for Values<'a, K, V> {}
+
+#[cfg(feature = "serde")]
+impl<K, V> Serialize for Map<K, V>
+where
+    K: Serialize,
+    V: Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(self.len()))?;
+        for (k, v) in self.entries() {
+            map.serialize_entry(k, v)?;
+        }
+        map.end()
+    }
+}

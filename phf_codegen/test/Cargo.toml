@@ -6,7 +6,7 @@ build = "build.rs"
 edition = "2018"
 
 [dependencies]
-phf = { version = "0.10.0", features = ["uncased", "unicase"] }
+phf = { version = "0.10", features = ["uncased", "unicase"] }
 uncased = { version = "0.9.6", default-features = false }
 unicase = "2.4.0"
 

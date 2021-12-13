@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.10.1
+
+* Allow serializing `Map` ([#244])
+* Improve docs ([#240], [#243])
+
+[#240]: https://github.com/rust-phf/rust-phf/pull/240
+[#243]: https://github.com/rust-phf/rust-phf/pull/243
+[#244]: https://github.com/rust-phf/rust-phf/pull/244
+
 ## 0.10.0
 
 * Constify `len` and `is_empty` ([#224])

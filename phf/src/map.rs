@@ -15,6 +15,7 @@ use serde::ser::{Serialize, SerializeMap, Serializer};
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_map!` macro and code generation. They are subject to change at any
 /// time and should never be accessed directly.
+#[derive(PartialEq, Eq)]
 pub struct Map<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub key: HashKey,

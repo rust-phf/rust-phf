@@ -16,6 +16,7 @@ use phf_shared::{self, HashKey, PhfBorrow, PhfHash};
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_ordered_map!` macro and code generation. They are subject to change at
 /// any time and should never be accessed directly.
+#[derive(PartialEq, Eq)]
 pub struct OrderedMap<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub key: HashKey,

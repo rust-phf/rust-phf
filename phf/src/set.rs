@@ -14,6 +14,7 @@ use crate::{map, Map};
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_set!` macro and code generation. They are subject to change at any
 /// time and should never be accessed directly.
+#[derive(PartialEq, Eq)]
 pub struct Set<T: 'static> {
     #[doc(hidden)]
     pub map: Map<T, ()>,

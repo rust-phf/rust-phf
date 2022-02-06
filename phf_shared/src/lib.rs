@@ -364,26 +364,28 @@ impl PhfHash for char {
 }
 
 // minimize duplicated code since formatting drags in quite a bit
-fn fmt_array(array: &[u8], f: &mut fmt::Formatter<'_>) -> fmt::Result {
+fn fmt_array<T: core::fmt::Debug>(array: &[T], f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(f, "{:?}", array)
 }
 
 macro_rules! array_impl (
-    ($t:ty, $n:expr) => (
-        impl PhfHash for [$t; $n] {
+    ($t:ty) => (
+        impl<const N: usize> PhfHash for [$t; N] {
             #[inline]
             fn phf_hash<H: Hasher>(&self, state: &mut H) {
-                state.write(self);
+                for v in &self[..] {
+                    v.phf_hash(state);
+                }
             }
         }
 
-        impl FmtConst for [$t; $n] {
+        impl<const N: usize> FmtConst for [$t; N] {
             fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 fmt_array(self, f)
             }
         }
 
-        impl PhfBorrow<[$t]> for [$t; $n] {
+        impl<const N: usize> PhfBorrow<[$t]> for [$t; N] {
             fn borrow(&self) -> &[$t] {
                 self
             }
@@ -391,35 +393,15 @@ macro_rules! array_impl (
     )
 );
 
-array_impl!(u8, 1);
-array_impl!(u8, 2);
-array_impl!(u8, 3);
-array_impl!(u8, 4);
-array_impl!(u8, 5);
-array_impl!(u8, 6);
-array_impl!(u8, 7);
-array_impl!(u8, 8);
-array_impl!(u8, 9);
-array_impl!(u8, 10);
-array_impl!(u8, 11);
-array_impl!(u8, 12);
-array_impl!(u8, 13);
-array_impl!(u8, 14);
-array_impl!(u8, 15);
-array_impl!(u8, 16);
-array_impl!(u8, 17);
-array_impl!(u8, 18);
-array_impl!(u8, 19);
-array_impl!(u8, 20);
-array_impl!(u8, 21);
-array_impl!(u8, 22);
-array_impl!(u8, 23);
-array_impl!(u8, 24);
-array_impl!(u8, 25);
-array_impl!(u8, 26);
-array_impl!(u8, 27);
-array_impl!(u8, 28);
-array_impl!(u8, 29);
-array_impl!(u8, 30);
-array_impl!(u8, 31);
-array_impl!(u8, 32);
+array_impl!(u8);
+array_impl!(i8);
+array_impl!(u16);
+array_impl!(i16);
+array_impl!(u32);
+array_impl!(i32);
+array_impl!(u64);
+array_impl!(i64);
+array_impl!(u128);
+array_impl!(i128);
+array_impl!(bool);
+array_impl!(char);

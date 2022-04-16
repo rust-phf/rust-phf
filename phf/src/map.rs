@@ -47,6 +47,16 @@ where
 }
 
 impl<K, V> Map<K, V> {
+    /// Create a new, empty, immutable map.
+    #[inline]
+    pub const fn new_empty() -> Self {
+        Self {
+            key: 0,
+            disps: &[],
+            entries: &[],
+        }
+    }
+
     /// Returns the number of entries in the `Map`.
     #[inline]
     pub const fn len(&self) -> usize {

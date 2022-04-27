@@ -49,7 +49,7 @@ where
 impl<K, V> Map<K, V> {
     /// Create a new, empty, immutable map.
     #[inline]
-    pub const fn new_empty() -> Self {
+    pub const fn new() -> Self {
         Self {
             key: 0,
             disps: &[],

@@ -46,6 +46,12 @@ where
     }
 }
 
+impl<K, V> Default for Map<K, V> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<K, V> Map<K, V> {
     /// Create a new, empty, immutable map.
     #[inline]

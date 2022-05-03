@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+* Bump up MSRV to 1.60
+* Now the `unicase` feature works fine with the `macros` feature, doesn't need to import `phf-macros` directly.
+
 ## 0.10.1
 
 * Allow serializing `Map` ([#244])

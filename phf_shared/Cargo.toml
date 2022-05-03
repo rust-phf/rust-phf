@@ -6,6 +6,7 @@ license = "MIT"
 description = "Support code shared by PHF libraries"
 repository = "https://github.com/sfackler/rust-phf"
 edition = "2018"
+rust-version = "1.60"
 
 [lib]
 name = "phf_shared"

@@ -7,6 +7,7 @@ description = "Runtime support for perfect hash function data structures"
 repository = "https://github.com/sfackler/rust-phf"
 edition = "2018"
 readme = "../README.md"
+rust-version = "1.60"
 
 [lib]
 name = "phf"
@@ -17,7 +18,7 @@ test = false
 default = ["std"]
 std = ["phf_shared/std"]
 uncased = ["phf_shared/uncased"]
-unicase = ["phf_shared/unicase"]
+unicase = ["phf_macros?/unicase", "phf_shared/unicase"]
 macros = [
     "phf_macros",
     "proc-macro-hack",

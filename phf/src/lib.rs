@@ -7,7 +7,7 @@
 //! produced, but if you set the environment variable `PHF_STATS` it will issue
 //! a compiler note about how long it took.
 //!
-//! MSRV (minimum supported rust version) is Rust 1.46.
+//! MSRV (minimum supported rust version) is Rust 1.60.
 //!
 //! ## Usage
 //!

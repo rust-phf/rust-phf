@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "phf",
+    "phf/examples/unicase-example",
     "phf_codegen",
     "phf_codegen/test",
     "phf_generator",

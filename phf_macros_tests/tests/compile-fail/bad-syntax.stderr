@@ -1,7 +1,7 @@
 error: expected identifier
- --> $DIR/bad-syntax.rs:5:5
+ --> tests/compile-fail/bad-syntax.rs:5:5
   |
 5 |     => //~ ERROR expected identifier
   |     ^^
   |
-  = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+  = note: this error originates in the macro `proc_macro_call` (in Nightly builds, run with -Z macro-backtrace for more info)

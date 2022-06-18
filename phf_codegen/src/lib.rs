@@ -129,6 +129,7 @@
 //! ```
 
 #![doc(html_root_url = "https://docs.rs/phf_codegen/0.10")]
+#![allow(clippy::new_without_default)]
 
 use phf_shared::{FmtConst, PhfHash};
 use std::collections::HashSet;

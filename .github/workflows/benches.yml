@@ -13,12 +13,12 @@ jobs:
         run: |
           rustup set profile minimal
           rustup override set nightly
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: master
       - name: measure benchmarks on master
         run: cargo bench
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           clean: false
       - name: measure benchmarks on PR

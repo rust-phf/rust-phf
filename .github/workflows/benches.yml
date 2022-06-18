@@ -7,18 +7,18 @@ jobs:
   bench_between_master_and_pr:
     if: ${{ github.event.label.name == 'run-benchmarks' }}
     name: Bench
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Setup nightly toolchain
         run: |
           rustup set profile minimal
           rustup override set nightly
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: master
       - name: measure benchmarks on master
         run: cargo bench
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           clean: false
       - name: measure benchmarks on PR

@@ -8,19 +8,21 @@ on:
 jobs:
   ci:
     name: CI
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
         # MSRV and nightly
         version: [1.60.0, nightly]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set toolchain
         run: |
           rustup set profile minimal
           rustup override set ${{ matrix.version }}
+
+      - uses: Swatinem/rust-cache@v1.4.0
 
       - name: Rustfmt check
         if: matrix.version == '1.60.0'

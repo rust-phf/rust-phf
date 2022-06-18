@@ -22,6 +22,8 @@ jobs:
           rustup set profile minimal
           rustup override set ${{ matrix.version }}
 
+      - uses: Swatinem/rust-cache@v1.4.0
+
       - name: Rustfmt check
         if: matrix.version == '1.60.0'
         run: |

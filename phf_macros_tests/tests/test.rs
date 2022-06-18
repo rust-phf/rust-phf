@@ -23,9 +23,9 @@ mod map {
             "foo" => 10,
             "bar" => 11,
         );
-        assert!(Some(&10) == MAP.get(&("foo")));
-        assert!(Some(&11) == MAP.get(&("bar")));
-        assert_eq!(None, MAP.get(&("asdf")));
+        assert!(Some(&10) == MAP.get("foo"));
+        assert!(Some(&11) == MAP.get("bar"));
+        assert_eq!(None, MAP.get("asdf"));
         assert_eq!(2, MAP.len());
     }
 
@@ -50,7 +50,7 @@ mod map {
             "foo" => 10,
             "bar" => 11,
         );
-        let hash = MAP.keys().map(|&e| e).collect::<HashSet<_>>();
+        let hash = MAP.keys().copied().collect::<HashSet<_>>();
         assert!(hash.contains(&("foo")));
         assert!(hash.contains(&("bar")));
         assert_eq!(2, hash.len());
@@ -62,7 +62,7 @@ mod map {
             "foo" => 10,
             "bar" => 11,
         );
-        let hash = MAP.values().map(|&e| e).collect::<HashSet<isize>>();
+        let hash = MAP.values().copied().collect::<HashSet<isize>>();
         assert!(hash.contains(&10));
         assert!(hash.contains(&11));
         assert_eq!(2, hash.len());
@@ -98,7 +98,7 @@ mod map {
             "y" => 24,
             "z" => 25,
         );
-        assert!(MAP.get(&("a")) == Some(&0));
+        assert!(MAP.get("a") == Some(&0));
     }
 
     #[test]
@@ -123,7 +123,7 @@ mod map {
         static MAP: phf::Map<&'static str, isize> = phf_map!(
             "a" => 0,
         );
-        MAP["b"];
+        let _ = MAP["b"];
     }
 
     macro_rules! test_key_type(
@@ -142,7 +142,7 @@ mod map {
         static MAP: phf::Map<&'static str, [u8; 3]> = phf_map!(
             "a" => [0u8, 1, 2],
         );
-        assert_eq!(Some(&[0u8, 1, 2]), MAP.get(&("a")));
+        assert_eq!(Some(&[0u8, 1, 2]), MAP.get("a"));
     }
 
     #[test]
@@ -273,9 +273,9 @@ mod set {
             "hello",
             "world",
         };
-        assert!(SET.contains(&"hello"));
-        assert!(SET.contains(&"world"));
-        assert!(!SET.contains(&"foo"));
+        assert!(SET.contains("hello"));
+        assert!(SET.contains("world"));
+        assert!(!SET.contains("foo"));
         assert_eq!(2, SET.len());
     }
 
@@ -285,7 +285,7 @@ mod set {
             "hello",
             "world",
         };
-        let set = SET.iter().map(|e| *e).collect::<HashSet<_>>();
+        let set = SET.iter().copied().collect::<HashSet<_>>();
         assert!(set.contains(&"hello"));
         assert!(set.contains(&"world"));
         assert_eq!(2, set.len());
@@ -331,9 +331,9 @@ mod ordered_map {
             "foo" => 10,
             "bar" => 11,
         );
-        assert!(Some(&10) == MAP.get(&"foo"));
-        assert!(Some(&11) == MAP.get(&"bar"));
-        assert_eq!(None, MAP.get(&"asdf"));
+        assert!(Some(&10) == MAP.get("foo"));
+        assert!(Some(&11) == MAP.get("bar"));
+        assert_eq!(None, MAP.get("asdf"));
         assert_eq!(2, MAP.len());
     }
 
@@ -344,9 +344,9 @@ mod ordered_map {
             "bar" => 5,
             "baz" => 5,
         );
-        assert_eq!(Some(0), MAP.get_index(&"foo"));
-        assert_eq!(Some(2), MAP.get_index(&"baz"));
-        assert_eq!(None, MAP.get_index(&"xyz"));
+        assert_eq!(Some(0), MAP.get_index("foo"));
+        assert_eq!(Some(2), MAP.get_index("baz"));
+        assert_eq!(None, MAP.get_index("xyz"));
 
         assert_eq!(Some(0), MAP.get_index(&*"foo".to_string()));
         assert_eq!(Some(2), MAP.get_index(&*"baz".to_string()));
@@ -382,7 +382,7 @@ mod ordered_map {
             "bar" => 11,
             "baz" => 12,
         );
-        let vec = MAP.keys().map(|&e| e).collect::<Vec<_>>();
+        let vec = MAP.keys().copied().collect::<Vec<_>>();
         assert_eq!(vec, vec!("foo", "bar", "baz"));
     }
 
@@ -393,7 +393,7 @@ mod ordered_map {
             "bar" => 11,
             "baz" => 12,
         );
-        let vec = MAP.values().map(|&v| v).collect::<Vec<_>>();
+        let vec = MAP.values().copied().collect::<Vec<_>>();
         assert_eq!(vec, vec!(10, 11, 12));
     }
 
@@ -411,7 +411,7 @@ mod ordered_map {
         static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
             "a" => 0,
         );
-        MAP["b"];
+        let _ = MAP["b"];
     }
 
     #[test]
@@ -455,10 +455,10 @@ mod ordered_set {
             "there",
             "world",
         };
-        assert!(SET.contains(&"hello"));
-        assert!(SET.contains(&"there"));
-        assert!(SET.contains(&"world"));
-        assert!(!SET.contains(&"foo"));
+        assert!(SET.contains("hello"));
+        assert!(SET.contains("there"));
+        assert!(SET.contains("world"));
+        assert!(!SET.contains("foo"));
         assert_eq!(3, SET.len());
     }
 
@@ -469,9 +469,9 @@ mod ordered_set {
             "bar",
             "baz",
         };
-        assert_eq!(Some(0), SET.get_index(&"foo"));
-        assert_eq!(Some(2), SET.get_index(&"baz"));
-        assert_eq!(None, SET.get_index(&"xyz"));
+        assert_eq!(Some(0), SET.get_index("foo"));
+        assert_eq!(Some(2), SET.get_index("baz"));
+        assert_eq!(None, SET.get_index("xyz"));
 
         assert_eq!(Some(0), SET.get_index(&*"foo".to_string()));
         assert_eq!(Some(2), SET.get_index(&*"baz".to_string()));
@@ -493,7 +493,7 @@ mod ordered_set {
             "there",
             "world",
         };
-        let vec = SET.iter().map(|&e| e).collect::<Vec<_>>();
+        let vec = SET.iter().copied().collect::<Vec<_>>();
         assert_eq!(vec, vec!("hello", "there", "world"));
     }
 

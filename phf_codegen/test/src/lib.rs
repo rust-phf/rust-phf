@@ -70,10 +70,10 @@ mod test {
 
     #[test]
     fn uncased_map() {
-        assert_eq!("a", UNCASED_MAP[&UncasedStr::new("AbC")]);
-        assert_eq!("a", UNCASED_MAP[&UncasedStr::new("abc")]);
-        assert_eq!("b", UNCASED_MAP[&UncasedStr::new("DEf")]);
-        assert!(!UNCASED_MAP.contains_key(&UncasedStr::new("XyZ")));
+        assert_eq!("a", UNCASED_MAP[UncasedStr::new("AbC")]);
+        assert_eq!("a", UNCASED_MAP[UncasedStr::new("abc")]);
+        assert_eq!("b", UNCASED_MAP[UncasedStr::new("DEf")]);
+        assert!(!UNCASED_MAP.contains_key(UncasedStr::new("XyZ")));
     }
 
     #[test]

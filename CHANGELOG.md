@@ -2,8 +2,17 @@
 
 ## Unreleased
 
+
+## 0.11.0
+
 * Bump up MSRV to 1.60
-* Now the `unicase` feature works fine with the `macros` feature, doesn't need to import `phf-macros` directly.
+* Crates' edition are now 2021 [#257]
+* Remove `proc-macro-hack` dependency [#256]
+* Now the `unicase` feature works fine with the `macros` feature, doesn't need to import `phf-macros` directly anymore. [#251]
+
+[#251]: https://github.com/rust-phf/rust-phf/pull/251
+[#256]: https://github.com/rust-phf/rust-phf/pull/256
+[#257]: https://github.com/rust-phf/rust-phf/pull/257
 
 ## 0.10.1
 

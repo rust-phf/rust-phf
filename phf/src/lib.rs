@@ -102,14 +102,12 @@ extern crate std as core;
 ///     assert_eq!(MY_MAP["hello"], 1);
 /// }
 /// ```
-#[proc_macro_hack::proc_macro_hack]
 pub use phf_macros::phf_map;
 
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`OrderedMap`].
 ///
 /// Requires the `macros` feature. Same usage as [`phf_map`].
-#[proc_macro_hack::proc_macro_hack]
 pub use phf_macros::phf_ordered_map;
 
 #[cfg(feature = "macros")]
@@ -131,14 +129,12 @@ pub use phf_macros::phf_ordered_map;
 ///     assert!(MY_SET.contains("hello world"));
 /// }
 /// ```
-#[proc_macro_hack::proc_macro_hack]
 pub use phf_macros::phf_set;
 
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`OrderedSet`].
 ///
 /// Requires the `macros` feature. Same usage as [`phf_set`].
-#[proc_macro_hack::proc_macro_hack]
 pub use phf_macros::phf_ordered_set;
 
 #[doc(inline)]

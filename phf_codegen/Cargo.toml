@@ -1,7 +1,7 @@
 [package]
 name = "phf_codegen"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.10.0"
+version = "0.11.0"
 license = "MIT"
 description = "Codegen library for PHF types"
 repository = "https://github.com/sfackler/rust-phf"
@@ -10,5 +10,5 @@ readme = "../README.md"
 rust-version = "1.60"
 
 [dependencies]
-phf_generator = "0.10.0"
-phf_shared = "0.10.0"
+phf_generator = "0.11.0"
+phf_shared = "0.11.0"

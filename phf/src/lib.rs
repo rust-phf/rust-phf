@@ -18,7 +18,7 @@
 //!
 //!```toml
 //! [dependencies]
-//! phf = { version = "0.10", features = ["macros"] }
+//! phf = { version = "0.11", features = ["macros"] }
 //! ```
 //!
 //! To compile the `phf` crate with a dependency on
@@ -28,7 +28,7 @@
 //! ```toml
 //! [dependencies]
 //! # to use `phf` in `no_std` environments
-//! phf = { version = "0.10", default-features = false }
+//! phf = { version = "0.11", default-features = false }
 //! ```
 //!
 //! ## Example (with the `macros` feature enabled)
@@ -71,7 +71,7 @@
 //! [#183]: https://github.com/rust-phf/rust-phf/issues/183
 //! [#196]: https://github.com/rust-phf/rust-phf/issues/196
 
-#![doc(html_root_url = "https://docs.rs/phf/0.10")]
+#![doc(html_root_url = "https://docs.rs/phf/0.11")]
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 

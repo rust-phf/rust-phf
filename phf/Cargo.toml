@@ -5,7 +5,7 @@ version = "0.10.1"
 license = "MIT"
 description = "Runtime support for perfect hash function data structures"
 repository = "https://github.com/sfackler/rust-phf"
-edition = "2018"
+edition = "2021"
 readme = "../README.md"
 rust-version = "1.60"
 

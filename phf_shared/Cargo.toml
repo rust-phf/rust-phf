@@ -5,7 +5,7 @@ version = "0.10.0"
 license = "MIT"
 description = "Support code shared by PHF libraries"
 repository = "https://github.com/sfackler/rust-phf"
-edition = "2018"
+edition = "2021"
 rust-version = "1.60"
 
 [lib]

@@ -3,5 +3,3 @@ error: duplicate key
   |
 6 |     UniCase::ascii("foo") => 42, //~ ERROR duplicate key UniCase("FOO")
   |     ^^^^^^^^^^^^^^^^^^^^^
-  |
-  = note: this error originates in the macro `proc_macro_call` (in Nightly builds, run with -Z macro-backtrace for more info)

@@ -4,6 +4,8 @@ version = "0.1.0"
 authors = ["Yuki Okushi <jtitor@2k36.org>"]
 edition = "2021"
 rust-version = "1.60"
+repository = "https://github.com/rust-phf/rust-phf"
+categories = ["data-structures"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

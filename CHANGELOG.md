@@ -6,7 +6,7 @@
 ## 0.11.0
 
 * Bump up MSRV to 1.60
-* Crates' edition are now 2021 [#257]
+* Crates' edition is now 2021 [#257]
 * Remove `proc-macro-hack` dependency [#256]
 * Now the `unicase` feature works fine with the `macros` feature, doesn't need to import `phf-macros` directly anymore. [#251]
 

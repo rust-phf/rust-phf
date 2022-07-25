@@ -5,10 +5,11 @@ authors = ["Steven Fackler <sfackler@gmail.com>"]
 edition = "2021"
 license = "MIT"
 description = "Macros to generate types in the phf crate"
-repository = "https://github.com/sfackler/rust-phf"
+repository = "https://github.com/rust-phf/rust-phf"
 readme = "../README.md"
 include = ["src/lib.rs"]
 rust-version = "1.60"
+categories = ["data-structures"]
 
 [lib]
 proc-macro = true

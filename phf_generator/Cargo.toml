@@ -7,6 +7,7 @@ description = "PHF generation logic"
 repository = "https://github.com/rust-phf/rust-phf"
 edition = "2021"
 rust-version = "1.60"
+categories = ["data-structures"]
 
 [dependencies]
 rand = { version = "0.8", features = ["small_rng"] }

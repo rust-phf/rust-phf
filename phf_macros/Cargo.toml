@@ -9,6 +9,7 @@ repository = "https://github.com/rust-phf/rust-phf"
 readme = "../README.md"
 include = ["src/lib.rs"]
 rust-version = "1.60"
+categories = ["data-structures"]
 
 [lib]
 proc-macro = true

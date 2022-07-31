@@ -352,6 +352,8 @@ sip_impl!(le u32);
 sip_impl!(le i32);
 sip_impl!(le u64);
 sip_impl!(le i64);
+sip_impl!(le usize);
+sip_impl!(le isize);
 sip_impl!(le u128);
 sip_impl!(le i128);
 sip_impl!(bool);

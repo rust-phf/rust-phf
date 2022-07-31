@@ -180,6 +180,8 @@ impl_reflexive!(
     i32,
     u64,
     i64,
+    usize,
+    isize,
     u128,
     i128,
     bool,

@@ -152,6 +152,8 @@ delegate_debug!(u32);
 delegate_debug!(i32);
 delegate_debug!(u64);
 delegate_debug!(i64);
+delegate_debug!(usize);
+delegate_debug!(isize);
 delegate_debug!(u128);
 delegate_debug!(i128);
 delegate_debug!(bool);

@@ -407,6 +407,8 @@ array_impl!(u32);
 array_impl!(i32);
 array_impl!(u64);
 array_impl!(i64);
+array_impl!(usize);
+array_impl!(isize);
 array_impl!(u128);
 array_impl!(i128);
 array_impl!(bool);

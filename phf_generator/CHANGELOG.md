@@ -5,14 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.11.1 (2022-08-08)
+
+### Other
+
+ - <csr-id-27a2ce4b07ddc68c45e2faccbfef52d22375c1b0/> Unpin the `criterion` dependency
+
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 75 commits contributed to the release over the course of 2719 calendar days.
- - 0 commits where understood as [conventional](https://www.conventionalcommits.org).
+ - 77 commits contributed to the release over the course of 2723 calendar days.
+ - 1 commit where understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' where seen in commit messages
 
 ### Commit Details
@@ -22,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Unpin the `criterion` dependency ([`27a2ce4`](https://github.com/rust-phf/rust-phf/commit/27a2ce4b07ddc68c45e2faccbfef52d22375c1b0))
+    - Replace handmade changelog with generated one by `cargo-smart-release` ([`cb84cf6`](https://github.com/rust-phf/rust-phf/commit/cb84cf6636ab52823c53e70d6abeac8f648a3482))
     - Disable default features for rand dep in phf_generator ([`deefda1`](https://github.com/rust-phf/rust-phf/commit/deefda1cdff6ced54526ddb702b13282e0c8c66b))
     - Add README.md for some crates ([`e0b34fa`](https://github.com/rust-phf/rust-phf/commit/e0b34fa0a697f45f2c41a875bf84b78a6d3ce079))
     - Add category to crates ([`32a72c3`](https://github.com/rust-phf/rust-phf/commit/32a72c3859997fd6b590e9ec092ae789d2acdf55))

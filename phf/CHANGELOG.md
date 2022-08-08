@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.11.1 (2022-08-08)
+
+<csr-id-92e7b433a4f62cc9b070cd1d678a6061d0906ee6/>
 
 ### Chore
 
@@ -33,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 233 commits contributed to the release over the course of 2953 calendar days.
+ - 234 commits contributed to the release over the course of 2957 calendar days.
  - 3 commits where understood as [conventional](https://www.conventionalcommits.org).
  - 1 unique issue was worked on: [#249](https://github.com/rust-phf/rust-phf/issues/249)
 
@@ -46,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  * **[#249](https://github.com/rust-phf/rust-phf/issues/249)**
     - Add `Map::new()` function and `Default` implementation to create new, empty map ([`baac7d0`](https://github.com/rust-phf/rust-phf/commit/baac7d065a71a388476b998ba55b1c0aedaa9d86))
  * **Uncategorized**
+    - Replace handmade changelog with generated one by `cargo-smart-release` ([`cb84cf6`](https://github.com/rust-phf/rust-phf/commit/cb84cf6636ab52823c53e70d6abeac8f648a3482))
     - Add category to crates ([`32a72c3`](https://github.com/rust-phf/rust-phf/commit/32a72c3859997fd6b590e9ec092ae789d2acdf55))
     - Update repository links on Cargo.toml ([`1af3b0f`](https://github.com/rust-phf/rust-phf/commit/1af3b0fe1f8fdcae7ccc1bc8d51de309fb16a6bf))
     - Release 0.11.0 ([`d2efdc0`](https://github.com/rust-phf/rust-phf/commit/d2efdc08a7eb1d0d6c414b7b2ac41ce1fe1f9a43))

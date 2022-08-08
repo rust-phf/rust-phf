@@ -14,10 +14,10 @@ readme = "README.md"
 rand = { version = "0.8", default-features = false, features = ["small_rng"] }
 phf_shared = { version = "0.11.0", default-features = false }
 # for stable black_box()
-criterion = { version = "=0.3.4", optional = true }
+criterion = { version = "0.3.6", optional = true }
 
 [dev-dependencies]
-criterion = "=0.3.4"
+criterion = "0.3.6"
 
 [[bench]]
 name = "benches"

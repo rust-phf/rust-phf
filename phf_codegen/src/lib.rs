@@ -11,9 +11,17 @@
 //!
 //! ## Examples
 //!
-//! build.rs:
+//! To use `phf_codegen` on build.rs, you have to add dependencies under `[build-dependencies]`:
 //!
-//! ```rust,no_run
+//! ```toml
+//! [build-dependencies]
+//! phf = { version = "0.11.1", default-features = false }
+//! phf_codegen = "0.11.1"
+//! ```
+//!
+//! Then put code on build.rs:
+//!
+//! ```ignore
 //! use std::env;
 //! use std::fs::File;
 //! use std::io::{BufWriter, Write};
@@ -23,21 +31,23 @@
 //!     let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
 //!     let mut file = BufWriter::new(File::create(&path).unwrap());
 //!
-//!     writeln!(
+//!     write!(
 //!         &mut file,
-//!          "static KEYWORDS: phf::Map<&'static str, Keyword> = \n{};\n",
-//!          phf_codegen::Map::new()
-//!              .entry("loop", "Keyword::Loop")
-//!              .entry("continue", "Keyword::Continue")
-//!              .entry("break", "Keyword::Break")
-//!              .entry("fn", "Keyword::Fn")
-//!              .entry("extern", "Keyword::Extern")
-//!              .build()
-//!     ).unwrap();
+//!         "static KEYWORDS: phf::Map<&'static str, Keyword> = {}",
+//!         phf_codegen::Map::new()
+//!             .entry("loop", "Keyword::Loop")
+//!             .entry("continue", "Keyword::Continue")
+//!             .entry("break", "Keyword::Break")
+//!             .entry("fn", "Keyword::Fn")
+//!             .entry("extern", "Keyword::Extern")
+//!             .build()
+//!     )
+//!     .unwrap();
+//!     write!(&mut file, ";\n").unwrap();
 //! }
 //! ```
 //!
-//! lib.rs:
+//! and lib.rs:
 //!
 //! ```ignore
 //! #[derive(Clone)]
@@ -62,7 +72,7 @@
 //!
 //! build.rs:
 //!
-//! ```rust,no_run
+//! ```no_run
 //! use std::env;
 //! use std::fs::File;
 //! use std::io::{BufWriter, Write};
@@ -88,7 +98,7 @@
 //!
 //! lib.rs:
 //!
-//! ```rust,ignore
+//! ```ignore
 //! #[derive(Clone)]
 //! enum Keyword {
 //!     Loop,

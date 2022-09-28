@@ -73,7 +73,15 @@ work as you want. See [#183] or [#196] for example.
 
 ### phf_codegen
 
-build.rs:
+To use `phf_codegen` on build.rs, you have to add dependencies under `[build-dependencies]`:
+
+```toml
+[build-dependencies]
+phf = { version = "0.11.1", default-features = false }
+phf_codegen = "0.11.1"
+```
+
+Then put code on build.rs:
 
 ```rust
 use std::env;
@@ -101,7 +109,7 @@ fn main() {
 }
 ```
 
-lib.rs:
+and lib.rs:
 
 ```rust
 #[derive(Clone)]

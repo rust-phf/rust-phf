@@ -98,7 +98,7 @@ pub trait FmtConst {
 /// ### Motivation
 /// The conventional signature for lookup methods on collections looks something like this:
 ///
-/// ```rust,ignore
+/// ```ignore
 /// impl<K, V> Map<K, V> where K: PhfHash + Eq {
 ///     fn get<T: ?Sized>(&self, key: &T) -> Option<&V> where T: PhfHash + Eq, K: Borrow<T> {
 ///         ...

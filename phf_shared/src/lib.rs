@@ -152,6 +152,8 @@ delegate_debug!(u32);
 delegate_debug!(i32);
 delegate_debug!(u64);
 delegate_debug!(i64);
+delegate_debug!(usize);
+delegate_debug!(isize);
 delegate_debug!(u128);
 delegate_debug!(i128);
 delegate_debug!(bool);
@@ -178,6 +180,8 @@ impl_reflexive!(
     i32,
     u64,
     i64,
+    usize,
+    isize,
     u128,
     i128,
     bool,
@@ -352,6 +356,8 @@ sip_impl!(le u32);
 sip_impl!(le i32);
 sip_impl!(le u64);
 sip_impl!(le i64);
+sip_impl!(le usize);
+sip_impl!(le isize);
 sip_impl!(le u128);
 sip_impl!(le i128);
 sip_impl!(bool);
@@ -401,6 +407,8 @@ array_impl!(u32);
 array_impl!(i32);
 array_impl!(u64);
 array_impl!(i64);
+array_impl!(usize);
+array_impl!(isize);
 array_impl!(u128);
 array_impl!(i128);
 array_impl!(bool);

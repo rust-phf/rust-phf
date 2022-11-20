@@ -413,3 +413,30 @@ array_impl!(u128);
 array_impl!(i128);
 array_impl!(bool);
 array_impl!(char);
+
+macro_rules! slice_impl (
+    ($t:ty) => {
+        impl PhfHash for [$t] {
+            #[inline]
+            fn phf_hash<H: Hasher>(&self, state: &mut H) {
+                for v in self {
+                    v.phf_hash(state);
+                }
+            }
+        }
+    };
+);
+
+slice_impl!(i8);
+slice_impl!(u16);
+slice_impl!(i16);
+slice_impl!(u32);
+slice_impl!(i32);
+slice_impl!(u64);
+slice_impl!(i64);
+slice_impl!(usize);
+slice_impl!(isize);
+slice_impl!(u128);
+slice_impl!(i128);
+slice_impl!(bool);
+slice_impl!(char);

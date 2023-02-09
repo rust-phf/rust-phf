@@ -35,6 +35,12 @@ jobs:
           rustup component add rustfmt
           cargo fmt --all -- --check
 
+      - name: Clippy check
+        if: matrix.version == '1.60.0'
+        run: |
+          rustup component add clippy
+          cargo clippy --all -- -D warnings
+
       - name: Run `cargo test` on workspace
         run: cargo test --workspace --exclude=phf_codegen_test
 

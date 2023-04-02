@@ -11,9 +11,7 @@ use std::collections::HashSet;
 use std::hash::Hasher;
 use syn::parse::{self, Parse, ParseStream};
 use syn::punctuated::Punctuated;
-#[cfg(feature = "unicase")]
-use syn::ExprLit;
-use syn::{parse_macro_input, Error, Expr, Lit, Token, UnOp};
+use syn::{parse_macro_input, Error, Expr, ExprLit, Lit, Token, UnOp};
 #[cfg(feature = "unicase")]
 use unicase_::UniCase;
 
@@ -123,6 +121,19 @@ impl ParsedKey {
                         ParsedKey::I128(v) => Some(ParsedKey::I128(try_negate!(v))),
                         _ => None,
                     },
+                    UnOp::Deref(_) => {
+                        let mut expr = &*unary.expr;
+                        while let Expr::Group(group) = expr {
+                            expr = &*group.expr;
+                        }
+                        match expr {
+                            Expr::Lit(ExprLit {
+                                lit: Lit::ByteStr(s),
+                                ..
+                            }) => Some(ParsedKey::Binary(s.value())),
+                            _ => None,
+                        }
+                    }
                     _ => None,
                 }
             }

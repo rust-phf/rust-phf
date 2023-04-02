@@ -86,6 +86,7 @@ extern crate std as core;
 /// Supported key expressions are:
 /// - literals: bools, (byte) strings, bytes, chars, and integers (these must have a type suffix)
 /// - arrays of `u8` integers
+/// - dereferenced byte string literals
 /// - `UniCase::unicode(string)` or `UniCase::ascii(string)` if the `unicase` feature is enabled
 ///
 /// # Example

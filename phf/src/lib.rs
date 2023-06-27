@@ -85,7 +85,7 @@ extern crate std as core;
 /// - literals: bools, (byte) strings, bytes, chars, and integers (these must have a type suffix)
 /// - arrays of `u8` integers
 /// - dereferenced byte string literals
-/// - `UniCase::unicode(string)` or `UniCase::ascii(string)` if the `unicase` feature is enabled
+/// - `UniCase::unicode(string)`, `UniCase::ascii(string)`, or `Ascii::new(string)` if the `unicase` feature is enabled
 ///
 /// # Example
 ///

@@ -8,4 +8,4 @@ rust-version = "1.61"
 
 [dependencies]
 phf = { version = "^0.11.2", features = ["macros", "unicase"] }
-unicase = "2"
+unicase = "2.6.0"

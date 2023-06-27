@@ -152,10 +152,14 @@ impl ParsedKey {
             Expr::Call(call) => {
                 if let Expr::Path(ep) = call.func.as_ref() {
                     if call.args.len() == 1 {
-                        if let Some(Expr::Lit(ExprLit {
+                        let mut arg = call.args.first().unwrap();
+                        while let Expr::Group(group) = arg {
+                            arg = &*group.expr;
+                        }
+                        if let Expr::Lit(ExprLit {
                             attrs: _,
                             lit: Lit::Str(s),
-                        })) = call.args.first()
+                        }) = arg
                         {
                             let segments = &mut ep.path.segments.iter().rev();
                             let last = &segments.next()?.ident;

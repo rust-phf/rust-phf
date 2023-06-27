@@ -7,10 +7,10 @@ edition = "2021"
 
 [dependencies]
 phf = { version = "^0.11.2", features = ["uncased", "unicase"] }
-uncased = { version = "0.9.6", default-features = false }
+uncased = { version = "0.9.9", default-features = false }
 unicase = "2.6.0"
 
 [build-dependencies]
 phf_codegen = { version = "^0.11.2", path = ".." }
-uncased = { version = "0.9.6", default-features = false }
+uncased = { version = "0.9.9", default-features = false }
 unicase = "2.6.0"

@@ -11,6 +11,13 @@ fn compile_test_unicase() {
 
 #[test]
 #[ignore]
+fn compile_test_uncased() {
+    let t = trybuild::TestCases::new();
+    t.compile_fail("tests/compile-fail-uncased/*.rs");
+}
+
+#[test]
+#[ignore]
 fn compile_fail() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/compile-fail/*.rs");

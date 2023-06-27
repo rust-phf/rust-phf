@@ -29,6 +29,17 @@ where
     }
 }
 
+impl<T> PartialEq for OrderedSet<T>
+where
+    T: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.map == other.map
+    }
+}
+
+impl<T> Eq for OrderedSet<T> where T: Eq {}
+
 impl<T> OrderedSet<T> {
     /// Returns the number of elements in the `OrderedSet`.
     #[inline]

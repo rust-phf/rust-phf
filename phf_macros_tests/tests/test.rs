@@ -1,6 +1,8 @@
 mod map {
     use phf::phf_map;
     use std::collections::{HashMap, HashSet};
+    use uncased::UncasedStr;
+    use unicase::{Ascii, UniCase};
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::Map<&'static str, isize> = phf_map!(
@@ -20,6 +22,20 @@ mod map {
     #[allow(dead_code)]
     static DEREF_BYTE_STRING_KEY: phf::Map<[u8; 9], &'static str> = phf_map!(
         *b"camembert" => "delicious",
+    );
+
+    macro_rules! unicase_map {
+        ($($key:literal => $value:expr),* $(,)?) => {
+            phf_map!(
+                $(UniCase::ascii($key) => $value),*
+            )
+        };
+    }
+
+    #[allow(dead_code)]
+    static UNICASE_FROM_MACRO: phf::Map<UniCase<&'static str>, isize> = unicase_map!(
+        "FOO" => 10,
+        "Bar" => 11,
     );
 
     #[test]
@@ -247,7 +263,6 @@ mod map {
 
     #[test]
     fn test_unicase() {
-        use unicase::UniCase;
         static MAP: phf::Map<UniCase<&'static str>, isize> = phf_map!(
             UniCase::ascii("FOO") => 10,
             UniCase::unicode("Bar") => 11,
@@ -259,7 +274,6 @@ mod map {
 
     #[test]
     fn test_unicase_ascii() {
-        use unicase::Ascii;
         static MAP: phf::Map<Ascii<&'static str>, isize> = phf_map!(
             Ascii::new("FOO") => 10,
             Ascii::new("Bar") => 11,
@@ -271,7 +285,6 @@ mod map {
 
     #[test]
     fn test_uncased() {
-        use uncased::UncasedStr;
         static MAP: phf::Map<&'static UncasedStr, isize> = phf_map!(
             UncasedStr::new("FOO") => 10,
             UncasedStr::new("Bar") => 11,

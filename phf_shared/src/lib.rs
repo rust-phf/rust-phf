@@ -279,6 +279,17 @@ where
 }
 
 #[cfg(feature = "unicase")]
+impl<S> PhfHash for unicase::Ascii<S>
+where
+    unicase::Ascii<S>: Hash,
+{
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        self.hash(state)
+    }
+}
+
+#[cfg(feature = "unicase")]
 impl<S> FmtConst for unicase::UniCase<S>
 where
     S: AsRef<str>,
@@ -296,8 +307,27 @@ where
 }
 
 #[cfg(feature = "unicase")]
+impl<S> FmtConst for unicase::Ascii<S>
+where
+    S: AsRef<str>,
+{
+    fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Ascii::new(")?;
+        self.as_ref().fmt_const(f)?;
+        f.write_str(")")
+    }
+}
+
+#[cfg(feature = "unicase")]
 impl<'b, 'a: 'b, S: ?Sized + 'a> PhfBorrow<unicase::UniCase<&'b S>> for unicase::UniCase<&'a S> {
     fn borrow(&self) -> &unicase::UniCase<&'b S> {
+        self
+    }
+}
+
+#[cfg(feature = "unicase")]
+impl<'b, 'a: 'b, S: ?Sized + 'a> PhfBorrow<unicase::Ascii<&'b S>> for unicase::Ascii<&'a S> {
+    fn borrow(&self) -> &unicase::Ascii<&'b S> {
         self
     }
 }

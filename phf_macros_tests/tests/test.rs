@@ -256,6 +256,18 @@ mod map {
         assert!(Some(&11) == MAP.get(&UniCase::new("bar")));
         assert_eq!(None, MAP.get(&UniCase::new("asdf")));
     }
+
+    #[test]
+    fn test_unicase_ascii() {
+        use unicase::Ascii;
+        static MAP: phf::Map<Ascii<&'static str>, isize> = phf_map!(
+            Ascii::new("FOO") => 10,
+            Ascii::new("Bar") => 11,
+        );
+        assert!(Some(&10) == MAP.get(&Ascii::new("FOo")));
+        assert!(Some(&11) == MAP.get(&Ascii::new("bar")));
+        assert_eq!(None, MAP.get(&Ascii::new("asdf")));
+    }
 }
 
 mod set {

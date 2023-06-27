@@ -1,5 +1,11 @@
 error: duplicate key
  --> tests/compile-fail-unicase/equivalent-keys.rs:6:5
   |
-6 |     UniCase::ascii("foo") => 42, //~ ERROR duplicate key UniCase("FOO")
+6 |     UniCase::ascii("foo") => 42, //~ ERROR duplicate key
   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error: duplicate key
+  --> tests/compile-fail-unicase/equivalent-keys.rs:11:5
+   |
+11 |     Ascii::new("foo") => 42, //~ ERROR duplicate key
+   |     ^^^^^^^^^^^^^^^^^

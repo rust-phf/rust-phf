@@ -13,7 +13,7 @@ use syn::parse::{self, Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::{parse_macro_input, Error, Expr, ExprLit, Lit, Token, UnOp};
 #[cfg(feature = "unicase")]
-use unicase_::UniCase;
+use unicase_::{Ascii, UniCase};
 
 #[derive(Hash, PartialEq, Eq, Clone)]
 enum ParsedKey {
@@ -33,6 +33,8 @@ enum ParsedKey {
     Bool(bool),
     #[cfg(feature = "unicase")]
     UniCase(UniCase<String>),
+    #[cfg(feature = "unicase")]
+    UniCaseAscii(Ascii<String>),
 }
 
 impl PhfHash for ParsedKey {
@@ -57,6 +59,8 @@ impl PhfHash for ParsedKey {
             ParsedKey::Bool(s) => s.phf_hash(state),
             #[cfg(feature = "unicase")]
             ParsedKey::UniCase(s) => s.phf_hash(state),
+            #[cfg(feature = "unicase")]
+            ParsedKey::UniCaseAscii(s) => s.phf_hash(state),
         }
     }
 }
@@ -144,20 +148,25 @@ impl ParsedKey {
                     let segments = &mut ep.path.segments.iter().rev();
                     let last = &segments.next()?.ident;
                     let last_ahead = &segments.next()?.ident;
-                    let is_unicode = last_ahead == "UniCase" && last == "unicode";
-                    let is_ascii = last_ahead == "UniCase" && last == "ascii";
-                    if call.args.len() == 1 && (is_unicode || is_ascii) {
+                    let is_unicase_unicode = last_ahead == "UniCase" && last == "unicode";
+                    let is_unicase_ascii = last_ahead == "UniCase" && last == "ascii";
+                    let is_ascii_new = last_ahead == "Ascii" && last == "new";
+                    if call.args.len() == 1
+                        && (is_unicase_unicode || is_unicase_ascii || is_ascii_new)
+                    {
                         if let Some(Expr::Lit(ExprLit {
                             attrs: _,
                             lit: Lit::Str(s),
                         })) = call.args.first()
                         {
-                            let v = if is_unicode {
-                                UniCase::unicode(s.value())
+                            let v = if is_unicase_unicode {
+                                ParsedKey::UniCase(UniCase::unicode(s.value()))
+                            } else if is_unicase_ascii {
+                                ParsedKey::UniCase(UniCase::ascii(s.value()))
                             } else {
-                                UniCase::ascii(s.value())
+                                ParsedKey::UniCaseAscii(Ascii::new(s.value()))
                             };
-                            Some(ParsedKey::UniCase(v))
+                            Some(v)
                         } else {
                             None
                         }

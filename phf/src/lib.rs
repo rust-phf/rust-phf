@@ -86,6 +86,7 @@ extern crate std as core;
 /// - arrays of `u8` integers
 /// - dereferenced byte string literals
 /// - `UniCase::unicode(string)`, `UniCase::ascii(string)`, or `Ascii::new(string)` if the `unicase` feature is enabled
+/// - `UncasedStr::new(string)` if the `uncased` feature is enabled
 ///
 /// # Example
 ///

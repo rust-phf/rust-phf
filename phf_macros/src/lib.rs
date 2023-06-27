@@ -12,6 +12,8 @@ use std::hash::Hasher;
 use syn::parse::{self, Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::{parse_macro_input, Error, Expr, ExprLit, Lit, Token, UnOp};
+#[cfg(feature = "uncased")]
+use uncased_::Uncased;
 #[cfg(feature = "unicase")]
 use unicase_::{Ascii, UniCase};
 
@@ -35,6 +37,8 @@ enum ParsedKey {
     UniCase(UniCase<String>),
     #[cfg(feature = "unicase")]
     UniCaseAscii(Ascii<String>),
+    #[cfg(feature = "uncased")]
+    Uncased(Uncased<'static>),
 }
 
 impl PhfHash for ParsedKey {
@@ -61,6 +65,8 @@ impl PhfHash for ParsedKey {
             ParsedKey::UniCase(s) => s.phf_hash(state),
             #[cfg(feature = "unicase")]
             ParsedKey::UniCaseAscii(s) => s.phf_hash(state),
+            #[cfg(feature = "uncased")]
+            ParsedKey::Uncased(s) => s.phf_hash(state),
         }
     }
 }
@@ -142,40 +148,34 @@ impl ParsedKey {
                 }
             }
             Expr::Group(group) => ParsedKey::from_expr(&group.expr),
-            #[cfg(feature = "unicase")]
+            #[cfg(any(feature = "unicase", feature = "uncased"))]
             Expr::Call(call) => {
                 if let Expr::Path(ep) = call.func.as_ref() {
-                    let segments = &mut ep.path.segments.iter().rev();
-                    let last = &segments.next()?.ident;
-                    let last_ahead = &segments.next()?.ident;
-                    let is_unicase_unicode = last_ahead == "UniCase" && last == "unicode";
-                    let is_unicase_ascii = last_ahead == "UniCase" && last == "ascii";
-                    let is_ascii_new = last_ahead == "Ascii" && last == "new";
-                    if call.args.len() == 1
-                        && (is_unicase_unicode || is_unicase_ascii || is_ascii_new)
-                    {
+                    if call.args.len() == 1 {
                         if let Some(Expr::Lit(ExprLit {
                             attrs: _,
                             lit: Lit::Str(s),
                         })) = call.args.first()
                         {
-                            let v = if is_unicase_unicode {
-                                ParsedKey::UniCase(UniCase::unicode(s.value()))
-                            } else if is_unicase_ascii {
-                                ParsedKey::UniCase(UniCase::ascii(s.value()))
-                            } else {
-                                ParsedKey::UniCaseAscii(Ascii::new(s.value()))
-                            };
-                            Some(v)
-                        } else {
-                            None
+                            let segments = &mut ep.path.segments.iter().rev();
+                            let last = &segments.next()?.ident;
+                            let last_ahead = &segments.next()?.ident;
+                            #[cfg(feature = "unicase")]
+                            if last_ahead == "UniCase" && last == "unicode" {
+                                return Some(ParsedKey::UniCase(UniCase::unicode(s.value())));
+                            } else if last_ahead == "UniCase" && last == "ascii" {
+                                return Some(ParsedKey::UniCase(UniCase::ascii(s.value())));
+                            } else if last_ahead == "Ascii" && last == "new" {
+                                return Some(ParsedKey::UniCaseAscii(Ascii::new(s.value())));
+                            }
+                            #[cfg(feature = "uncased")]
+                            if last_ahead == "UncasedStr" && last == "new" {
+                                return Some(ParsedKey::Uncased(Uncased::new(s.value())));
+                            }
                         }
-                    } else {
-                        None
                     }
-                } else {
-                    None
                 }
+                None
             }
             _ => None,
         }

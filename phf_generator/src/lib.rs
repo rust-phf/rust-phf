@@ -3,7 +3,7 @@
 //! [phf]: https://docs.rs/phf
 
 #![doc(html_root_url = "https://docs.rs/phf_generator/0.11")]
-use phf_shared::{HashKey, PhfHash};
+use phf_shared::{HashKey, Hashes, PhfHash};
 use rand::distributions::Standard;
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
@@ -19,22 +19,27 @@ pub struct HashState {
 }
 
 pub fn generate_hash<H: PhfHash>(entries: &[H]) -> HashState {
+    generate_hash_with_hash_fn(entries, phf_shared::hash)
+}
+
+pub fn generate_hash_with_hash_fn<T, F>(entries: &[T], hash_fn: F) -> HashState
+where
+    F: Fn(&T, &HashKey) -> Hashes,
+{
     SmallRng::seed_from_u64(FIXED_SEED)
         .sample_iter(Standard)
-        .find_map(|key| try_generate_hash(entries, key))
+        .find_map(|key| {
+            let hashes: Vec<_> = entries.iter().map(|entry| hash_fn(entry, &key)).collect();
+            try_generate_hash(&hashes, key)
+        })
         .expect("failed to solve PHF")
 }
 
-fn try_generate_hash<H: PhfHash>(entries: &[H], key: HashKey) -> Option<HashState> {
+fn try_generate_hash(hashes: &[Hashes], key: HashKey) -> Option<HashState> {
     struct Bucket {
         idx: usize,
         keys: Vec<usize>,
     }
-
-    let hashes: Vec<_> = entries
-        .iter()
-        .map(|entry| phf_shared::hash(entry, &key))
-        .collect();
 
     let buckets_len = (hashes.len() + DEFAULT_LAMBDA - 1) / DEFAULT_LAMBDA;
     let mut buckets = (0..buckets_len)

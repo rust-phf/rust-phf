@@ -105,7 +105,7 @@ impl<K, V> OrderedMap<K, V> {
     /// Returns references to both the key and values at an index
     /// within the list used to initialize the ordered map. See `.get_index(key)`.
     pub fn index(&self, index: usize) -> Option<(&K, &V)> {
-        self.entries.get(index).map(|&(ref k, ref v)| (k, v))
+        self.entries.get(index).map(|(ref k, ref v)| (k, v))
     }
 
     /// Like `get`, but returns both the key and the value.

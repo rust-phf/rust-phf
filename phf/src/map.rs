@@ -190,7 +190,7 @@ impl<'a, K, V> Iterator for Entries<'a, K, V> {
     type Item = (&'a K, &'a V);
 
     fn next(&mut self) -> Option<(&'a K, &'a V)> {
-        self.iter.next().map(|&(ref k, ref v)| (k, v))
+        self.iter.next().map(|(ref k, ref v)| (k, v))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {

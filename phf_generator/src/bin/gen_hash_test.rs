@@ -10,7 +10,7 @@ fn gen_vec(len: usize) -> Vec<String> {
     let mut rng = SmallRng::seed_from_u64(0xAAAAAAAAAAAAAAAA).sample_iter(Alphanumeric);
 
     (0..len)
-        .map(move |_| rng.by_ref().take(64).collect::<String>())
+        .map(move |_| String::from_utf8(rng.by_ref().take(64).collect::<Vec<u8>>()).unwrap())
         .collect()
 }
 

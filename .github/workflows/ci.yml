@@ -47,3 +47,20 @@ jobs:
 
       - name: unicase + macros features check
         run: cargo check -p unicase-example
+
+      - name: check all features
+        run: cargo check --all-features
+
+      - name: check all targets
+        if: matrix.version == 'nightly'
+        run: cargo check --all-features --all-targets
+
+      - name: update to minimal versions
+        run: cargo +nightly update -Z minimal-versions
+
+      - name: check all features with minimal versions
+        run: cargo check --all-features
+
+      - name: check all targets with minimal versions
+        if: matrix.version == 'nightly'
+        run: cargo check --all-features --all-targets

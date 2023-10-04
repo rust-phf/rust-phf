@@ -20,7 +20,7 @@ unicase = ["unicase_", "phf_shared/unicase"]
 [dependencies]
 syn = { version = "2", features = ["full"] }
 quote = "1"
-proc-macro2 = "1"
+proc-macro2 = "1.0.60"
 unicase_ = { package = "unicase", version = "2.4.0", optional = true }
 
 phf_generator = "0.11.1"

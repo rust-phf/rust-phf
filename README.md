@@ -11,7 +11,7 @@ It currently uses the
 [CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) and can generate
 a 100,000 entry map in roughly .4 seconds.
 
-MSRV (minimum supported rust version) is Rust 1.60.
+MSRV (minimum supported rust version) is Rust 1.61.
 
 ## Usage
 

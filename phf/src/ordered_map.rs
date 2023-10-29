@@ -49,6 +49,26 @@ where
     }
 }
 
+impl<K, V> PartialEq for OrderedMap<K, V>
+where
+    K: PartialEq,
+    V: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.key == other.key
+            && self.disps == other.disps
+            && self.idxs == other.idxs
+            && self.entries == other.entries
+    }
+}
+
+impl<K, V> Eq for OrderedMap<K, V>
+where
+    K: Eq,
+    V: Eq,
+{
+}
+
 impl<K, V> OrderedMap<K, V> {
     /// Returns the number of entries in the `OrderedMap`.
     #[inline]

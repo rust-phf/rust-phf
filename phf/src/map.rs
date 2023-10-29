@@ -52,6 +52,23 @@ impl<K, V> Default for Map<K, V> {
     }
 }
 
+impl<K, V> PartialEq for Map<K, V>
+where
+    K: PartialEq,
+    V: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.key == other.key && self.disps == other.disps && self.entries == other.entries
+    }
+}
+
+impl<K, V> Eq for Map<K, V>
+where
+    K: Eq,
+    V: Eq,
+{
+}
+
 impl<K, V> Map<K, V> {
     /// Create a new, empty, immutable map.
     #[inline]

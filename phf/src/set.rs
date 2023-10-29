@@ -28,6 +28,17 @@ where
     }
 }
 
+impl<T> PartialEq for Set<T>
+where
+    T: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.map == other.map
+    }
+}
+
+impl<T> Eq for Set<T> where T: Eq {}
+
 impl<T> Set<T> {
     /// Returns the number of elements in the `Set`.
     #[inline]

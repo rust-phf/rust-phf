@@ -12,8 +12,10 @@ use std::hash::Hasher;
 use syn::parse::{self, Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::{parse_macro_input, Error, Expr, ExprLit, Lit, Token, UnOp};
+#[cfg(feature = "uncased")]
+use uncased_::Uncased;
 #[cfg(feature = "unicase")]
-use unicase_::UniCase;
+use unicase_::{Ascii, UniCase};
 
 #[derive(Hash, PartialEq, Eq, Clone)]
 enum ParsedKey {
@@ -33,6 +35,10 @@ enum ParsedKey {
     Bool(bool),
     #[cfg(feature = "unicase")]
     UniCase(UniCase<String>),
+    #[cfg(feature = "unicase")]
+    UniCaseAscii(Ascii<String>),
+    #[cfg(feature = "uncased")]
+    Uncased(Uncased<'static>),
 }
 
 impl PhfHash for ParsedKey {
@@ -57,6 +63,10 @@ impl PhfHash for ParsedKey {
             ParsedKey::Bool(s) => s.phf_hash(state),
             #[cfg(feature = "unicase")]
             ParsedKey::UniCase(s) => s.phf_hash(state),
+            #[cfg(feature = "unicase")]
+            ParsedKey::UniCaseAscii(s) => s.phf_hash(state),
+            #[cfg(feature = "uncased")]
+            ParsedKey::Uncased(s) => s.phf_hash(state),
         }
     }
 }
@@ -138,35 +148,38 @@ impl ParsedKey {
                 }
             }
             Expr::Group(group) => ParsedKey::from_expr(&group.expr),
-            #[cfg(feature = "unicase")]
+            #[cfg(any(feature = "unicase", feature = "uncased"))]
             Expr::Call(call) => {
                 if let Expr::Path(ep) = call.func.as_ref() {
-                    let segments = &mut ep.path.segments.iter().rev();
-                    let last = &segments.next()?.ident;
-                    let last_ahead = &segments.next()?.ident;
-                    let is_unicode = last_ahead == "UniCase" && last == "unicode";
-                    let is_ascii = last_ahead == "UniCase" && last == "ascii";
-                    if call.args.len() == 1 && (is_unicode || is_ascii) {
-                        if let Some(Expr::Lit(ExprLit {
+                    if call.args.len() == 1 {
+                        let mut arg = call.args.first().unwrap();
+                        while let Expr::Group(group) = arg {
+                            arg = &*group.expr;
+                        }
+                        if let Expr::Lit(ExprLit {
                             attrs: _,
                             lit: Lit::Str(s),
-                        })) = call.args.first()
+                        }) = arg
                         {
-                            let v = if is_unicode {
-                                UniCase::unicode(s.value())
-                            } else {
-                                UniCase::ascii(s.value())
-                            };
-                            Some(ParsedKey::UniCase(v))
-                        } else {
-                            None
+                            let segments = &mut ep.path.segments.iter().rev();
+                            let last = &segments.next()?.ident;
+                            let last_ahead = &segments.next()?.ident;
+                            #[cfg(feature = "unicase")]
+                            if last_ahead == "UniCase" && last == "unicode" {
+                                return Some(ParsedKey::UniCase(UniCase::unicode(s.value())));
+                            } else if last_ahead == "UniCase" && last == "ascii" {
+                                return Some(ParsedKey::UniCase(UniCase::ascii(s.value())));
+                            } else if last_ahead == "Ascii" && last == "new" {
+                                return Some(ParsedKey::UniCaseAscii(Ascii::new(s.value())));
+                            }
+                            #[cfg(feature = "uncased")]
+                            if last_ahead == "UncasedStr" && last == "new" {
+                                return Some(ParsedKey::Uncased(Uncased::new(s.value())));
+                            }
                         }
-                    } else {
-                        None
                     }
-                } else {
-                    None
                 }
+                None
             }
             _ => None,
         }

@@ -1,6 +1,8 @@
 mod map {
     use phf::phf_map;
     use std::collections::{HashMap, HashSet};
+    use uncased::UncasedStr;
+    use unicase::{Ascii, UniCase};
 
     #[allow(dead_code)]
     static TRAILING_COMMA: phf::Map<&'static str, isize> = phf_map!(
@@ -20,6 +22,20 @@ mod map {
     #[allow(dead_code)]
     static DEREF_BYTE_STRING_KEY: phf::Map<[u8; 9], &'static str> = phf_map!(
         *b"camembert" => "delicious",
+    );
+
+    macro_rules! unicase_map {
+        ($($key:literal => $value:expr),* $(,)?) => {
+            phf_map!(
+                $(UniCase::ascii($key) => $value),*
+            )
+        };
+    }
+
+    #[allow(dead_code)]
+    static UNICASE_FROM_MACRO: phf::Map<UniCase<&'static str>, isize> = unicase_map!(
+        "FOO" => 10,
+        "Bar" => 11,
     );
 
     #[test]
@@ -247,7 +263,6 @@ mod map {
 
     #[test]
     fn test_unicase() {
-        use unicase::UniCase;
         static MAP: phf::Map<UniCase<&'static str>, isize> = phf_map!(
             UniCase::ascii("FOO") => 10,
             UniCase::unicode("Bar") => 11,
@@ -255,6 +270,28 @@ mod map {
         assert!(Some(&10) == MAP.get(&UniCase::new("FOo")));
         assert!(Some(&11) == MAP.get(&UniCase::new("bar")));
         assert_eq!(None, MAP.get(&UniCase::new("asdf")));
+    }
+
+    #[test]
+    fn test_unicase_ascii() {
+        static MAP: phf::Map<Ascii<&'static str>, isize> = phf_map!(
+            Ascii::new("FOO") => 10,
+            Ascii::new("Bar") => 11,
+        );
+        assert!(Some(&10) == MAP.get(&Ascii::new("FOo")));
+        assert!(Some(&11) == MAP.get(&Ascii::new("bar")));
+        assert_eq!(None, MAP.get(&Ascii::new("asdf")));
+    }
+
+    #[test]
+    fn test_uncased() {
+        static MAP: phf::Map<&'static UncasedStr, isize> = phf_map!(
+            UncasedStr::new("FOO") => 10,
+            UncasedStr::new("Bar") => 11,
+        );
+        assert!(Some(&10) == MAP.get(&UncasedStr::new("FOo")));
+        assert!(Some(&11) == MAP.get(&UncasedStr::new("bar")));
+        assert_eq!(None, MAP.get(&UncasedStr::new("asdf")));
     }
 }
 

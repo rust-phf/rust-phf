@@ -139,7 +139,6 @@ impl ParsedKey {
                 }
             }
             Expr::Group(group) => ParsedKey::from_expr(&group.expr),
-            // A call to a `stringify!()` macro
             // TODO: Is it possible to modify this so that it evaluates the final expansion of any macro invocations,
             //  and only afterwards does the parsing
             Expr::Macro(ExprMacro{mac: Macro{tokens, path, ..}, ..})

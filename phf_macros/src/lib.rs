@@ -7,11 +7,12 @@ use phf_generator::HashState;
 use phf_shared::PhfHash;
 use proc_macro::TokenStream;
 use quote::quote;
+use quote::ToTokens;
 use std::collections::HashSet;
 use std::hash::Hasher;
 use syn::parse::{self, Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, Error, Expr, ExprLit, Lit, Token, UnOp};
+use syn::{parse_macro_input, Error, Expr, ExprLit, Lit, Token, UnOp, ExprMacro, Macro};
 #[cfg(feature = "unicase")]
 use unicase_::UniCase;
 
@@ -138,6 +139,13 @@ impl ParsedKey {
                 }
             }
             Expr::Group(group) => ParsedKey::from_expr(&group.expr),
+            // A call to a `stringify!()` macro
+            // TODO: Is it possible to modify this so that it evaluates the final expansion of any macro invocations,
+            //  and only afterwards does the parsing
+            Expr::Macro(ExprMacro{mac: Macro{tokens, path, ..}, ..})
+                if path.to_token_stream().to_string() == "stringify" => {
+                Some(ParsedKey::Str(tokens.to_string()))
+            },
             #[cfg(feature = "unicase")]
             Expr::Call(call) => {
                 if let Expr::Path(ep) = call.func.as_ref() {
@@ -158,7 +166,24 @@ impl ParsedKey {
                                 UniCase::ascii(s.value())
                             };
                             Some(ParsedKey::UniCase(v))
-                        } else {
+                        }
+                        // A call to the stringify!() macro, inside a call to UniCase
+                        else if let Some(Expr::Macro(ExprMacro{mac: Macro{tokens, path, ..}, ..})) = call.args.first()
+                        {
+                            if path.to_token_stream().to_string() == "stringify"{
+                                let s = tokens.to_string();
+                                let v = if is_unicode {
+                                    UniCase::unicode(s)
+                                } else {
+                                    UniCase::ascii(s)
+                                };
+                                Some(ParsedKey::UniCase(v))
+                            }
+                            else {
+                                None
+                            }
+                        }
+                        else {
                             None
                         }
                     } else {

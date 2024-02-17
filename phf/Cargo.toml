@@ -18,7 +18,7 @@ test = false
 [features]
 default = ["std"]
 std = ["phf_shared/std"]
-uncased = ["phf_shared/uncased"]
+uncased = ["phf_macros?/uncased", "phf_shared/uncased"]
 unicase = ["phf_macros?/unicase", "phf_shared/unicase"]
 macros = ["phf_macros"]
 

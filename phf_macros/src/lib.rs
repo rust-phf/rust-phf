@@ -156,7 +156,13 @@ impl ParsedKey {
                     return None;
                 }
 
-                let _value = match call.args.first().unwrap() {
+                let mut arg = call.args.first().unwrap();
+
+                while let Expr::Group(group) = arg {
+                    arg = &group.expr;
+                }
+
+                let _value = match arg {
                     Expr::Lit(ExprLit {
                         attrs: _,
                         lit: Lit::Str(s),

@@ -198,6 +198,17 @@ impl<K: Hash + PhfHash + Eq + FmtConst> Map<K> {
         self
     }
 
+    /// Clears the entries currently in the builder.
+    ///
+    /// Using a single builder and clearing it after calls to [`Self::build`] is more efficent
+    /// than creating a new builder in a loop, as this can reuse heap allocations similar to [`Vec::clear`].
+    pub fn clear_entries(&mut self) -> &mut Map<K> {
+        self.keys.clear();
+        self.values.clear();
+
+        self
+    }
+
     /// Calculate the hash parameters and return a struct implementing
     /// [`Display`](::std::fmt::Display) which will print the constructed `phf::Map`.
     ///
@@ -302,6 +313,15 @@ impl<T: Hash + PhfHash + Eq + FmtConst> Set<T> {
         self
     }
 
+    /// Clears the entries currently in the builder.
+    ///
+    /// Using a single builder and clearing it after calls to [`Self::build`] is more efficent
+    /// than creating a new builder in a loop, as this can reuse heap allocations similar to [`Vec::clear`].
+    pub fn clear_entries(&mut self) -> &mut Set<T> {
+        self.map.clear_entries();
+        self
+    }
+
     /// Calculate the hash parameters and return a struct implementing
     /// [`Display`](::std::fmt::Display) which will print the constructed `phf::Set`.
     ///
@@ -355,6 +375,17 @@ impl<K: Hash + PhfHash + Eq + FmtConst> OrderedMap<K> {
     pub fn entry(&mut self, key: K, value: &str) -> &mut OrderedMap<K> {
         self.keys.push(key);
         self.values.push(value.to_owned());
+        self
+    }
+
+    /// Clears the entries currently in the builder.
+    ///
+    /// Using a single builder and clearing it after calls to [`Self::build`] is more efficent
+    /// than creating a new builder in a loop, as this can reuse heap allocations similar to [`Vec::clear`].
+    pub fn clear_entries(&mut self) -> &mut OrderedMap<K> {
+        self.keys.clear();
+        self.values.clear();
+
         self
     }
 
@@ -469,6 +500,15 @@ impl<T: Hash + PhfHash + Eq + FmtConst> OrderedSet<T> {
     /// Adds an entry to the builder.
     pub fn entry(&mut self, entry: T) -> &mut OrderedSet<T> {
         self.map.entry(entry, "()");
+        self
+    }
+
+    /// Clears the entries currently in the builder.
+    ///
+    /// Using a single builder and clearing it after calls to [`Self::build`] is more efficent
+    /// than creating a new builder in a loop, as this can reuse heap allocations similar to [`Vec::clear`].
+    pub fn clear_entries(&mut self) -> &mut OrderedSet<T> {
+        self.map.clear_entries();
         self
     }
 

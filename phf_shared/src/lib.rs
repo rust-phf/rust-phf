@@ -9,9 +9,8 @@
 extern crate std as core;
 
 use core::fmt;
-use core::hash::{Hash, Hasher};
+use core::hash::{BuildHasher, Hash, Hasher};
 use core::num::Wrapping;
-use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
 
 #[non_exhaustive]
 pub struct Hashes {
@@ -33,13 +32,18 @@ pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 /// `key` is from `phf_generator::HashState`.
 #[inline]
 pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
-    let mut hasher = SipHasher13::new_with_keys(0, *key);
+    use foldhash::quality::FixedState;
+
+    let mut hasher = FixedState::with_seed(*key).build_hasher();
     x.phf_hash(&mut hasher);
 
-    let Hash128 {
-        h1: lower,
-        h2: upper,
-    } = hasher.finish128();
+    let mut hasher0 = hasher.clone();
+    hasher0.write_u64(0);
+    let upper = hasher0.finish();
+
+    let mut hasher1 = hasher;
+    hasher1.write_u64(1);
+    let lower = hasher1.finish();
 
     Hashes {
         g: (lower >> 32) as u32,

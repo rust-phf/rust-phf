@@ -13,11 +13,9 @@ readme = "README.md"
 [dependencies]
 fastrand = { version = "2.1.0", default-features = false }
 phf_shared = { version = "^0.11.2", default-features = false }
-# for stable black_box()
-criterion = { version = "0.3.6", optional = true }
 
 [dev-dependencies]
-criterion = "0.3.6"
+criterion = "0.5.1"
 
 [[bench]]
 name = "benches"
@@ -25,4 +23,3 @@ harness = false
 
 [[bin]]
 name = "gen_hash_test"
-required-features = ["criterion"]

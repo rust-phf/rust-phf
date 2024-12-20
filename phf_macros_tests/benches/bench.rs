@@ -4,7 +4,10 @@ extern crate test;
 
 mod map {
     use phf::phf_map;
-    use std::collections::{BTreeMap, HashMap};
+    use std::{
+        collections::{BTreeMap, HashMap},
+        hint::black_box,
+    };
     use test::Bencher;
 
     macro_rules! map_and_match {
@@ -58,14 +61,14 @@ mod map {
     #[bench]
     fn bench_match_some(b: &mut Bencher) {
         b.iter(|| {
-            assert_eq!(match_get("zucchini").unwrap(), 25);
+            assert_eq!(match_get(black_box("zucchini")).unwrap(), 25);
         })
     }
 
     #[bench]
     fn bench_match_none(b: &mut Bencher) {
         b.iter(|| {
-            assert_eq!(match_get("potato"), None);
+            assert_eq!(match_get(black_box("potato")), None);
         })
     }
 
@@ -77,7 +80,7 @@ mod map {
         }
 
         b.iter(|| {
-            assert_eq!(map.get("zucchini").unwrap(), &25);
+            assert_eq!(map.get(black_box("zucchini")).unwrap(), &25);
         })
     }
 
@@ -89,14 +92,14 @@ mod map {
         }
 
         b.iter(|| {
-            assert_eq!(map.get("zucchini").unwrap(), &25);
+            assert_eq!(map.get(black_box("zucchini")).unwrap(), &25);
         })
     }
 
     #[bench]
     fn bench_phf_some(b: &mut Bencher) {
         b.iter(|| {
-            assert_eq!(MAP.get("zucchini").unwrap(), &25);
+            assert_eq!(MAP.get(black_box("zucchini")).unwrap(), &25);
         })
     }
 
@@ -108,7 +111,7 @@ mod map {
         }
 
         b.iter(|| {
-            assert_eq!(map.get("potato"), None);
+            assert_eq!(map.get(black_box("potato")), None);
         })
     }
 
@@ -120,14 +123,14 @@ mod map {
         }
 
         b.iter(|| {
-            assert_eq!(map.get("potato"), None);
+            assert_eq!(map.get(black_box("potato")), None);
         })
     }
 
     #[bench]
     fn bench_phf_none(b: &mut Bencher) {
         b.iter(|| {
-            assert_eq!(MAP.get("potato"), None);
+            assert_eq!(MAP.get(black_box("potato")), None);
         })
     }
 }

@@ -8,10 +8,14 @@ mod map {
     use test::Bencher;
 
     macro_rules! map_and_match {
-        ($map:ident, $f:ident, $($key:expr => $value:expr,)+) => {
-            static $map: phf::Map<&'static str, usize> = phf_map! {
+        ($phf:ident, $entries:ident, $f:ident, $($key:expr => $value:expr,)+) => {
+            static $phf: phf::Map<&'static str, usize> = phf_map! {
                 $($key => $value),+
             };
+
+            static $entries: &[(&'static str, usize)] = &[
+                $(($key, $value)),+
+            ];
 
             fn $f(key: &str) -> Option<usize> {
                 match key {
@@ -22,7 +26,7 @@ mod map {
         }
     }
 
-    map_and_match! { MAP, match_get,
+    map_and_match! { MAP, ENTRIES, match_get,
         "apple" => 0,
         "banana" => 1,
         "carrot" => 2,
@@ -68,7 +72,7 @@ mod map {
     #[bench]
     fn bench_btreemap_some(b: &mut Bencher) {
         let mut map = BTreeMap::new();
-        for (key, value) in MAP.entries() {
+        for (key, value) in ENTRIES {
             map.insert(*key, *value);
         }
 
@@ -80,7 +84,7 @@ mod map {
     #[bench]
     fn bench_hashmap_some(b: &mut Bencher) {
         let mut map = HashMap::new();
-        for (key, value) in MAP.entries() {
+        for (key, value) in ENTRIES {
             map.insert(*key, *value);
         }
 
@@ -99,7 +103,7 @@ mod map {
     #[bench]
     fn bench_btreemap_none(b: &mut Bencher) {
         let mut map = BTreeMap::new();
-        for (key, value) in MAP.entries() {
+        for (key, value) in ENTRIES {
             map.insert(*key, *value);
         }
 
@@ -111,7 +115,7 @@ mod map {
     #[bench]
     fn bench_hashmap_none(b: &mut Bencher) {
         let mut map = HashMap::new();
-        for (key, value) in MAP.entries() {
+        for (key, value) in ENTRIES {
             map.insert(*key, *value);
         }
 

@@ -12,6 +12,8 @@ use core::fmt;
 use core::hash::{BuildHasher, Hash, Hasher};
 use core::num::Wrapping;
 
+use foldhash::folded_multiply;
+
 mod foldhash;
 
 #[non_exhaustive]
@@ -39,18 +41,12 @@ pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
     let mut hasher = FixedState::with_seed(*key).build_hasher();
     x.phf_hash(&mut hasher);
 
-    let mut hasher0 = hasher.clone();
-    hasher0.write_u64(0);
-    let upper = hasher0.finish();
-
-    let mut hasher1 = hasher;
-    hasher1.write_u64(1);
-    let lower = hasher1.finish();
-
+    let lower = hasher.finish();
+    let upper = folded_multiply(lower, foldhash::ARBITRARY1);
     Hashes {
         g: (lower >> 32) as u32,
         f1: lower as u32,
-        f2: upper as u32,
+        f2: (upper ^ (upper >> 32)) as u32,
     }
 }
 

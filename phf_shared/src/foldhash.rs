@@ -6,7 +6,7 @@ use core::hash::{BuildHasher, Hasher};
 
 // Arbitrary constants with high entropy. Hexadecimal digits of pi were used.
 const ARBITRARY0: u64 = 0x243f6a8885a308d3;
-const _ARBITRARY1: u64 = 0x13198a2e03707344;
+pub const ARBITRARY1: u64 = 0x13198a2e03707344;
 const _ARBITRARY2: u64 = 0xa4093822299f31d0;
 const ARBITRARY3: u64 = 0x082efa98ec4e6c89;
 const ARBITRARY4: u64 = 0x452821e638d01377;
@@ -20,7 +20,7 @@ const _ARBITRARY9: u64 = 0xd1310ba698dfb5ac;
 const FIXED_GLOBAL_SEED: [u64; 4] = [ARBITRARY4, ARBITRARY5, ARBITRARY6, ARBITRARY7];
 
 #[inline(always)]
-const fn folded_multiply(x: u64, y: u64) -> u64 {
+pub(super) const fn folded_multiply(x: u64, y: u64) -> u64 {
     // We compute the full u64 x u64 -> u128 product, this is a single mul
     // instruction on x86-64, one mul plus one mulhi on ARM64.
     let full = (x as u128) * (y as u128);

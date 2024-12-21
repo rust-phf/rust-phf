@@ -1,3 +1,7 @@
+// Copyright (c) 2024 Orson Peters
+// Distributed with permission under the zlib license.
+// Minor modifications made to remove any platform dependant code.
+
 use core::hash::{BuildHasher, Hasher};
 
 // Arbitrary constants with high entropy. Hexadecimal digits of pi were used.

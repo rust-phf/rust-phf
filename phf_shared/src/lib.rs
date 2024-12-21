@@ -12,6 +12,8 @@ use core::fmt;
 use core::hash::{BuildHasher, Hash, Hasher};
 use core::num::Wrapping;
 
+mod foldhash;
+
 #[non_exhaustive]
 pub struct Hashes {
     pub g: u32,

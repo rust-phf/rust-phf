@@ -5,14 +5,61 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.11.3 (2025-01-07)
+
+### Other
+
+ - <csr-id-9ed628fe2ca954fdc49a93331188a99b58c9363a/> include LICENSE and changelog files in published crates
+   The restrictive "include" directive is only present in the phf_macros
+   crate but in none of the others. This commit brings phf_macros crate
+   in line with other crates in this workspace.
+
+### Bug Fixes
+
+ - <csr-id-b54c740086a96da85056b0df28174122bd73d5b0/> Add isize/usize as valid key types
+   These types already implement PhfHash as of #262, but were not supported
+   as valid key expressions in `phf_map!` and co.
+
+### Chore
+
+ - <csr-id-a96a4e29d63fb1ab3cc10e050571e733f5d2d0d1/> bump Cargo.toml version of phf and phf_macros
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 8 commits contributed to the release over the course of 260 calendar days.
- - 320 days passed between releases.
+ - 10 commits contributed to the release.
+ - 562 days passed between releases.
+ - 3 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Adjusting changelogs prior to release of phf_shared v0.11.3, phf_generator v0.11.3, phf_macros v0.11.3, phf v0.11.3, phf_codegen v0.11.3 ([`a95dade`](https://github.com/rust-phf/rust-phf/commit/a95dade6f69866b7871f85dd3fd42984df2f3d28))
+    - Merge pull request #322 from JohnTitor/release-0.11.3 ([`dc64dd6`](https://github.com/rust-phf/rust-phf/commit/dc64dd6bace986a8858590455e08659d9ea4ae4b))
+    - Reset version num ([`13581f8`](https://github.com/rust-phf/rust-phf/commit/13581f8e9eefe8b8b7cb1b1ad04f2d68d97b0ffd))
+    - Merge pull request #315 from LunarLambda/master ([`695a0df`](https://github.com/rust-phf/rust-phf/commit/695a0df769f3c75150a67ed9bb316579b875289d))
+    - Bump Cargo.toml version of phf and phf_macros ([`a96a4e2`](https://github.com/rust-phf/rust-phf/commit/a96a4e29d63fb1ab3cc10e050571e733f5d2d0d1))
+    - Add isize/usize as valid key types ([`b54c740`](https://github.com/rust-phf/rust-phf/commit/b54c740086a96da85056b0df28174122bd73d5b0))
+    - Merge pull request #300 from JohnTitor/msrv-1.61 ([`323366d`](https://github.com/rust-phf/rust-phf/commit/323366d03966ddad2eaa3432df79c9da8339e319))
+    - Bump MSRV to 1.61 ([`1795f7b`](https://github.com/rust-phf/rust-phf/commit/1795f7b66b16af0191f221dc957bc8a090c891ad))
+    - Merge pull request #293 from decathorpe/master ([`e03f456`](https://github.com/rust-phf/rust-phf/commit/e03f4562957afd89d8d95a19d563eda9f0db7e8c))
+    - Include LICENSE and changelog files in published crates ([`9ed628f`](https://github.com/rust-phf/rust-phf/commit/9ed628fe2ca954fdc49a93331188a99b58c9363a))
+</details>
+
+## 0.11.2 (2023-06-24)
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 10 commits contributed to the release.
+ - 319 days passed between releases.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
@@ -23,6 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Release phf_shared v0.11.2, phf_generator v0.11.2, phf_macros v0.11.2, phf v0.11.2, phf_codegen v0.11.2 ([`c9c35fd`](https://github.com/rust-phf/rust-phf/commit/c9c35fd8ba3f1bc228388b0cef6e3814a02a72c0))
+    - Update changelogs ([`a1e5072`](https://github.com/rust-phf/rust-phf/commit/a1e5072b8e84b108f06389a1d41ac868426a03f7))
     - Merge pull request #280 from jf2048/deref-bytestring ([`3776342`](https://github.com/rust-phf/rust-phf/commit/377634245c8c6f0569a2ed7b75d08366b54c8810))
     - Merge pull request #284 from nickelc/deps/syn2 ([`5ec8936`](https://github.com/rust-phf/rust-phf/commit/5ec8936369ca9eb6392a4aeb878d9bfef88d0d17))
     - Update `syn` to 2.0 ([`8e3e3e5`](https://github.com/rust-phf/rust-phf/commit/8e3e3e554433a2bcb6bf84805b1d03a49780d8c3))
@@ -65,7 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 232 commits contributed to the release over the course of 2751 calendar days.
+ - 232 commits contributed to the release.
  - 3 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 

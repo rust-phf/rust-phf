@@ -1,6 +1,6 @@
 [package]
 name = "phf_macros"
-version = "0.11.2"
+version = "0.11.3"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 edition = "2021"
 license = "MIT"

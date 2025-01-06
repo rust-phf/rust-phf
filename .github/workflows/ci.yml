@@ -24,6 +24,11 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2.7.1
 
+      - name: Use latest versions of dependencies
+        if: matrix.version != '1.61.0'
+        run: |
+          cargo update --verbose
+
       - name: Rustfmt check
         if: matrix.version == '1.61.0'
         run: |

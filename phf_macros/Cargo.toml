@@ -7,7 +7,7 @@ license = "MIT"
 description = "Macros to generate types in the phf crate"
 repository = "https://github.com/rust-phf/rust-phf"
 readme = "../README.md"
-rust-version = "1.61"
+rust-version = "1.63"
 categories = ["data-structures"]
 
 [lib]

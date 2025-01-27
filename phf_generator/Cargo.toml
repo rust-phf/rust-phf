@@ -6,7 +6,7 @@ license = "MIT"
 description = "PHF generation logic"
 repository = "https://github.com/rust-phf/rust-phf"
 edition = "2021"
-rust-version = "1.61"
+rust-version = "1.63"
 categories = ["data-structures"]
 readme = "README.md"
 

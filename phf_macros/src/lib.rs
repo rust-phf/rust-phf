@@ -15,7 +15,7 @@ use syn::{parse_macro_input, Error, Expr, ExprLit, Lit, Token, UnOp};
 #[cfg(feature = "uncased")]
 use uncased_::Uncased;
 #[cfg(feature = "unicase")]
-use unicase_::UniCase;
+use unicase_::{Ascii, UniCase};
 
 #[derive(Hash, PartialEq, Eq, Clone)]
 enum ParsedKey {
@@ -37,6 +37,8 @@ enum ParsedKey {
     Bool(bool),
     #[cfg(feature = "unicase")]
     UniCase(UniCase<String>),
+    #[cfg(feature = "unicase")]
+    UniCaseAscii(Ascii<String>),
     #[cfg(feature = "uncased")]
     Uncased(Uncased<'static>),
 }
@@ -65,6 +67,8 @@ impl PhfHash for ParsedKey {
             ParsedKey::Bool(s) => s.phf_hash(state),
             #[cfg(feature = "unicase")]
             ParsedKey::UniCase(s) => s.phf_hash(state),
+            #[cfg(feature = "unicase")]
+            ParsedKey::UniCaseAscii(s) => s.phf_hash(state),
             #[cfg(feature = "uncased")]
             ParsedKey::Uncased(s) => s.phf_hash(state),
         }
@@ -184,6 +188,8 @@ impl ParsedKey {
                     ("UniCase", "unicode") => Some(ParsedKey::UniCase(UniCase::unicode(_value))),
                     #[cfg(feature = "unicase")]
                     ("UniCase", "ascii") => Some(ParsedKey::UniCase(UniCase::ascii(_value))),
+                    #[cfg(feature = "unicase")]
+                    ("Ascii", "new") => Some(ParsedKey::UniCaseAscii(Ascii::new(_value))),
                     #[cfg(feature = "uncased")]
                     ("UncasedStr", "new") => Some(ParsedKey::Uncased(Uncased::new(_value))),
                     _ => None,

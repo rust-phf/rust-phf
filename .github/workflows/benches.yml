@@ -3,6 +3,10 @@ on:
   pull_request:
     types: [labeled]
 
+permissions:
+  deployments: write
+  contents: write
+
 jobs:
   bench_between_master_and_pr:
     if: ${{ github.event.label.name == 'run-benchmarks' }}
@@ -13,13 +17,17 @@ jobs:
         run: |
           rustup set profile minimal
           rustup override set nightly
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Run benchmark on PR
+        run: cargo bench | tee output.txt
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@d48d326b4ca9ba73ca0cd0d59f108f9e02a381c7 # v1.20.4
         with:
-          ref: master
-      - name: measure benchmarks on master
-        run: cargo bench
-      - uses: actions/checkout@v4
-        with:
-          clean: false
-      - name: measure benchmarks on PR
-        run: cargo bench
+          tool: 'cargo'
+          output-file-path: output.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          comment-always: true
+          comment-on-alert: true
+          alert-threshold: '150%'
+          fail-on-alert: true

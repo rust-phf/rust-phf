@@ -7,14 +7,21 @@ use fastrand::Rng;
 
 use phf_generator::generate_hash;
 
-fn gen_vec(len: usize) -> Vec<u64> {
-    let mut rng = Rng::with_seed(0xAAAAAAAAAAAAAAAA);
+fn gen_vec(seed: u64, len: usize) -> Vec<u64> {
+    let mut rng = Rng::with_seed(seed);
     iter::repeat_with(|| rng.u64(..)).take(len).collect()
 }
 
 fn bench_hash<M: Measurement>(b: &mut Bencher<M>, len: &usize) {
-    let vec = gen_vec(*len);
-    b.iter(|| generate_hash(&vec))
+    let mut seed = 0xAAAAAAAAAAAAAAAA;
+    b.iter_batched_ref(
+        || {
+            seed += 1;
+            gen_vec(seed, *len)
+        },
+        |v| generate_hash(v),
+        criterion::BatchSize::PerIteration,
+    );
 }
 
 fn gen_hash_small(c: &mut Criterion) {

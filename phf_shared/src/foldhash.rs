@@ -5,19 +5,14 @@
 use core::hash::{BuildHasher, Hasher};
 
 // Arbitrary constants with high entropy. Hexadecimal digits of pi were used.
-const ARBITRARY0: u64 = 0x243f6a8885a308d3;
-pub const ARBITRARY1: u64 = 0x13198a2e03707344;
-const _ARBITRARY2: u64 = 0xa4093822299f31d0;
+pub(crate) const ARBITRARY0: u64 = 0x243f6a8885a308d3;
+const ARBITRARY1: u64 = 0x13198a2e03707344;
+const ARBITRARY2: u64 = 0xa4093822299f31d0;
 const ARBITRARY3: u64 = 0x082efa98ec4e6c89;
 const ARBITRARY4: u64 = 0x452821e638d01377;
-const ARBITRARY5: u64 = 0xbe5466cf34e90c6c;
-const ARBITRARY6: u64 = 0xc0ac29b7c97c50dd;
-const ARBITRARY7: u64 = 0x3f84d5b5b5470917;
-const ARBITRARY8: u64 = 0x9216d5d98979fb1b;
-const _ARBITRARY9: u64 = 0xd1310ba698dfb5ac;
 
 /// Used for FixedState, and RandomState if atomics for dynamic init are unavailable.
-const FIXED_GLOBAL_SEED: [u64; 4] = [ARBITRARY4, ARBITRARY5, ARBITRARY6, ARBITRARY7];
+const FIXED_GLOBAL_SEED: [u64; 4] = [ARBITRARY1, ARBITRARY2, ARBITRARY3, ARBITRARY4];
 
 #[inline(always)]
 pub(super) const fn folded_multiply(x: u64, y: u64) -> u64 {
@@ -39,9 +34,6 @@ pub mod fast {
     use super::*;
 
     /// A [`BuildHasher`] for [`fast::FoldHasher`]s that all have the same fixed seed.
-    ///
-    /// Not recommended unless you absolutely need determinism.
-    #[derive(Copy, Clone, Debug)]
     pub struct FixedState {
         per_hasher_seed: u64,
     }
@@ -50,18 +42,8 @@ pub mod fast {
         /// Creates a [`FixedState`] with the given seed.
         #[inline(always)]
         pub const fn with_seed(seed: u64) -> Self {
-            // XOR with ARBITRARY3 such that with_seed(0) matches default.
             Self {
-                per_hasher_seed: seed ^ ARBITRARY3,
-            }
-        }
-    }
-
-    impl Default for FixedState {
-        #[inline(always)]
-        fn default() -> Self {
-            Self {
-                per_hasher_seed: ARBITRARY3,
+                per_hasher_seed: seed,
             }
         }
     }
@@ -77,7 +59,7 @@ pub mod fast {
 
     /// A [`Hasher`] instance implementing foldhash, optimized for speed.
     ///
-    /// It can't be created directly, see [`RandomState`] or [`FixedState`].
+    /// It can't be created directly, see [`FixedState`].
     #[derive(Clone)]
     pub struct FoldHasher {
         accumulator: u64,
@@ -197,94 +179,6 @@ pub mod fast {
             } else {
                 self.accumulator
             }
-        }
-    }
-}
-
-/// The foldhash implementation optimized for quality.
-pub mod quality {
-    use super::*;
-
-    /// A [`BuildHasher`] for [`quality::FoldHasher`]s that all have the same fixed seed.
-    ///
-    /// Not recommended unless you absolutely need determinism.
-    #[derive(Copy, Clone, Default, Debug)]
-    pub struct FixedState {
-        inner: fast::FixedState,
-    }
-
-    impl FixedState {
-        /// Creates a [`FixedState`] with the given seed.
-        #[inline(always)]
-        pub const fn with_seed(seed: u64) -> Self {
-            Self {
-                // We do an additional folded multiply with the seed here for
-                // the quality hash to ensure better independence between seed
-                // and hash. If the seed is zero the folded multiply is zero,
-                // preserving with_seed(0) == default().
-                inner: fast::FixedState::with_seed(folded_multiply(seed, ARBITRARY8)),
-            }
-        }
-    }
-
-    impl BuildHasher for FixedState {
-        type Hasher = FoldHasher;
-
-        #[inline(always)]
-        fn build_hasher(&self) -> FoldHasher {
-            FoldHasher {
-                inner: self.inner.build_hasher(),
-            }
-        }
-    }
-
-    /// A [`Hasher`] instance implementing foldhash, optimized for quality.
-    ///
-    /// It can't be created directly, see [`RandomState`] or [`FixedState`].
-    #[derive(Clone)]
-    pub struct FoldHasher {
-        pub(crate) inner: fast::FoldHasher,
-    }
-
-    impl Hasher for FoldHasher {
-        #[inline(always)]
-        fn write(&mut self, bytes: &[u8]) {
-            self.inner.write(bytes);
-        }
-
-        #[inline(always)]
-        fn write_u8(&mut self, i: u8) {
-            self.inner.write_u8(i);
-        }
-
-        #[inline(always)]
-        fn write_u16(&mut self, i: u16) {
-            self.inner.write_u16(i);
-        }
-
-        #[inline(always)]
-        fn write_u32(&mut self, i: u32) {
-            self.inner.write_u32(i);
-        }
-
-        #[inline(always)]
-        fn write_u64(&mut self, i: u64) {
-            self.inner.write_u64(i);
-        }
-
-        #[inline(always)]
-        fn write_u128(&mut self, i: u128) {
-            self.inner.write_u128(i);
-        }
-
-        #[inline(always)]
-        fn write_usize(&mut self, i: usize) {
-            self.inner.write_usize(i);
-        }
-
-        #[inline(always)]
-        fn finish(&self) -> u64 {
-            folded_multiply(self.inner.finish(), ARBITRARY0)
         }
     }
 }

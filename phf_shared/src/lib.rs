@@ -36,17 +36,17 @@ pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 /// `key` is from `phf_generator::HashState`.
 #[inline]
 pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
-    use foldhash::quality::FixedState;
+    use foldhash::fast::FixedState;
 
     let mut hasher = FixedState::with_seed(*key).build_hasher();
     x.phf_hash(&mut hasher);
 
     let lower = hasher.finish();
-    let upper = folded_multiply(lower, foldhash::ARBITRARY1);
+    let upper = folded_multiply(lower, foldhash::ARBITRARY0);
     Hashes {
-        g: (lower >> 32) as u32,
-        f1: lower as u32,
-        f2: (upper ^ (upper >> 32)) as u32,
+        f1: (lower >> 32) as u32,
+        f2: lower as u32,
+        g: (upper ^ (upper >> 32)) as u32,
     }
 }
 

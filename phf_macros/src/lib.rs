@@ -12,6 +12,8 @@ use std::hash::Hasher;
 use syn::parse::{self, Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::{parse_macro_input, Error, Expr, ExprLit, Lit, Token, UnOp};
+#[cfg(feature = "uncased")]
+use uncased_::Uncased;
 #[cfg(feature = "unicase")]
 use unicase_::UniCase;
 
@@ -25,14 +27,18 @@ enum ParsedKey {
     I32(i32),
     I64(i64),
     I128(i128),
+    Isize(isize),
     U8(u8),
     U16(u16),
     U32(u32),
     U64(u64),
     U128(u128),
+    Usize(usize),
     Bool(bool),
     #[cfg(feature = "unicase")]
     UniCase(UniCase<String>),
+    #[cfg(feature = "uncased")]
+    Uncased(Uncased<'static>),
 }
 
 impl PhfHash for ParsedKey {
@@ -49,14 +55,18 @@ impl PhfHash for ParsedKey {
             ParsedKey::I32(s) => s.phf_hash(state),
             ParsedKey::I64(s) => s.phf_hash(state),
             ParsedKey::I128(s) => s.phf_hash(state),
+            ParsedKey::Isize(s) => s.phf_hash(state),
             ParsedKey::U8(s) => s.phf_hash(state),
             ParsedKey::U16(s) => s.phf_hash(state),
             ParsedKey::U32(s) => s.phf_hash(state),
             ParsedKey::U64(s) => s.phf_hash(state),
             ParsedKey::U128(s) => s.phf_hash(state),
+            ParsedKey::Usize(s) => s.phf_hash(state),
             ParsedKey::Bool(s) => s.phf_hash(state),
             #[cfg(feature = "unicase")]
             ParsedKey::UniCase(s) => s.phf_hash(state),
+            #[cfg(feature = "uncased")]
+            ParsedKey::Uncased(s) => s.phf_hash(state),
         }
     }
 }
@@ -78,11 +88,13 @@ impl ParsedKey {
                     "i32" => Some(ParsedKey::I32(s.base10_parse::<u32>().unwrap() as i32)),
                     "i64" => Some(ParsedKey::I64(s.base10_parse::<u64>().unwrap() as i64)),
                     "i128" => Some(ParsedKey::I128(s.base10_parse::<u128>().unwrap() as i128)),
+                    "isize" => Some(ParsedKey::Isize(s.base10_parse::<usize>().unwrap() as isize)),
                     "u8" => Some(ParsedKey::U8(s.base10_parse::<u8>().unwrap())),
                     "u16" => Some(ParsedKey::U16(s.base10_parse::<u16>().unwrap())),
                     "u32" => Some(ParsedKey::U32(s.base10_parse::<u32>().unwrap())),
                     "u64" => Some(ParsedKey::U64(s.base10_parse::<u64>().unwrap())),
                     "u128" => Some(ParsedKey::U128(s.base10_parse::<u128>().unwrap())),
+                    "usize" => Some(ParsedKey::Usize(s.base10_parse::<usize>().unwrap())),
                     _ => None,
                 },
                 Lit::Bool(s) => Some(ParsedKey::Bool(s.value)),
@@ -119,6 +131,7 @@ impl ParsedKey {
                         ParsedKey::I32(v) => Some(ParsedKey::I32(try_negate!(v))),
                         ParsedKey::I64(v) => Some(ParsedKey::I64(try_negate!(v))),
                         ParsedKey::I128(v) => Some(ParsedKey::I128(try_negate!(v))),
+                        ParsedKey::Isize(v) => Some(ParsedKey::Isize(try_negate!(v))),
                         _ => None,
                     },
                     UnOp::Deref(_) => {
@@ -138,34 +151,42 @@ impl ParsedKey {
                 }
             }
             Expr::Group(group) => ParsedKey::from_expr(&group.expr),
-            #[cfg(feature = "unicase")]
-            Expr::Call(call) => {
+            Expr::Call(call) if call.args.len() == 1 => {
+                let last;
+                let last_ahead;
+
                 if let Expr::Path(ep) = call.func.as_ref() {
-                    let segments = &mut ep.path.segments.iter().rev();
-                    let last = &segments.next()?.ident;
-                    let last_ahead = &segments.next()?.ident;
-                    let is_unicode = last_ahead == "UniCase" && last == "unicode";
-                    let is_ascii = last_ahead == "UniCase" && last == "ascii";
-                    if call.args.len() == 1 && (is_unicode || is_ascii) {
-                        if let Some(Expr::Lit(ExprLit {
-                            attrs: _,
-                            lit: Lit::Str(s),
-                        })) = call.args.first()
-                        {
-                            let v = if is_unicode {
-                                UniCase::unicode(s.value())
-                            } else {
-                                UniCase::ascii(s.value())
-                            };
-                            Some(ParsedKey::UniCase(v))
-                        } else {
-                            None
-                        }
-                    } else {
-                        None
-                    }
+                    let mut segments = ep.path.segments.iter();
+                    last = segments.next_back()?.ident.to_string();
+                    last_ahead = segments.next_back()?.ident.to_string();
                 } else {
-                    None
+                    return None;
+                }
+
+                let mut arg = call.args.first().unwrap();
+
+                while let Expr::Group(group) = arg {
+                    arg = &group.expr;
+                }
+
+                let _value = match arg {
+                    Expr::Lit(ExprLit {
+                        attrs: _,
+                        lit: Lit::Str(s),
+                    }) => s.value(),
+                    _ => {
+                        return None;
+                    }
+                };
+
+                match (&*last_ahead, &*last) {
+                    #[cfg(feature = "unicase")]
+                    ("UniCase", "unicode") => Some(ParsedKey::UniCase(UniCase::unicode(_value))),
+                    #[cfg(feature = "unicase")]
+                    ("UniCase", "ascii") => Some(ParsedKey::UniCase(UniCase::ascii(_value))),
+                    #[cfg(feature = "uncased")]
+                    ("UncasedStr", "new") => Some(ParsedKey::Uncased(Uncased::new(_value))),
+                    _ => None,
                 }
             }
             _ => None,

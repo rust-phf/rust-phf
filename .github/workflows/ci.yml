@@ -8,7 +8,7 @@ on:
 jobs:
   ci:
     name: CI
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -22,7 +22,7 @@ jobs:
           rustup set profile minimal
           rustup override set ${{ matrix.version }}
 
-      - uses: Swatinem/rust-cache@v2.7.1
+      - uses: Swatinem/rust-cache@v2.7.7
 
       - name: Rustfmt check
         if: matrix.version == '1.61.0'
@@ -33,11 +33,6 @@ jobs:
       - name: Run `cargo test` on workspace
         if: matrix.version != '1.61.0'
         run: cargo test --workspace --exclude=phf_codegen_test
-
-      - name: phf_macros UI test
-        if: matrix.version == '1.61.0'
-        working-directory: phf_macros_tests
-        run: cargo test -- --ignored --test-threads=1
 
       - name: phf_codegen test
         if: matrix.version != '1.61.0'

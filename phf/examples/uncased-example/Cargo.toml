@@ -1,5 +1,5 @@
 [package]
-name = "unicase-example"
+name = "uncased-example"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.61"

@@ -15,14 +15,14 @@ jobs:
         # MSRV and nightly
         version: [1.61.0, stable, nightly]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set toolchain
         run: |
           rustup set profile minimal
           rustup override set ${{ matrix.version }}
 
-      - uses: Swatinem/rust-cache@v2.7.7
+      - uses: Swatinem/rust-cache@f0deed1e0edfc6a9be95417288c0e1099b1eeec3 # v2.7.7
 
       - name: Rustfmt check
         if: matrix.version == '1.61.0'

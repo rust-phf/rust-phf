@@ -285,6 +285,18 @@ mod map {
         assert!(Some(&11) == MAP.get(&UniCase::new("bar")));
         assert_eq!(None, MAP.get(&UniCase::new("asdf")));
     }
+
+    #[test]
+    fn test_uncased() {
+        use uncased::UncasedStr;
+        static MAP: phf::Map<&'static UncasedStr, isize> = phf_map!(
+            UncasedStr::new("FOO") => 10,
+            UncasedStr::new("Bar") => 11,
+        );
+        assert!(Some(&10) == MAP.get("FOo".into()));
+        assert!(Some(&11) == MAP.get("bar".into()));
+        assert_eq!(None, MAP.get("asdf".into()));
+    }
 }
 
 mod set {

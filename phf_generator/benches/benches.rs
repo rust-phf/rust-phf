@@ -1,7 +1,7 @@
 use criterion::measurement::Measurement;
 use criterion::{criterion_group, criterion_main, Bencher, BenchmarkId, Criterion};
 
-use rand::distributions::Standard;
+use rand::distr::StandardUniform;
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
@@ -9,7 +9,7 @@ use phf_generator::generate_hash;
 
 fn gen_vec(len: usize) -> Vec<u64> {
     SmallRng::seed_from_u64(0xAAAAAAAAAAAAAAAA)
-        .sample_iter(Standard)
+        .sample_iter(StandardUniform)
         .take(len)
         .collect()
 }

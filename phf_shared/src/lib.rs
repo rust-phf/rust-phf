@@ -245,6 +245,12 @@ impl<'a> PhfBorrow<[u8]> for &'a [u8] {
     }
 }
 
+impl<'a, const N: usize> PhfBorrow<[u8; N]> for &'a [u8; N] {
+    fn borrow(&self) -> &[u8; N] {
+        self
+    }
+}
+
 impl PhfHash for str {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {

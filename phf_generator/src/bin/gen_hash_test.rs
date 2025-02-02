@@ -1,16 +1,17 @@
+use std::iter;
+
 use criterion::*;
 
-use rand::distributions::Alphanumeric;
-use rand::rngs::SmallRng;
-use rand::{Rng, SeedableRng};
+use fastrand::Rng;
 
 use phf_generator::generate_hash;
 
 fn gen_vec(len: usize) -> Vec<String> {
-    let mut rng = SmallRng::seed_from_u64(0xAAAAAAAAAAAAAAAA).sample_iter(Alphanumeric);
+    let mut rng = Rng::with_seed(0xAAAAAAAAAAAAAAAA);
+    let mut chars = iter::repeat_with(|| rng.alphanumeric());
 
     (0..len)
-        .map(move |_| rng.by_ref().take(64).collect::<String>())
+        .map(move |_| chars.by_ref().take(64).collect::<String>())
         .collect()
 }
 

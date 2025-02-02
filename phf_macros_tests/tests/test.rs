@@ -201,6 +201,22 @@ mod map {
     }
 
     #[test]
+    fn test_isize_keys() {
+        if cfg!(target_pointer_width = "16") {
+            test_key_type!(isize, 0isize => 0, 1isize => 1, 32767isize => 2, -32768isize => 3);
+        } else if cfg!(target_pointer_width = "32") {
+            test_key_type!(isize, 0isize => 0, 1isize => 1, 2147483647isize => 2, -2147483648isize => 3);
+        } else if cfg!(target_pointer_width = "64") {
+            test_key_type!(
+                isize, 0isize => 0, 1isize => 1,
+                9223372036854775807isize => 2, -9223372036854775808isize => 3
+            );
+        } else {
+            panic!("target_pointer_width is not 16, 32, or 64")
+        }
+    }
+
+    #[test]
     fn test_u8_keys() {
         test_key_type!(u8, 0u8 => 0, 1u8 => 1, 255u8 => 2);
     }
@@ -226,6 +242,19 @@ mod map {
             u128, 0u128 => 0, 1u128 => 1,
             340282366920938463463374607431768211455u128 => 2
         );
+    }
+
+    #[test]
+    fn test_usize_keys() {
+        if cfg!(target_pointer_width = "16") {
+            test_key_type!(usize, 0usize => 0, 1usize => 1, 65535usize => 2);
+        } else if cfg!(target_pointer_width = "32") {
+            test_key_type!(usize, 0usize => 0, 1usize => 1, 4294967295usize => 2);
+        } else if cfg!(target_pointer_width = "64") {
+            test_key_type!(usize, 0usize => 0, 1usize => 1, 18446744073709551615usize => 2);
+        } else {
+            panic!("target_pointer_width is not 16, 32, or 64")
+        }
     }
 
     #[test]

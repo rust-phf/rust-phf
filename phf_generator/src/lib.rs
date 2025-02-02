@@ -3,10 +3,10 @@
 //! [phf]: https://docs.rs/phf
 
 #![doc(html_root_url = "https://docs.rs/phf_generator/0.11")]
+use std::iter;
+
+use fastrand::Rng;
 use phf_shared::{HashKey, Hashes, PhfHash};
-use rand::distributions::Standard;
-use rand::rngs::SmallRng;
-use rand::{Rng, SeedableRng};
 
 const DEFAULT_LAMBDA: usize = 5;
 
@@ -27,9 +27,9 @@ where
     F: Fn(&T, &HashKey) -> Hashes,
 {
     let mut generator = Generator::new(entries.len());
+    let mut rng = Rng::with_seed(FIXED_SEED);
 
-    SmallRng::seed_from_u64(FIXED_SEED)
-        .sample_iter(Standard)
+    iter::repeat_with(|| rng.u64(..))
         .find(|key| {
             let hashes = entries.iter().map(|entry| hash_fn(entry, key));
             generator.reset(hashes);

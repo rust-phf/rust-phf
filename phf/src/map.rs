@@ -7,7 +7,6 @@ use core::slice;
 use phf_shared::{self, HashKey, PhfBorrow, PhfHash};
 #[cfg(feature = "serde")]
 use serde::ser::{Serialize, SerializeMap, Serializer};
-
 /// An immutable map constructed at compile time.
 ///
 /// ## Note

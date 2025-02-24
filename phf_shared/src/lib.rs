@@ -10,8 +10,7 @@ extern crate std as core;
 
 use core::fmt;
 use core::hash::{Hash, Hasher};
-use core::num::Wrapping;
-use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
+use const_siphasher::sip128::{Hash128, SipHasher13};
 
 #[non_exhaustive]
 pub struct Hashes {
@@ -26,8 +25,8 @@ pub struct Hashes {
 pub type HashKey = u64;
 
 #[inline]
-pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
-    (Wrapping(d2) + Wrapping(f1) * Wrapping(d1) + Wrapping(f2)).0
+pub const fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
+    d2.wrapping_add(f1.wrapping_mul(d1)).wrapping_add(f2)
 }
 
 /// `key` is from `phf_generator::HashState`.
@@ -54,7 +53,7 @@ pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
 /// * `disps` is from `phf_generator::HashState::disps`.
 /// * `len` is the length of `phf_generator::HashState::map`.
 #[inline]
-pub fn get_index(hashes: &Hashes, disps: &[(u32, u32)], len: usize) -> u32 {
+pub const fn get_index(hashes: &Hashes, disps: &[(u32, u32)], len: usize) -> u32 {
     let (d1, d2) = disps[(hashes.g % (disps.len() as u32)) as usize];
     displace(hashes.f1, hashes.f2, d1, d2) % (len as u32)
 }
@@ -67,16 +66,6 @@ pub fn get_index(hashes: &Hashes, disps: &[(u32, u32)], len: usize) -> u32 {
 pub trait PhfHash {
     /// Feeds the value into the state given, updating the hasher as necessary.
     fn phf_hash<H: Hasher>(&self, state: &mut H);
-
-    /// Feeds a slice of this type into the state provided.
-    fn phf_hash_slice<H: Hasher>(data: &[Self], state: &mut H)
-    where
-        Self: Sized,
-    {
-        for piece in data {
-            piece.phf_hash(state);
-        }
-    }
 }
 
 /// Trait for printing types with `const` constructors, used by `phf_codegen` and `phf_macros`.

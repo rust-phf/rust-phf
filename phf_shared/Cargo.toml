@@ -20,6 +20,6 @@ default = ["std"]
 std = []
 
 [dependencies]
-siphasher = "1.0"
+const-siphasher = { git = "https://github.com/Daniel-Aaron-Bloom/const-siphash-rs" }
 unicase = { version = "2.4.0", optional = true }
 uncased = { version = "0.9.9", optional = true, default-features = false }

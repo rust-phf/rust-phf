@@ -5,23 +5,22 @@
 [Documentation](https://docs.rs/phf)
 
 Rust-PHF is a library to generate efficient lookup tables at compile time using
-[perfect hash functions](http://en.wikipedia.org/wiki/Perfect_hash_function).
+[perfect hash functions](https://en.wikipedia.org/wiki/Perfect_hash_function).
 
 It currently uses the
-[CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) and can generate
+[CHD algorithm](https://cmph.sourceforge.net/papers/esa09.pdf) and can generate
 a 100,000 entry map in roughly .4 seconds.
 
-MSRV (minimum supported rust version) is Rust 1.61.
+MSRV (minimum supported Rust version) is Rust 1.61.
 
 ## Usage
 
-PHF data structures can be constructed via either the procedural
-macros in the `phf_macros` crate or code generation supported by the
-`phf_codegen` crate.
+PHF data structures can be constructed via either the procedural macros in the
+`phf_macros` crate or code generation supported by the `phf_codegen` crate.
 
-To compile the `phf` crate with a dependency on
-libcore instead of libstd, enabling use in environments where libstd
-will not work, set `default-features = false` for the dependency:
+To compile the `phf` crate with a dependency on libcore instead of libstd,
+enabling use in environments where libstd will not work, set
+`default-features = false` for the dependency:
 
 ```toml
 [dependencies]
@@ -63,15 +62,16 @@ phf = { version = "0.11", features = ["macros"] }
 
 #### Note
 
-Currently, the macro syntax has some limitations and may not
-work as you want. See [#183] or [#196] for example.
+Currently, the macro syntax has some limitations and may not work as you want.
+See [#183] or [#196] for example.
 
 [#183]: https://github.com/rust-phf/rust-phf/issues/183
 [#196]: https://github.com/rust-phf/rust-phf/issues/196
 
 ### phf_codegen
 
-To use `phf_codegen` on build.rs, you have to add dependencies under `[build-dependencies]`:
+To use `phf_codegen` on build.rs, you have to add dependencies under
+`[build-dependencies]`:
 
 ```toml
 [build-dependencies]

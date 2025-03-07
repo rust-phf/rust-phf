@@ -1,18 +1,22 @@
-[workspace]
-resolver = "1"
-members = [
-    "phf",
-    "phf/examples/unicase-example",
-    "phf_codegen",
-    "phf_codegen/test",
-    "phf_generator",
-    "phf_macros",
-    "phf_macros_tests",
-    "phf_shared"
-]
+[package]
+name = "cphf"
+authors = ["Daniel Bloom"]
+version = "1.0.0"
+license = "MIT"
+description = "Compile-time perfect hash function data structures"
+repository = "https://github.com/Daniel-Aaron-Bloom/cphf-rs"
+edition = "2021"
+readme = "../README.md"
+rust-version = "1.85.0"
+categories = ["data-structures", "no-std"]
+keywords = ["phf", "const"]
 
-[patch.crates-io]
-phf = { path = "phf" }
-phf_generator = { path = "./phf_generator" }
-phf_macros = { path = "./phf_macros" }
-phf_shared = { path = "./phf_shared" }
+[dependencies]
+const-siphasher = { git = "https://github.com/Daniel-Aaron-Bloom/const-siphash-rs" }
+arrayvec-const = "0.7"
+sort-const = "1.0.1"
+unicase = { version = "2.4.0", optional = true }
+const_panic = "0.2.12"
+
+[badges]
+github = { repository = "Daniel-Aaron-Bloom/cphf-rs", workflow = "CI" }

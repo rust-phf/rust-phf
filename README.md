@@ -1,38 +1,27 @@
-# Rust-PHF
+# cphf
+[![Crates.io](https://img.shields.io/crates/v/cphf.svg)](https://crates.io/crates/cphf)
+[![Workflow Status](https://github.com/Daniel-Aaron-Bloom/cphf-rs/workflows/CI/badge.svg)](https://github.com/Daniel-Aaron-Bloom/cphf-rs/actions?query=workflow%3A%22CI%22)
 
-[![CI](https://github.com/rust-phf/rust-phf/actions/workflows/ci.yml/badge.svg)](https://github.com/rust-phf/rust-phf/actions/workflows/ci.yml) [![Latest Version](https://img.shields.io/crates/v/phf.svg)](https://crates.io/crates/phf)
-
-[Documentation](https://docs.rs/phf)
-
-Rust-PHF is a library to generate efficient lookup tables at compile time using
+CPHF is a library to generate efficient lookup tables at compile time using
 [perfect hash functions](http://en.wikipedia.org/wiki/Perfect_hash_function).
 
 It currently uses the
 [CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) and can generate
-a 100,000 entry map in roughly .4 seconds.
+a 120 entry map in roughly 1 second.
 
-MSRV (minimum supported rust version) is Rust 1.61.
+MSRV (minimum supported rust version) is Rust 1.85.
+In contrast to the excellent [`phf`](https://github.com/rust-phf/rust-phf/) crate, this crate
+uses no code generation outside of normal `macro_rules`, and instead generates the map using `const` expressions.
+This does mean this crate several orders of magnitude slower than `phf` (so maps with thousands of entries would probably be
+better served by `phf`), but doing so allows it to avoid all the major drawbacks. Namely, [nested maps](https://github.com/rust-phf/rust-phf/issues/183) are supported [any type](https://github.com/rust-phf/rust-phf/issues/196) can be used as a key (provided it implements the correct traits and pseudo-traits).
 
-## Usage
+### Usage
 
-PHF data structures can be constructed via either the procedural
-macros in the `phf_macros` crate or code generation supported by the
-`phf_codegen` crate.
-
-To compile the `phf` crate with a dependency on
-libcore instead of libstd, enabling use in environments where libstd
-will not work, set `default-features = false` for the dependency:
-
-```toml
-[dependencies]
-# to use `phf` in `no_std` environments
-phf = { version = "0.11", default-features = false }
-```
-
-### phf_macros
+Simply add `cphf` as a depenency and utilize the included [`phf_ordered_map`] macro to construct an [`OrderedMap`]
+or the [`phf_ordered_set`] macro to construct an [`OrderedSet`]
 
 ```rust
-use phf::phf_map;
+use cphf::{phf_ordered_map, OrderedMap};
 
 #[derive(Clone)]
 pub enum Keyword {
@@ -43,7 +32,7 @@ pub enum Keyword {
     Extern,
 }
 
-static KEYWORDS: phf::Map<&'static str, Keyword> = phf_map! {
+static KEYWORDS: OrderedMap<&'static str, Keyword> = phf_ordered_map! {&'static str, Keyword;
     "loop" => Keyword::Loop,
     "continue" => Keyword::Continue,
     "break" => Keyword::Break,
@@ -56,72 +45,32 @@ pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
 }
 ```
 
-```toml
-[dependencies]
-phf = { version = "0.11", features = ["macros"] }
+Inclusion of duplicate keys will result in a compiler error.
+
+```compile_fail
+use cphf::{phf_ordered_set, OrderedSet};
+static DUPLICATE_KEYS: OrderedSet<u32> = phf_ordered_set! {u32;
+    0,
+    1,
+    0,
+};
 ```
 
-#### Note
-
-Currently, the macro syntax has some limitations and may not
-work as you want. See [#183] or [#196] for example.
-
-[#183]: https://github.com/rust-phf/rust-phf/issues/183
-[#196]: https://github.com/rust-phf/rust-phf/issues/196
-
-### phf_codegen
-
-To use `phf_codegen` on build.rs, you have to add dependencies under `[build-dependencies]`:
-
-```toml
-[build-dependencies]
-phf = { version = "0.11.1", default-features = false }
-phf_codegen = "0.11.1"
+```compile_fail
+use cphf::{phf_ordered_map, OrderedMap};
+static DUPLICATE_KEYS: OrderedMap<u32, ()> = phf_ordered_map! {u32, ();
+    0 => (),
+    1 => (),
+    0 => (),
+};
 ```
 
-Then put code on build.rs:
+## License
 
-```rust
-use std::env;
-use std::fs::File;
-use std::io::{BufWriter, Write};
-use std::path::Path;
+Licensed under 
+* MIT license ([LICENSE](LICENSE) or https://opensource.org/licenses/MIT)
 
-fn main() {
-    let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
-    let mut file = BufWriter::new(File::create(&path).unwrap());
-
-    write!(
-        &mut file,
-        "static KEYWORDS: phf::Map<&'static str, Keyword> = {}",
-        phf_codegen::Map::new()
-            .entry("loop", "Keyword::Loop")
-            .entry("continue", "Keyword::Continue")
-            .entry("break", "Keyword::Break")
-            .entry("fn", "Keyword::Fn")
-            .entry("extern", "Keyword::Extern")
-            .build()
-    )
-    .unwrap();
-    write!(&mut file, ";\n").unwrap();
-}
-```
-
-and lib.rs:
-
-```rust
-#[derive(Clone)]
-enum Keyword {
-    Loop,
-    Continue,
-    Break,
-    Fn,
-    Extern,
-}
-
-include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
-
-pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
-    KEYWORDS.get(keyword).cloned()
-}
-```
+[`phf_ordered_map`]: https://docs.rs/cphf/latest/cphf/macro.phf_ordered_map.html "macro cphf::phf_ordered_map"
+[`phf_ordered_set`]: https://docs.rs/cphf/latest/cphf/macro.phf_ordered_set.html "macro cphf::phf_ordered_set"
+[`OrderedSet`]: https://docs.rs/cphf/latest/cphf/struct.OrderedSet.html "struct cphf::OrderedSet"
+[`OrderedMap`]: https://docs.rs/cphf/latest/cphf/struct.OrderedMap.html "struct cphf::OrderedMap"

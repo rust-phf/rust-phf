@@ -59,19 +59,23 @@ const fn inc_u32(v: &mut u32) -> u32 {
 
 #[cfg(feature = "list")]
 #[derive(Clone, Copy)]
-struct Bucket2{
+struct Bucket {
     len: usize,
     id: usize,
-    head_hash_id: Option<usize>
+    head_hash_id: Option<usize>,
 }
 #[cfg(feature = "list")]
 #[derive(Clone, Copy)]
-struct Buckets<const BUCKET_LEN: usize>([Bucket2; BUCKET_LEN]);
+struct Buckets<const BUCKET_LEN: usize>([Bucket; BUCKET_LEN]);
 
 #[cfg(feature = "list")]
 impl<const BUCKET_LEN: usize> Buckets<BUCKET_LEN> {
     const fn new() -> Self {
-        const DUMMY: Bucket2 = Bucket2{len: 0, id: 0, head_hash_id: None};
+        const DUMMY: Bucket = Bucket {
+            len: 0,
+            id: 0,
+            head_hash_id: None,
+        };
         let mut data = [DUMMY; BUCKET_LEN];
         let mut i = 0;
         while i < BUCKET_LEN {
@@ -92,7 +96,6 @@ impl<const BUCKET_LEN: usize> Buckets<BUCKET_LEN> {
         const_shellsort!(&mut self.0, |a, b| a.len > b.len);
     }
 }
-
 
 pub struct Generator<const LEN: usize, const BUCKET_LEN: usize> {
     rng: WyRand,

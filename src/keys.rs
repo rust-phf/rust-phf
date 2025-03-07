@@ -12,7 +12,10 @@ pub trait PhfKey: Eq {
 ///
 /// Keys support any number of proxy types by providing the ability to hash and compare equality.
 pub trait PhfKeyProxy<PK: ?Sized> {
+    /// Hash the proxy key in the same way that `Self` would be hashed
     fn pfh_hash(pk: &PK, state: &mut Hasher);
+
+    /// Compare the proxy key to `self`
     fn pfh_eq(&self, other: &PK) -> bool;
 }
 

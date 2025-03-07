@@ -17,19 +17,21 @@ const MAX_GENERATIONS: usize = 1000;
 #[macro_export]
 macro_rules! phf_ordered_set {
     () => { $crate::OrderedSet::new() };
-    ($k:ty; $($key:expr),* $(,)?) => {{
+    ($(@$lambda:expr,)? $k:ty; $($key:expr),* $(,)?) => {{
         struct Builder;
         impl $crate::SetBuilder for Builder {
             type Key = $k;
             const ENTRIES: &[Self::Key] = &[$($key),*];
+            $(const LAMBDA: usize = $lambda;)?
         }
         $crate::phf_ordered_set_from_builder!(Builder)
     }};
-    ($k:ty; = $e:expr) => {{
+    ($(@$lambda:expr,)? $k:ty; = $e:expr) => {{
         struct Builder;
         impl $crate::SetBuilder for Builder {
             type Key = $k;
             const ENTRIES: &[Self::Key] = &$e;
+            $(const LAMBDA: usize = $lambda;)?
         }
         $crate::phf_ordered_set_from_builder!(Builder)
     }};
@@ -47,21 +49,23 @@ macro_rules! phf_ordered_set {
 #[macro_export]
 macro_rules! phf_ordered_map {
     () => { $crate::OrderedMap::new() };
-    ($k:ty, $v:ty; $($key:expr => $val:expr),* $(,)?) => {{
+    ($(@$lambda:expr,)? $k:ty, $v:ty; $($key:expr => $val:expr),* $(,)?) => {{
         struct Builder;
         impl $crate::MapBuilder for Builder {
             type Key = $k;
             type Value = $v;
             const ENTRIES: &[(Self::Key, Self::Value)] = &[$(($key, $val)),*];
+            $(const LAMBDA: usize = $lambda;)?
         }
         $crate::phf_ordered_map_from_builder!(Builder)
     }};
-    ($k:ty, $v:ty; = $e:expr) => {{
+    ($(@$lambda:expr,)? $k:ty, $v:ty; = $e:expr) => {{
         struct Builder;
         impl $crate::MapBuilder for Builder {
             type Key = $k;
             type Value = $v;
             const ENTRIES: &[(Self::Key, Self::Value)] = &$e;
+            $(const LAMBDA: usize = $lambda;)?
         }
         $crate::phf_ordered_map_from_builder!(Builder)
     }};
@@ -121,13 +125,13 @@ macro_rules! __phf_container_from_builder {
     ($builder:ty, $container:path, $btrait:ty, $get_key:path) => {{
         const LEN: usize = <$builder as $btrait>::ENTRIES.len();
         const LAMBDA: usize = <$builder as $btrait>::LAMBDA;
-        const BUCKET_LEN: usize = (LEN + LAMBDA - 1) / LAMBDA;
+        const BUCKET_LEN: usize = LEN.div_ceil(LAMBDA);
         type PhfKey = <$builder as $btrait>::Key;
         type ConstKey = <PhfKey as $crate::PhfKey>::ConstKey;
-        const STATE: &$crate::BuilderState<LEN, BUCKET_LEN> = &{
+        // Check for duplicates by doing a single pass hash
+        const HAS_DUPLICATES: () = {
             let entries: &[_] = <$builder as $btrait>::ENTRIES;
 
-            // Check for duplicates by doing a single pass hash
             {
                 let mut hash_idx = [(0_u128, 0); LEN];
                 let mut i = 0;
@@ -157,6 +161,9 @@ macro_rules! __phf_container_from_builder {
                     i += 1;
                 }
             }
+        };
+        const STATE: &$crate::BuilderState<LEN, BUCKET_LEN> = &{
+            let entries: &[_] = <$builder as $btrait>::ENTRIES;
 
             let mut generator = $crate::Generator::<LEN, BUCKET_LEN>::new();
             let mut generations = 0;
@@ -177,12 +184,12 @@ macro_rules! __phf_container_from_builder {
                     }
                     hashes
                 };
-                match generator.try_generate_hash(&hashes) {
-                    Ok(state) => break state,
-                    Err(e) => generator = ::core::mem::ManuallyDrop::into_inner(e),
+                if let Some(state) = generator.try_generate_hash(&hashes) {
+                    break state;
                 }
             }
         };
+        let _ = HAS_DUPLICATES;
         $container(<$builder as $btrait>::ENTRIES, STATE)
     }};
 }

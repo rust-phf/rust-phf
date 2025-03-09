@@ -104,10 +104,10 @@ pub mod fast {
     impl Hasher for FoldHasher {
         #[inline(always)]
         fn write(&mut self, bytes: &[u8]) {
-            let mut s0 = self.accumulator;
-            let mut s1 = self.expand_seed;
             let len = bytes.len();
             if len <= 16 {
+                let mut s0 = self.accumulator;
+                let mut s1 = self.expand_seed;
                 // XOR the input into s0, s1, then multiply and fold.
                 if len >= 8 {
                     s0 ^= u64::from_le_bytes(bytes[0..8].try_into().unwrap());
@@ -124,14 +124,19 @@ pub mod fast {
                 }
                 self.accumulator = folded_multiply(s0, s1);
             } else if len < 256 {
-                self.accumulator = hash_bytes_medium(bytes, s0, s1, self.fold_seed);
+                self.accumulator = hash_bytes_medium(
+                    bytes,
+                    self.accumulator,
+                    self.accumulator.wrapping_add(self.expand_seed),
+                    self.fold_seed,
+                );
             } else {
                 self.accumulator = hash_bytes_long(
                     bytes,
-                    s0,
-                    s1,
-                    self.expand_seed2,
-                    self.expand_seed3,
+                    self.accumulator,
+                    self.accumulator.wrapping_add(self.expand_seed),
+                    self.accumulator.wrapping_add(self.expand_seed2),
+                    self.accumulator.wrapping_add(self.expand_seed3),
                     self.fold_seed,
                 );
             }

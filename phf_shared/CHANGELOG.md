@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.12.0 (2025-06-19)
+
+### Chore
+
+ - <csr-id-08e74647f00f7d77cbb81e0cb73ed663798d000f/> Update version number in docs
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 5 commits contributed to the release over the course of 138 calendar days.
+ - 163 days passed between releases.
+ - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Update version number in docs ([`08e7464`](https://github.com/rust-phf/rust-phf/commit/08e74647f00f7d77cbb81e0cb73ed663798d000f))
+    - Merge pull request #289 from thaliaarchi/master ([`a6df856`](https://github.com/rust-phf/rust-phf/commit/a6df856ade4cfbf2666fcabbd70c666ea8234abf))
+    - Add support for unicase::Ascii type ([`2806801`](https://github.com/rust-phf/rust-phf/commit/28068018dec5aab9b6ddc0da918431285db8cd34))
+    - Merge branch 'master' into no-wasteful-allocations ([`33b8aff`](https://github.com/rust-phf/rust-phf/commit/33b8affe77cea8bdeccb5c8d6c730c78231fc138))
+    - Merge branch 'master' into fastrand ([`576dd47`](https://github.com/rust-phf/rust-phf/commit/576dd47858a2db74eb4ef67a8385039ef17b867d))
+</details>
+
 ## 0.11.3 (2025-01-07)
 
 ### Commit Statistics
@@ -23,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - Adjusting changelogs prior to release of phf_shared v0.11.3, phf_generator v0.11.3, phf_macros v0.11.3, phf v0.11.3, phf_codegen v0.11.3 ([`a95dade`](https://github.com/rust-phf/rust-phf/commit/a95dade6f69866b7871f85dd3fd42984df2f3d28))
+    - Adjusting changelogs prior to release of phf_shared v0.11.3, phf_generator v0.11.3, phf_macros v0.11.3, phf v0.11.3, phf_codegen v0.11.3 ([`e111f4b`](https://github.com/rust-phf/rust-phf/commit/e111f4b53a965c188fdcbf03950321107d9b3987))
     - Merge branch 'master' into master ([`43e9bb6`](https://github.com/rust-phf/rust-phf/commit/43e9bb69aca9ab8ddf8e2041d33d4ec08a6a0ce1))
     - Merge pull request #314 from TGODiamond/master ([`4abd9a0`](https://github.com/rust-phf/rust-phf/commit/4abd9a0a5eaddb1b4c18d678b2924a1cda818f85))
     - Add `PhfBorrow<[u8; N]>` ([`e44fb71`](https://github.com/rust-phf/rust-phf/commit/e44fb714ea4d5fb85bfad1496dd887313cbfa3b5))

@@ -2,7 +2,7 @@
 //!
 //! [phf]: https://docs.rs/phf
 
-#![doc(html_root_url = "https://docs.rs/phf_generator/0.11")]
+#![doc(html_root_url = "https://docs.rs/phf_generator/0.12")]
 use std::iter;
 
 use fastrand::Rng;

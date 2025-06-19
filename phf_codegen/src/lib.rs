@@ -15,8 +15,8 @@
 //!
 //! ```toml
 //! [build-dependencies]
-//! phf = { version = "0.11.1", default-features = false }
-//! phf_codegen = "0.11.1"
+//! phf = { version = "0.12", default-features = false }
+//! phf_codegen = "0.12"
 //! ```
 //!
 //! Then put code on build.rs:
@@ -138,7 +138,7 @@
 //! // ...
 //! ```
 
-#![doc(html_root_url = "https://docs.rs/phf_codegen/0.11")]
+#![doc(html_root_url = "https://docs.rs/phf_codegen/0.12")]
 #![allow(clippy::new_without_default)]
 
 use phf_shared::{FmtConst, PhfHash};

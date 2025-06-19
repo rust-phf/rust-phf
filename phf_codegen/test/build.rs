@@ -4,7 +4,7 @@ use std::io::{self, BufWriter, Write};
 use std::path::Path;
 
 use uncased::UncasedStr;
-use unicase::UniCase;
+use unicase::{Ascii, UniCase};
 
 fn main() -> io::Result<()> {
     let file = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
@@ -66,6 +66,15 @@ fn main() -> io::Result<()> {
         phf_codegen::Map::new()
             .entry(UniCase::new("abc"), "\"a\"")
             .entry(UniCase::new("DEF"), "\"b\"")
+            .build()
+    )?;
+
+    write!(
+        &mut file,
+        "static UNICASE_ASCII_MAP: ::phf::Map<::unicase::Ascii<&'static str>, &'static str> = \n{};",
+        phf_codegen::Map::new()
+            .entry(Ascii::new("abc"), "\"a\"")
+            .entry(Ascii::new("DEF"), "\"b\"")
             .build()
     )?;
 

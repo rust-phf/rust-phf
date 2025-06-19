@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use uncased::UncasedStr;
-    use unicase::UniCase;
+    use unicase::{Ascii, UniCase};
 
     include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
@@ -66,6 +66,22 @@ mod test {
         assert_eq!("a", UNICASE_MAP[&UniCase::new(&*local_str_1)]);
         assert_eq!("a", UNICASE_MAP[&UniCase::new(&*local_str_2)]);
         assert_eq!("b", UNICASE_MAP[&UniCase::new(&*local_str_3)]);
+    }
+
+    #[test]
+    fn unicase_ascii_map() {
+        assert_eq!("a", UNICASE_ASCII_MAP[&Ascii::new("AbC")]);
+        assert_eq!("a", UNICASE_ASCII_MAP[&Ascii::new("abc")]);
+        assert_eq!("b", UNICASE_ASCII_MAP[&Ascii::new("DEf")]);
+        assert!(!UNICASE_ASCII_MAP.contains_key(&Ascii::new("XyZ")));
+
+        // allow lookup with non-static slices
+        let local_str_1 = "AbC".to_string();
+        let local_str_2 = "abc".to_string();
+        let local_str_3 = "DEf".to_string();
+        assert_eq!("a", UNICASE_ASCII_MAP[&Ascii::new(&*local_str_1)]);
+        assert_eq!("a", UNICASE_ASCII_MAP[&Ascii::new(&*local_str_2)]);
+        assert_eq!("b", UNICASE_ASCII_MAP[&Ascii::new(&*local_str_3)]);
     }
 
     #[test]

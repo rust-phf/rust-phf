@@ -7,13 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.12.0 (2025-06-19)
 
+### Chore
+
+ - <csr-id-51d6baaa6ffce658fb9b56a96affaf0ddd0603e5/> Update changelog
+
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 5 commits contributed to the release over the course of 138 calendar days.
+ - 6 commits contributed to the release over the course of 138 calendar days.
  - 163 days passed between releases.
- - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
@@ -23,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Update changelog ([`51d6baa`](https://github.com/rust-phf/rust-phf/commit/51d6baaa6ffce658fb9b56a96affaf0ddd0603e5))
     - Merge pull request #289 from thaliaarchi/master ([`a6df856`](https://github.com/rust-phf/rust-phf/commit/a6df856ade4cfbf2666fcabbd70c666ea8234abf))
     - Add support for unicase::Ascii type ([`2806801`](https://github.com/rust-phf/rust-phf/commit/28068018dec5aab9b6ddc0da918431285db8cd34))
     - Merge pull request #309 from edef1c/uncased-macro ([`37a7794`](https://github.com/rust-phf/rust-phf/commit/37a779400b63b5d0b5d5ab63e2727bbfb9ce494d))
@@ -34,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-id-9ed628fe2ca954fdc49a93331188a99b58c9363a/>
 <csr-id-a96a4e29d63fb1ab3cc10e050571e733f5d2d0d1/>
+<csr-id-3a86c8a152b587aa572bd17e318b3cf61133040d/>
 
 ### Other
 

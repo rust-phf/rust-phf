@@ -7,18 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.12.0 (2025-06-19)
 
+<csr-id-08e74647f00f7d77cbb81e0cb73ed663798d000f/>
+<csr-id-08897bd7603c362280ad4f24feca2c99be5e9a98/>
+
 ### Chore
 
  - <csr-id-08e74647f00f7d77cbb81e0cb73ed663798d000f/> Update version number in docs
  - <csr-id-08897bd7603c362280ad4f24feca2c99be5e9a98/> Turn off serde std feature on no-std
 
+### Chore
+
+ - <csr-id-51d6baaa6ffce658fb9b56a96affaf0ddd0603e5/> Update changelog
+
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 9 commits contributed to the release over the course of 138 calendar days.
+ - 10 commits contributed to the release over the course of 138 calendar days.
  - 163 days passed between releases.
- - 2 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 3 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
@@ -28,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Update changelog ([`51d6baa`](https://github.com/rust-phf/rust-phf/commit/51d6baaa6ffce658fb9b56a96affaf0ddd0603e5))
     - Update version number in docs ([`08e7464`](https://github.com/rust-phf/rust-phf/commit/08e74647f00f7d77cbb81e0cb73ed663798d000f))
     - Merge pull request #333 from JohnTitor/chore/serde-no-std ([`5c3ad85`](https://github.com/rust-phf/rust-phf/commit/5c3ad850fd55f8a9fd2ea8bce69fc458029242d6))
     - Turn off serde std feature on no-std ([`08897bd`](https://github.com/rust-phf/rust-phf/commit/08897bd7603c362280ad4f24feca2c99be5e9a98))

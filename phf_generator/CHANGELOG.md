@@ -7,17 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.12.0 (2025-06-19)
 
+<csr-id-08e74647f00f7d77cbb81e0cb73ed663798d000f/>
+
 ### Chore
 
  - <csr-id-08e74647f00f7d77cbb81e0cb73ed663798d000f/> Update version number in docs
+
+### Chore
+
+ - <csr-id-51d6baaa6ffce658fb9b56a96affaf0ddd0603e5/> Update changelog
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 4 commits contributed to the release over the course of 138 calendar days.
+ - 5 commits contributed to the release over the course of 138 calendar days.
  - 163 days passed between releases.
- - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
+ - 2 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
@@ -27,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Update changelog ([`51d6baa`](https://github.com/rust-phf/rust-phf/commit/51d6baaa6ffce658fb9b56a96affaf0ddd0603e5))
     - Update version number in docs ([`08e7464`](https://github.com/rust-phf/rust-phf/commit/08e74647f00f7d77cbb81e0cb73ed663798d000f))
     - Merge branch 'master' into no-wasteful-allocations ([`33b8aff`](https://github.com/rust-phf/rust-phf/commit/33b8affe77cea8bdeccb5c8d6c730c78231fc138))
     - Merge pull request #312 from goffrie/fastrand ([`24d8867`](https://github.com/rust-phf/rust-phf/commit/24d8867429d2338631b851db29c7057afccac987))

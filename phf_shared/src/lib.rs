@@ -9,9 +9,12 @@
 extern crate std as core;
 
 use core::fmt;
-use core::hash::{Hash, Hasher};
+use core::hash::{BuildHasher, Hash, Hasher};
 use core::num::Wrapping;
-use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
+
+use foldhash::folded_multiply;
+
+mod foldhash;
 
 #[non_exhaustive]
 pub struct Hashes {
@@ -33,18 +36,17 @@ pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 /// `key` is from `phf_generator::HashState`.
 #[inline]
 pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
-    let mut hasher = SipHasher13::new_with_keys(0, *key);
+    use foldhash::fast::FixedState;
+
+    let mut hasher = FixedState::with_seed(*key).build_hasher();
     x.phf_hash(&mut hasher);
 
-    let Hash128 {
-        h1: lower,
-        h2: upper,
-    } = hasher.finish128();
-
+    let lower = hasher.finish();
+    let upper = folded_multiply(lower, foldhash::ARBITRARY0);
     Hashes {
-        g: (lower >> 32) as u32,
-        f1: lower as u32,
-        f2: upper as u32,
+        f1: (lower >> 32) as u32,
+        f2: lower as u32,
+        g: (upper ^ (upper >> 32)) as u32,
     }
 }
 
@@ -258,13 +260,6 @@ impl PhfHash for str {
     }
 }
 
-impl PhfHash for [u8] {
-    #[inline]
-    fn phf_hash<H: Hasher>(&self, state: &mut H) {
-        state.write(self);
-    }
-}
-
 impl FmtConst for [u8] {
     #[inline]
     fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -362,6 +357,20 @@ impl PhfBorrow<uncased::UncasedStr> for &uncased::UncasedStr {
     }
 }
 
+impl PhfHash for u8 {
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        self.hash(state);
+    }
+
+    fn phf_hash_slice<H: Hasher>(bytes: &[u8], state: &mut H)
+    where
+        Self: Sized,
+    {
+        state.write(bytes);
+    }
+}
+
 macro_rules! sip_impl (
     (le $t:ty) => (
         impl PhfHash for $t {
@@ -381,7 +390,6 @@ macro_rules! sip_impl (
     )
 );
 
-sip_impl!(u8);
 sip_impl!(i8);
 sip_impl!(le u16);
 sip_impl!(le i16);
@@ -407,59 +415,40 @@ fn fmt_array<T: core::fmt::Debug>(array: &[T], f: &mut fmt::Formatter<'_>) -> fm
     write!(f, "{:?}", array)
 }
 
-macro_rules! array_impl (
+impl<T, const N: usize> PhfHash for [T; N]
+where
+    [T]: PhfHash,
+{
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        <[T]>::phf_hash(self, state);
+    }
+}
+
+impl<T: core::fmt::Debug, const N: usize> FmtConst for [T; N] {
+    fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt_array(self, f)
+    }
+}
+
+impl<T: PhfHash, const N: usize> PhfBorrow<[T]> for [T; N] {
+    fn borrow(&self) -> &[T] {
+        self
+    }
+}
+
+macro_rules! slice_impl (
     ($t:ty) => (
-        impl<const N: usize> PhfHash for [$t; N] {
+        impl PhfHash for [$t] {
             #[inline]
             fn phf_hash<H: Hasher>(&self, state: &mut H) {
-                for v in &self[..] {
-                    v.phf_hash(state);
-                }
-            }
-        }
-
-        impl<const N: usize> FmtConst for [$t; N] {
-            fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                fmt_array(self, f)
-            }
-        }
-
-        impl<const N: usize> PhfBorrow<[$t]> for [$t; N] {
-            fn borrow(&self) -> &[$t] {
-                self
+                <$t>::phf_hash_slice(self, state)
             }
         }
     )
 );
 
-array_impl!(u8);
-array_impl!(i8);
-array_impl!(u16);
-array_impl!(i16);
-array_impl!(u32);
-array_impl!(i32);
-array_impl!(u64);
-array_impl!(i64);
-array_impl!(usize);
-array_impl!(isize);
-array_impl!(u128);
-array_impl!(i128);
-array_impl!(bool);
-array_impl!(char);
-
-macro_rules! slice_impl (
-    ($t:ty) => {
-        impl PhfHash for [$t] {
-            #[inline]
-            fn phf_hash<H: Hasher>(&self, state: &mut H) {
-                for v in self {
-                    v.phf_hash(state);
-                }
-            }
-        }
-    };
-);
-
+slice_impl!(u8);
 slice_impl!(i8);
 slice_impl!(u16);
 slice_impl!(i16);

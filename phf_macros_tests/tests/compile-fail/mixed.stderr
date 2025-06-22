@@ -1,0 +1,39 @@
+error[E0308]: mismatched types
+ --> tests/compile-fail/mixed.rs:7:5
+  |
+7 |     "foo" => 0,
+  |     ^^^^^ expected `UniCase<&str>`, found `&str`
+  |
+  = note: expected struct `UniCase<&str>`
+          found reference `&'static str`
+help: call `Into::into` on this expression to convert `&'static str` into `UniCase<&str>`
+  |
+7 |     "foo".into() => 0,
+  |          +++++++
+
+error[E0277]: the trait bound `UniCase<&str>: phf_shared::PhfBorrow<_>` is not satisfied
+  --> tests/compile-fail/mixed.rs:12:18
+   |
+12 |     KEYWORDS.get("foo").unwrap();
+   |              --- ^^^^^ the trait `phf_shared::PhfBorrow<_>` is not implemented for `UniCase<&str>`
+   |              |
+   |              required by a bound introduced by this call
+   |
+   = help: the following other types implement trait `phf_shared::PhfBorrow<B>`:
+             `&'a [u8; N]` implements `phf_shared::PhfBorrow<[u8; N]>`
+             `&'a [u8]` implements `phf_shared::PhfBorrow<[u8]>`
+             `&'a str` implements `phf_shared::PhfBorrow<str>`
+             `String` implements `phf_shared::PhfBorrow<str>`
+             `Vec<u8>` implements `phf_shared::PhfBorrow<[u8]>`
+             `[bool; N]` implements `phf_shared::PhfBorrow<[bool]>`
+             `[char; N]` implements `phf_shared::PhfBorrow<[char]>`
+             `[i128; N]` implements `phf_shared::PhfBorrow<[i128]>`
+           and $N others
+note: required by a bound in `phf::Map::<K, V>::get`
+  --> $WORKSPACE/phf/src/map.rs
+   |
+   |     pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V>
+   |            --- required by a bound in this associated function
+...
+   |         K: PhfBorrow<T>,
+   |            ^^^^^^^^^^^^ required by this bound in `Map::<K, V>::get`

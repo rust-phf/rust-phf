@@ -8,7 +8,7 @@ permissions:
   contents: write
 
 jobs:
-  bench_between_master_and_pr:
+  bench_between_main_and_pr:
     if: ${{ github.event.label.name == 'run-benchmarks' }}
     name: Bench
     runs-on: ubuntu-latest

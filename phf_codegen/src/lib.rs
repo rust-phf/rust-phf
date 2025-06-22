@@ -280,6 +280,20 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
     }
 }
 
+impl<'a, K, V> FromIterator<(K, V)> for Map<'a, K>
+where
+    K: Hash + PhfHash + Eq + FmtConst,
+    V: Into<Cow<'a, str>>,
+{
+    fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> Self {
+        let mut map = Map::new();
+        for (key, value) in iter {
+            map.entry(key, value);
+        }
+        map
+    }
+}
+
 /// A builder for the `phf::Set` type.
 pub struct Set<'a, T> {
     map: Map<'a, T>,

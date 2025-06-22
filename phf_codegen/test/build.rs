@@ -120,5 +120,15 @@ fn main() -> io::Result<()> {
             .entry(b"baz", "2")
             .entry(b"quux", "3")
             .build()
+    )?;
+
+    // Test FromIterator implementation
+    writeln!(
+        &mut file,
+        "static FROM_ITER_MAP: ::phf::Map<&'static str, u32> = \n{};",
+        vec![("one", "1"), ("two", "2"), ("three", "3")]
+            .into_iter()
+            .collect::<phf_codegen::Map<_>>()
+            .build()
     )
 }

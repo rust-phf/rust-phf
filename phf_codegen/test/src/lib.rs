@@ -117,4 +117,12 @@ mod test {
     fn empty_ordered_map() {
         assert_eq!(None, EMPTY_ORDERED.get(&1));
     }
+
+    #[test]
+    fn from_iter_map() {
+        assert_eq!(1, FROM_ITER_MAP["one"]);
+        assert_eq!(2, FROM_ITER_MAP["two"]);
+        assert_eq!(3, FROM_ITER_MAP["three"]);
+        assert!(!FROM_ITER_MAP.contains_key("four"));
+    }
 }

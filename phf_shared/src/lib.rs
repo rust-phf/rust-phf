@@ -91,7 +91,7 @@ pub trait FmtConst {
 /// The same semantic requirements apply:
 ///
 /// > In particular `Eq`, `Ord` and `Hash` must be equivalent for borrowed and owned values:
-/// `x.borrow() == y.borrow()` should give the same result as `x == y`.
+/// > `x.borrow() == y.borrow()` should give the same result as `x == y`.
 ///
 /// (This crate's API only requires `Eq` and `PhfHash`, however.)
 ///
@@ -233,19 +233,19 @@ impl<'a, T: 'a + FmtConst + ?Sized> FmtConst for &'a T {
     }
 }
 
-impl<'a> PhfBorrow<str> for &'a str {
+impl PhfBorrow<str> for &str {
     fn borrow(&self) -> &str {
         self
     }
 }
 
-impl<'a> PhfBorrow<[u8]> for &'a [u8] {
+impl PhfBorrow<[u8]> for &[u8] {
     fn borrow(&self) -> &[u8] {
         self
     }
 }
 
-impl<'a, const N: usize> PhfBorrow<[u8; N]> for &'a [u8; N] {
+impl<const N: usize> PhfBorrow<[u8; N]> for &[u8; N] {
     fn borrow(&self) -> &[u8; N] {
         self
     }

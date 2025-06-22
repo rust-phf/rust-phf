@@ -20,9 +20,9 @@ error[E0277]: the trait bound `UniCase<&str>: phf_shared::PhfBorrow<_>` is not s
    |              required by a bound introduced by this call
    |
    = help: the following other types implement trait `phf_shared::PhfBorrow<B>`:
-             `&'a [u8; N]` implements `phf_shared::PhfBorrow<[u8; N]>`
-             `&'a [u8]` implements `phf_shared::PhfBorrow<[u8]>`
-             `&'a str` implements `phf_shared::PhfBorrow<str>`
+             `&[u8; N]` implements `phf_shared::PhfBorrow<[u8; N]>`
+             `&[u8]` implements `phf_shared::PhfBorrow<[u8]>`
+             `&str` implements `phf_shared::PhfBorrow<str>`
              `String` implements `phf_shared::PhfBorrow<str>`
              `Vec<u8>` implements `phf_shared::PhfBorrow<[u8]>`
              `[bool; N]` implements `phf_shared::PhfBorrow<[bool]>`
@@ -32,7 +32,7 @@ error[E0277]: the trait bound `UniCase<&str>: phf_shared::PhfBorrow<_>` is not s
 note: required by a bound in `phf::Map::<K, V>::get`
   --> $WORKSPACE/phf/src/map.rs
    |
-   |     pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V>
+   |     pub fn get<T>(&self, key: &T) -> Option<&V>
    |            --- required by a bound in this associated function
 ...
    |         K: PhfBorrow<T>,

@@ -78,22 +78,20 @@
 //! use std::io::{BufWriter, Write};
 //! use std::path::Path;
 //!
-//! fn main() {
-//!     let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
-//!     let mut file = BufWriter::new(File::create(&path).unwrap());
+//! let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
+//! let mut file = BufWriter::new(File::create(&path).unwrap());
 //!
-//!     writeln!(
-//!         &mut file,
-//!          "static KEYWORDS: phf::Map<&'static [u8], Keyword> = \n{};\n",
-//!          phf_codegen::Map::<&[u8]>::new()
-//!              .entry(b"loop", "Keyword::Loop")
-//!              .entry(b"continue", "Keyword::Continue")
-//!              .entry(b"break", "Keyword::Break")
-//!              .entry(b"fn", "Keyword::Fn")
-//!              .entry(b"extern", "Keyword::Extern")
-//!              .build()
-//!     ).unwrap();
-//! }
+//! writeln!(
+//!     &mut file,
+//!      "static KEYWORDS: phf::Map<&'static [u8], Keyword> = \n{};\n",
+//!      phf_codegen::Map::<&[u8]>::new()
+//!          .entry(b"loop", "Keyword::Loop")
+//!          .entry(b"continue", "Keyword::Continue")
+//!          .entry(b"break", "Keyword::Break")
+//!          .entry(b"fn", "Keyword::Fn")
+//!          .entry(b"extern", "Keyword::Extern")
+//!          .build()
+//! ).unwrap();
 //! ```
 //!
 //! lib.rs:

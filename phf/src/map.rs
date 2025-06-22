@@ -93,18 +93,18 @@ impl<K, V> Map<K, V> {
     }
 
     /// Determines if `key` is in the `Map`.
-    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool
+    pub fn contains_key<T>(&self, key: &T) -> bool
     where
-        T: Eq + PhfHash,
+        T: Eq + PhfHash + ?Sized,
         K: PhfBorrow<T>,
     {
         self.get(key).is_some()
     }
 
     /// Returns a reference to the value that `key` maps to.
-    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V>
+    pub fn get<T>(&self, key: &T) -> Option<&V>
     where
-        T: Eq + PhfHash,
+        T: Eq + PhfHash + ?Sized,
         K: PhfBorrow<T>,
     {
         self.get_entry(key).map(|e| e.1)
@@ -114,18 +114,18 @@ impl<K, V> Map<K, V> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K>
+    pub fn get_key<T>(&self, key: &T) -> Option<&K>
     where
-        T: Eq + PhfHash,
+        T: Eq + PhfHash + ?Sized,
         K: PhfBorrow<T>,
     {
         self.get_entry(key).map(|e| e.0)
     }
 
     /// Like `get`, but returns both the key and the value.
-    pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
+    pub fn get_entry<T>(&self, key: &T) -> Option<(&K, &V)>
     where
-        T: Eq + PhfHash,
+        T: Eq + PhfHash + ?Sized,
         K: PhfBorrow<T>,
     {
         if self.disps.is_empty() {
@@ -207,7 +207,7 @@ impl<'a, K, V> Iterator for Entries<'a, K, V> {
     type Item = (&'a K, &'a V);
 
     fn next(&mut self) -> Option<(&'a K, &'a V)> {
-        self.iter.next().map(|&(ref k, ref v)| (k, v))
+        self.iter.next().map(|(k, v)| (k, v))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {

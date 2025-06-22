@@ -23,11 +23,11 @@ error[E0277]: the trait bound `UniCase<&str>: phf_shared::PhfBorrow<_>` is not s
              `&[u8; N]` implements `phf_shared::PhfBorrow<[u8; N]>`
              `&[u8]` implements `phf_shared::PhfBorrow<[u8]>`
              `&str` implements `phf_shared::PhfBorrow<str>`
-             `String` implements `phf_shared::PhfBorrow<str>`
-             `Vec<u8>` implements `phf_shared::PhfBorrow<[u8]>`
-             `[bool; N]` implements `phf_shared::PhfBorrow<[bool]>`
-             `[char; N]` implements `phf_shared::PhfBorrow<[char]>`
-             `[i128; N]` implements `phf_shared::PhfBorrow<[i128]>`
+             `(A, B)` implements `phf_shared::PhfBorrow<(A, B)>`
+             `(A, B, C)` implements `phf_shared::PhfBorrow<(A, B, C)>`
+             `(A, B, C, D)` implements `phf_shared::PhfBorrow<(A, B, C, D)>`
+             `(A, B, C, D, E)` implements `phf_shared::PhfBorrow<(A, B, C, D, E)>`
+             `(A, B, C, D, E, F)` implements `phf_shared::PhfBorrow<(A, B, C, D, E, F)>`
            and $N others
 note: required by a bound in `phf::Map::<K, V>::get`
   --> $WORKSPACE/phf/src/map.rs

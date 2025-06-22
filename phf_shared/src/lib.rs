@@ -473,3 +473,52 @@ slice_impl!(u128);
 slice_impl!(i128);
 slice_impl!(bool);
 slice_impl!(char);
+
+macro_rules! tuple_impl {
+    ($($t:ident),+) => {
+        impl<$($t: PhfHash),+> PhfHash for ($($t,)+) {
+            fn phf_hash<HS: Hasher>(&self, state: &mut HS) {
+                #[allow(non_snake_case)]
+                let ($($t,)+) = self;
+                $(
+                    $t.phf_hash(state);
+                )+
+            }
+        }
+
+        impl<$($t: PhfHash),+> PhfBorrow<($($t,)+)> for ($($t,)+) {
+            fn borrow(&self) -> &($($t,)+) {
+                self
+            }
+        }
+
+        impl<$($t: FmtConst),+> FmtConst for ($($t,)+) {
+            fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                #[allow(non_snake_case)]
+                let ($($t,)+) = self;
+                write!(f, "(")?;
+                let mut first = true;
+                $(
+                    if !core::mem::replace(&mut first, false) {
+                        write!(f, ", ")?;
+                    }
+                    $t.fmt_const(f)?;
+                )+
+                write!(f, ")")
+            }
+        }
+    };
+}
+
+tuple_impl!(A);
+tuple_impl!(A, B);
+tuple_impl!(A, B, C);
+tuple_impl!(A, B, C, D);
+tuple_impl!(A, B, C, D, E);
+tuple_impl!(A, B, C, D, E, F);
+tuple_impl!(A, B, C, D, E, F, G);
+tuple_impl!(A, B, C, D, E, F, G, HT);
+tuple_impl!(A, B, C, D, E, F, G, HT, I);
+tuple_impl!(A, B, C, D, E, F, G, HT, I, J);
+tuple_impl!(A, B, C, D, E, F, G, HT, I, J, K);
+tuple_impl!(A, B, C, D, E, F, G, HT, I, J, K, L);

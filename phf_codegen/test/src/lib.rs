@@ -125,4 +125,40 @@ mod test {
         assert_eq!(3, FROM_ITER_MAP["three"]);
         assert!(!FROM_ITER_MAP.contains_key("four"));
     }
+
+    #[test]
+    fn tuple_map() {
+        assert_eq!("first", TUPLE_MAP[&(1u32, "a")]);
+        assert_eq!("second", TUPLE_MAP[&(2u32, "b")]);
+        assert_eq!("third", TUPLE_MAP[&(3u32, "c")]);
+        assert!(!TUPLE_MAP.contains_key(&(4u32, "d")));
+        assert!(!TUPLE_MAP.contains_key(&(1u32, "b")));
+    }
+
+    #[test]
+    fn tuple_set() {
+        assert!(TUPLE_SET.contains(&(1u32, "x")));
+        assert!(TUPLE_SET.contains(&(2u32, "y")));
+        assert!(TUPLE_SET.contains(&(3u32, "z")));
+        assert!(!TUPLE_SET.contains(&(4u32, "w")));
+        assert!(!TUPLE_SET.contains(&(1u32, "y")));
+    }
+
+    #[test]
+    fn nested_tuple_map() {
+        assert_eq!(10, NESTED_TUPLE_MAP[&((1u32, 2u32), "nested")]);
+        assert_eq!(20, NESTED_TUPLE_MAP[&((3u32, 4u32), "tuple")]);
+        assert_eq!(30, NESTED_TUPLE_MAP[&((5u32, 6u32), "keys")]);
+        assert!(!NESTED_TUPLE_MAP.contains_key(&((7u32, 8u32), "missing")));
+        assert!(!NESTED_TUPLE_MAP.contains_key(&((1u32, 2u32), "wrong")));
+    }
+
+    #[test]
+    fn mixed_tuple_map() {
+        assert_eq!("value1", MIXED_TUPLE_MAP[&(true, 1u8, "test")]);
+        assert_eq!("value2", MIXED_TUPLE_MAP[&(false, 2u8, "demo")]);
+        assert_eq!("value3", MIXED_TUPLE_MAP[&(true, 3u8, "example")]);
+        assert!(!MIXED_TUPLE_MAP.contains_key(&(false, 1u8, "test")));
+        assert!(!MIXED_TUPLE_MAP.contains_key(&(true, 4u8, "missing")));
+    }
 }

@@ -329,6 +329,19 @@ mod map {
         #[cfg(not(feature = "enabled_feature"))]
         assert_eq!(None, MY_MAP.get("baz"));
     }
+
+    #[test]
+    fn test_tuples() {
+        static MAP: phf::Map<(u32, &str), u32> = phf_map! {
+            (0, "a") => 1,
+            (1, "b") => 2,
+            (2, "c") => 3,
+        };
+        assert_eq!(Some(&1), MAP.get(&(0, "a")));
+        assert_eq!(Some(&2), MAP.get(&(1, "b")));
+        assert_eq!(Some(&3), MAP.get(&(2, "c")));
+        assert_eq!(None, MAP.get(&(3, "d")));
+    }
 }
 
 mod set {
@@ -407,6 +420,19 @@ mod set {
         assert!(SET.contains("baz"));
         #[cfg(not(feature = "enabled_feature"))]
         assert!(!SET.contains("baz"));
+    }
+
+    #[test]
+    fn test_tuples() {
+        static SET: phf::Set<(u32, &str)> = phf_set! {
+            (0, "a"),
+            (1, "b"),
+            (2, "c"),
+        };
+        assert!(SET.contains(&(0, "a")));
+        assert!(SET.contains(&(1, "b")));
+        assert!(SET.contains(&(2, "c")));
+        assert!(!SET.contains(&(3, "d")));
     }
 }
 
@@ -551,6 +577,19 @@ mod ordered_map {
         #[cfg(not(feature = "enabled_feature"))]
         assert_eq!(None, MY_MAP.get("baz"));
     }
+
+    #[test]
+    fn test_tuples() {
+        static MAP: phf::OrderedMap<(u32, &str), u32> = phf_ordered_map! {
+            (0, "a") => 1,
+            (1, "b") => 2,
+            (2, "c") => 3,
+        };
+        assert_eq!(Some(&1), MAP.get(&(0, "a")));
+        assert_eq!(Some(&2), MAP.get(&(1, "b")));
+        assert_eq!(Some(&3), MAP.get(&(2, "c")));
+        assert_eq!(None, MAP.get(&(3, "d")));
+    }
 }
 
 mod ordered_set {
@@ -651,5 +690,18 @@ mod ordered_set {
         assert!(SET.contains("baz"));
         #[cfg(not(feature = "enabled_feature"))]
         assert!(!SET.contains("baz"));
+    }
+
+    #[test]
+    fn test_tuples() {
+        static SET: phf::OrderedSet<(u32, &str)> = phf_ordered_set! {
+            (0, "a"),
+            (1, "b"),
+            (2, "c"),
+        };
+        assert!(SET.contains(&(0, "a")));
+        assert!(SET.contains(&(1, "b")));
+        assert!(SET.contains(&(2, "c")));
+        assert!(!SET.contains(&(3, "d")));
     }
 }

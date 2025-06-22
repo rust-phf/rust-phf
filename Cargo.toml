@@ -8,7 +8,7 @@ members = [
     "phf_codegen/test",
     "phf_generator",
     "phf_macros",
-    "phf_macros_tests",
+    "phf_macros_test",
     "phf_shared"
 ]
 

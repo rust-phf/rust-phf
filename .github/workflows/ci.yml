@@ -38,6 +38,10 @@ jobs:
         if: matrix.version != '1.66.0'
         run: cargo test -p phf_codegen_test
 
+      - name: trybuild test
+        if: matrix.version == 'stable'
+        run: cargo test -p phf_macros_tests -- --ignored
+
       - name: no_std build check
         working-directory: phf
         run: cargo build --no-default-features

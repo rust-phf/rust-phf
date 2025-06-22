@@ -57,9 +57,9 @@ impl<T> OrderedSet<T> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<U: ?Sized>(&self, key: &U) -> Option<&T>
+    pub fn get_key<U>(&self, key: &U) -> Option<&T>
     where
-        U: Eq + PhfHash,
+        U: Eq + PhfHash + ?Sized,
         T: PhfBorrow<U>,
     {
         self.map.get_key(key)
@@ -67,9 +67,9 @@ impl<T> OrderedSet<T> {
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered set.
-    pub fn get_index<U: ?Sized>(&self, key: &U) -> Option<usize>
+    pub fn get_index<U>(&self, key: &U) -> Option<usize>
     where
-        U: Eq + PhfHash,
+        U: Eq + PhfHash + ?Sized,
         T: PhfBorrow<U>,
     {
         self.map.get_index(key)
@@ -82,9 +82,9 @@ impl<T> OrderedSet<T> {
     }
 
     /// Returns true if `value` is in the `OrderedSet`.
-    pub fn contains<U: ?Sized>(&self, value: &U) -> bool
+    pub fn contains<U>(&self, value: &U) -> bool
     where
-        U: Eq + PhfHash,
+        U: Eq + PhfHash + ?Sized,
         T: PhfBorrow<U>,
     {
         self.map.contains_key(value)

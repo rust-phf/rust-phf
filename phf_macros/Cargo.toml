@@ -20,7 +20,7 @@ uncased = ["uncased_", "phf_shared/uncased"]
 [dependencies]
 syn = { version = "2", features = ["full"] }
 quote = "1"
-proc-macro2 = "1"
+proc-macro2 = "1.0.95"
 unicase_ = { package = "unicase", version = "2.4.0", optional = true }
 uncased_ = { package = "uncased", version = "0.9.7", optional = true }
 

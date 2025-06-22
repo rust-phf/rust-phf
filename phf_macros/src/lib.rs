@@ -35,6 +35,7 @@ enum ParsedKey {
     U128(u128),
     Usize(usize),
     Bool(bool),
+    Tuple(Vec<ParsedKey>),
     #[cfg(feature = "unicase")]
     UniCase(UniCase<String>),
     #[cfg(feature = "unicase")]
@@ -65,6 +66,11 @@ impl PhfHash for ParsedKey {
             ParsedKey::U128(s) => s.phf_hash(state),
             ParsedKey::Usize(s) => s.phf_hash(state),
             ParsedKey::Bool(s) => s.phf_hash(state),
+            ParsedKey::Tuple(elements) => {
+                for element in elements {
+                    element.phf_hash(state);
+                }
+            }
             #[cfg(feature = "unicase")]
             ParsedKey::UniCase(s) => s.phf_hash(state),
             #[cfg(feature = "unicase")]
@@ -99,6 +105,14 @@ impl ParsedKey {
                     "u64" => Some(ParsedKey::U64(s.base10_parse::<u64>().unwrap())),
                     "u128" => Some(ParsedKey::U128(s.base10_parse::<u128>().unwrap())),
                     "usize" => Some(ParsedKey::Usize(s.base10_parse::<usize>().unwrap())),
+                    // Handle unsuffixed integer literals, default to i32
+                    "" => {
+                        if let Ok(val) = s.base10_parse::<i32>() {
+                            Some(ParsedKey::I32(val))
+                        } else {
+                            None
+                        }
+                    }
                     _ => None,
                 },
                 Lit::Bool(s) => Some(ParsedKey::Bool(s.value)),
@@ -160,6 +174,17 @@ impl ParsedKey {
                     }
                     _ => None,
                 }
+            }
+            Expr::Tuple(tuple) => {
+                let mut elements = Vec::new();
+                for elem in &tuple.elems {
+                    if let Some(parsed_elem) = ParsedKey::from_expr(elem) {
+                        elements.push(parsed_elem);
+                    } else {
+                        return None;
+                    }
+                }
+                Some(ParsedKey::Tuple(elements))
             }
             Expr::Group(group) => ParsedKey::from_expr(&group.expr),
             Expr::Call(call) if call.args.len() == 1 => {

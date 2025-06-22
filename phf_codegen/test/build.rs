@@ -130,5 +130,49 @@ fn main() -> io::Result<()> {
             .into_iter()
             .collect::<phf_codegen::Map<_>>()
             .build()
+    )?;
+
+    // Test tuple keys for Map
+    writeln!(
+        &mut file,
+        "static TUPLE_MAP: ::phf::Map<(u32, &'static str), &'static str> = \n{};",
+        phf_codegen::Map::new()
+            .entry((1u32, "a"), "\"first\"")
+            .entry((2u32, "b"), "\"second\"")
+            .entry((3u32, "c"), "\"third\"")
+            .build()
+    )?;
+
+    // Test tuple keys for Set
+    writeln!(
+        &mut file,
+        "static TUPLE_SET: ::phf::Set<(u32, &'static str)> = \n{};",
+        phf_codegen::Set::new()
+            .entry((1u32, "x"))
+            .entry((2u32, "y"))
+            .entry((3u32, "z"))
+            .build()
+    )?;
+
+    // Test nested tuple keys for Map
+    writeln!(
+        &mut file,
+        "static NESTED_TUPLE_MAP: ::phf::Map<((u32, u32), &'static str), u32> = \n{};",
+        phf_codegen::Map::new()
+            .entry(((1u32, 2u32), "nested"), "10")
+            .entry(((3u32, 4u32), "tuple"), "20")
+            .entry(((5u32, 6u32), "keys"), "30")
+            .build()
+    )?;
+
+    // Test mixed type tuple keys
+    writeln!(
+        &mut file,
+        "static MIXED_TUPLE_MAP: ::phf::Map<(bool, u8, &'static str), &'static str> = \n{};",
+        phf_codegen::Map::new()
+            .entry((true, 1u8, "test"), "\"value1\"")
+            .entry((false, 2u8, "demo"), "\"value2\"")
+            .entry((true, 3u8, "example"), "\"value3\"")
+            .build()
     )
 }

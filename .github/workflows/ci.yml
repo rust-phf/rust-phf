@@ -40,7 +40,7 @@ jobs:
 
       - name: trybuild test
         if: matrix.version == 'stable'
-        run: cargo test -p phf_macros_tests -- --ignored
+        run: cargo test -p phf_macros_test -- --ignored
 
       - name: no_std build check
         working-directory: phf

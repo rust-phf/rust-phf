@@ -309,6 +309,26 @@ mod map {
         assert!(Some(&11) == MAP.get("bar".into()));
         assert_eq!(None, MAP.get("asdf".into()));
     }
+
+    #[test]
+    fn test_cfgs() {
+        static MY_MAP: phf::Map<&'static str, u32> = phf_map! {
+            "foo" => 1, // should always be present
+            #[cfg(feature = "disabled_feature")]
+            "bar" => 2, // should not be present as we disable this feature
+            #[cfg(feature = "enabled_feature")]
+            "baz" => 3, // should be present as we enable this feature
+        };
+        assert_eq!(Some(&1), MY_MAP.get("foo"));
+        #[cfg(feature = "disabled_feature")]
+        assert_eq!(Some(&2), MY_MAP.get("bar"));
+        #[cfg(not(feature = "disabled_feature"))]
+        assert_eq!(None, MY_MAP.get("bar"));
+        #[cfg(feature = "enabled_feature")]
+        assert_eq!(Some(&3), MY_MAP.get("baz"));
+        #[cfg(not(feature = "enabled_feature"))]
+        assert_eq!(None, MY_MAP.get("baz"));
+    }
 }
 
 mod set {
@@ -367,6 +387,26 @@ mod set {
         for e in &SET {
             assert_eq!(&"hello", e);
         }
+    }
+
+    #[test]
+    fn test_cfgs() {
+        static SET: phf::Set<&'static str> = phf_set! {
+            "foo", // should always be present
+            #[cfg(feature = "disabled_feature")]
+            "bar", // should not be present as we disable this feature
+            #[cfg(feature = "enabled_feature")]
+            "baz", // should be present as we enable this feature by default
+        };
+        assert!(SET.contains("foo"));
+        #[cfg(feature = "disabled_feature")]
+        assert!(SET.contains("bar"));
+        #[cfg(not(feature = "disabled_feature"))]
+        assert!(!SET.contains("bar"));
+        #[cfg(feature = "enabled_feature")]
+        assert!(SET.contains("baz"));
+        #[cfg(not(feature = "enabled_feature"))]
+        assert!(!SET.contains("baz"));
     }
 }
 
@@ -491,6 +531,26 @@ mod ordered_map {
             assert_eq!(&10, v)
         }
     }
+
+    #[test]
+    fn test_cfgs() {
+        static MY_MAP: phf::OrderedMap<&'static str, u32> = phf_ordered_map! {
+            "foo" => 1, // should always be present
+            #[cfg(feature = "disabled_feature")]
+            "bar" => 2, // should not be present as we disable this feature
+            #[cfg(feature = "enabled_feature")]
+            "baz" => 3, // should be present as we enable this feature
+        };
+        assert_eq!(Some(&1), MY_MAP.get("foo"));
+        #[cfg(feature = "disabled_feature")]
+        assert_eq!(Some(&2), MY_MAP.get("bar"));
+        #[cfg(not(feature = "disabled_feature"))]
+        assert_eq!(None, MY_MAP.get("bar"));
+        #[cfg(feature = "enabled_feature")]
+        assert_eq!(Some(&3), MY_MAP.get("baz"));
+        #[cfg(not(feature = "enabled_feature"))]
+        assert_eq!(None, MY_MAP.get("baz"));
+    }
 }
 
 mod ordered_set {
@@ -571,5 +631,25 @@ mod ordered_set {
         for e in &SET {
             assert_eq!(&"foo", e);
         }
+    }
+
+    #[test]
+    fn test_cfgs() {
+        static SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
+            "foo", // should always be present
+            #[cfg(feature = "disabled_feature")]
+            "bar", // should not be present as we disable this feature
+            #[cfg(feature = "enabled_feature")]
+            "baz", // should be present as we enable this feature by default
+        };
+        assert!(SET.contains("foo"));
+        #[cfg(feature = "disabled_feature")]
+        assert!(SET.contains("bar"));
+        #[cfg(not(feature = "disabled_feature"))]
+        assert!(!SET.contains("bar"));
+        #[cfg(feature = "enabled_feature")]
+        assert!(SET.contains("baz"));
+        #[cfg(not(feature = "enabled_feature"))]
+        assert!(!SET.contains("baz"));
     }
 }

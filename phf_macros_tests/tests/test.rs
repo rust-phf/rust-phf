@@ -653,3 +653,23 @@ mod ordered_set {
         assert!(!SET.contains("baz"));
     }
 }
+
+mod bi_map {
+    use phf_macros::phf_bimap;
+
+    #[test]
+    fn test() {
+        static MAP: phf::BiMap<&'static str, i32> = phf_bimap!(
+            "foo" => 10_i32,
+            "bar" => 11_i32,
+        );
+
+        assert_eq!(Some((&"foo", &10)), MAP.get_entry_by_left("foo"));
+        assert_eq!(Some((&"bar", &11)), MAP.get_entry_by_left("bar"));
+        assert_eq!(None, MAP.get_entry_by_left("xyz"));
+
+        assert_eq!(Some((&"foo", &10)), MAP.get_entry_by_right(&10));
+        assert_eq!(Some((&"bar", &11)), MAP.get_entry_by_right(&11));
+        assert_eq!(None, MAP.get_entry_by_right(&2));
+    }
+}

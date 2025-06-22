@@ -264,6 +264,20 @@ impl Parse for Entry {
     }
 }
 
+struct BiEntry {
+    left: Key,
+    right: Key,
+}
+
+impl Parse for BiEntry {
+    fn parse(input: ParseStream<'_>) -> parse::Result<BiEntry> {
+        let left = input.parse()?;
+        input.parse::<Token![=>]>()?;
+        let right = input.parse()?;
+        Ok(BiEntry { left, right })
+    }
+}
+
 struct Map(Vec<Entry>);
 
 impl Parse for Map {
@@ -272,6 +286,17 @@ impl Parse for Map {
         let map = parsed.into_iter().collect::<Vec<_>>();
         check_duplicates(&map)?;
         Ok(Map(map))
+    }
+}
+
+struct BiMap(Vec<BiEntry>);
+
+impl Parse for BiMap {
+    fn parse(input: ParseStream<'_>) -> parse::Result<BiMap> {
+        let parsed = Punctuated::<BiEntry, Token![,]>::parse_terminated(input)?;
+        let map = parsed.into_iter().collect::<Vec<_>>();
+        check_bi_duplicates(&map)?;
+        Ok(BiMap(map))
     }
 }
 
@@ -310,6 +335,20 @@ fn check_duplicates(entries: &[Entry]) -> parse::Result<()> {
     Ok(())
 }
 
+fn check_bi_duplicates(entries: &[BiEntry]) -> parse::Result<()> {
+    let mut left = HashSet::new();
+    let mut right = HashSet::new();
+    for entry in entries {
+        if !left.insert(&entry.left.parsed) {
+            return Err(Error::new_spanned(&entry.left.expr, "duplicate left"));
+        }
+        if !right.insert(&entry.right.parsed) {
+            return Err(Error::new_spanned(&entry.right.expr, "duplicate right"));
+        }
+    }
+    Ok(())
+}
+
 fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
     let key = state.key;
     let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
@@ -325,6 +364,38 @@ fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
         phf::Map {
             key: #key,
             disps: &[#(#disps),*],
+            entries: &[#(#entries),*],
+        }
+    }
+}
+
+fn build_bimap(
+    entries: &[BiEntry],
+    state_left: HashState,
+    state_right: HashState,
+) -> proc_macro2::TokenStream {
+    let key0 = state_left.key;
+    let disps0 = state_left.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
+    let idxs0 = state_left.map.iter().map(|idx| quote!(#idx));
+
+    let key1 = state_right.key;
+    let disps1 = state_right.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
+    let idxs1 = state_right.map.iter().map(|idx| quote!(#idx));
+
+    let entries = entries.iter().map(|entry| {
+        let key = &entry.left.expr;
+        let value = &entry.right.expr;
+        quote!((#key, #value))
+    });
+
+    quote! {
+        phf::BiMap {
+            key0: #key0,
+            key1: #key1,
+            disps0: &[#(#disps0),*],
+            disps1: &[#(#disps1),*],
+            idxs0: &[#(#idxs0),*],
+            idxs1: &[#(#idxs1),*],
             entries: &[#(#entries),*],
         }
     }
@@ -349,6 +420,17 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
             entries: &[#(#entries),*],
         }
     }
+}
+
+#[proc_macro]
+pub fn phf_bimap(input: TokenStream) -> TokenStream {
+    let map = parse_macro_input!(input as BiMap);
+    let state_left =
+        phf_generator::generate_hash(&map.0.iter().map(|x| &x.left).collect::<Vec<_>>());
+    let state_right =
+        phf_generator::generate_hash(&map.0.iter().map(|x| &x.right).collect::<Vec<_>>());
+
+    build_bimap(&map.0, state_left, state_right).into()
 }
 
 #[proc_macro]

@@ -64,9 +64,8 @@ phf = { version = "0.12", features = ["macros"] }
 #### Note
 
 Currently, the macro syntax has some limitations and may not
-work as you want. See [#183] or [#196] for example.
+work as you want. See [#196] for example.
 
-[#183]: https://github.com/rust-phf/rust-phf/issues/183
 [#196]: https://github.com/rust-phf/rust-phf/issues/196
 
 ### phf_codegen

@@ -24,6 +24,12 @@ jobs:
 
       - uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
 
+      - name: Minimal version check (nightly)
+        if: matrix.version == 'nightly'
+        run: |
+          cargo +nightly generate-lockfile -Z minimal-versions
+          cargo +nightly check --workspace --all-features
+
       - name: Rustfmt check
         if: matrix.version == '1.66.0'
         run: |

@@ -51,8 +51,19 @@ static KEYWORDS: phf::Map<&'static str, Keyword> = phf_map! {
     "extern" => Keyword::Extern,
 };
 
+// You can also use OR (`|`) patterns to map multiple keys to the same value:
+static OPERATORS: phf::Map<&'static str, &'static str> = phf_map! {
+    "+" | "add" | "plus" => "addition",
+    "-" | "sub" | "minus" => "subtraction",
+    "*" | "mul" | "times" => "multiplication",
+};
+
 pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
     KEYWORDS.get(keyword).cloned()
+}
+
+pub fn parse_operator(operator: &str) -> Option<&'static str> {
+    OPERATORS.get(operator).copied()
 }
 ```
 
@@ -103,6 +114,22 @@ fn main() {
     )
     .unwrap();
     write!(&mut file, ";\n").unwrap();
+
+    // Example with OR patterns (note: phf_codegen doesn't support OR patterns directly)
+    write!(
+        &mut file,
+        "static OPERATORS: phf::Map<&'static str, &'static str> = {}",
+        phf_codegen::Map::new()
+            .entry("+", "\"addition\"")
+            .entry("add", "\"addition\"")
+            .entry("plus", "\"addition\"")
+            .entry("-", "\"subtraction\"")
+            .entry("sub", "\"subtraction\"")
+            .entry("minus", "\"subtraction\"")
+            .build()
+    )
+    .unwrap();
+    write!(&mut file, ";\n").unwrap();
 }
 ```
 
@@ -122,5 +149,9 @@ include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
 pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
     KEYWORDS.get(keyword).cloned()
+}
+
+pub fn parse_operator(operator: &str) -> Option<&'static str> {
+    OPERATORS.get(operator).copied()
 }
 ```

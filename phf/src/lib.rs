@@ -84,7 +84,9 @@ extern crate std as core;
 /// Supported key expressions are:
 /// - literals: bools, (byte) strings, bytes, chars, and integers (these must have a type suffix)
 /// - arrays of `u8` integers
+/// - tuples of any supported key expressions
 /// - dereferenced byte string literals
+/// - OR patterns using `|` to map multiple keys to the same value
 /// - `UniCase::unicode(string)`, `UniCase::ascii(string)`, or `Ascii::new(string)` if the `unicase` feature is enabled
 /// - `UncasedStr::new(string)` if the `uncased` feature is enabled
 ///
@@ -100,6 +102,26 @@ extern crate std as core;
 ///
 /// fn main () {
 ///     assert_eq!(MY_MAP["hello"], 1);
+/// }
+/// ```
+///
+/// # OR Patterns
+///
+/// You can use OR patterns to map multiple keys to the same value:
+///
+/// ```
+/// use phf::{phf_map, Map};
+///
+/// static OPERATORS: Map<&'static str, &'static str> = phf_map! {
+///     "+" | "add" | "plus" => "addition",
+///     "-" | "sub" | "minus" => "subtraction",
+///     "*" | "mul" | "times" => "multiplication",
+/// };
+///
+/// fn main() {
+///     assert_eq!(OPERATORS["+"], "addition");
+///     assert_eq!(OPERATORS["add"], "addition");
+///     assert_eq!(OPERATORS["plus"], "addition");
 /// }
 /// ```
 pub use phf_macros::phf_map;
@@ -127,6 +149,27 @@ pub use phf_macros::phf_ordered_map;
 ///
 /// fn main () {
 ///     assert!(MY_SET.contains("hello world"));
+/// }
+/// ```
+///
+/// # OR Patterns
+///
+/// You can use OR patterns to include multiple keys in a single entry:
+///
+/// ```
+/// use phf::{phf_set, Set};
+///
+/// static KEYWORDS: Set<&'static str> = phf_set! {
+///     "if" | "elif" | "else",
+///     "for" | "while" | "loop",
+///     "fn" | "function" | "def",
+/// };
+///
+/// fn main() {
+///     assert!(KEYWORDS.contains("if"));
+///     assert!(KEYWORDS.contains("elif"));
+///     assert!(KEYWORDS.contains("else"));
+///     assert!(KEYWORDS.contains("for"));
 /// }
 /// ```
 pub use phf_macros::phf_set;

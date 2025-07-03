@@ -342,6 +342,32 @@ mod map {
         assert_eq!(Some(&3), MAP.get(&(2, "c")));
         assert_eq!(None, MAP.get(&(3, "d")));
     }
+
+    #[test]
+    fn test_or_pattern() {
+        static MAP: phf::Map<&'static str, isize> = phf_map!(
+            "foo" | "baz" => 10,
+            "bar" => 20,
+        );
+        assert_eq!(Some(&10), MAP.get("foo"));
+        assert_eq!(Some(&10), MAP.get("baz"));
+        assert_eq!(Some(&20), MAP.get("bar"));
+        assert_eq!(None, MAP.get("qux"));
+
+        // Test with three or more keys
+        static MAP2: phf::Map<&'static str, isize> = phf_map!(
+            "foo" | "baz" | "qux" => 10,
+            "bar" | "quux" => 20,
+            "xyz" => 30,
+        );
+        assert_eq!(Some(&10), MAP2.get("foo"));
+        assert_eq!(Some(&10), MAP2.get("baz"));
+        assert_eq!(Some(&10), MAP2.get("qux"));
+        assert_eq!(Some(&20), MAP2.get("bar"));
+        assert_eq!(Some(&20), MAP2.get("quux"));
+        assert_eq!(Some(&30), MAP2.get("xyz"));
+        assert_eq!(None, MAP2.get("unknown"));
+    }
 }
 
 mod set {
@@ -433,6 +459,34 @@ mod set {
         assert!(SET.contains(&(1, "b")));
         assert!(SET.contains(&(2, "c")));
         assert!(!SET.contains(&(3, "d")));
+    }
+
+    #[test]
+    fn test_or_pattern() {
+        static SET: phf::Set<&'static str> = phf_set! {
+            "foo" | "baz",
+            "bar" | "qux",
+        };
+        assert!(SET.contains("foo"));
+        assert!(SET.contains("baz"));
+        assert!(SET.contains("bar"));
+        assert!(SET.contains("qux"));
+        assert!(!SET.contains("unknown"));
+        assert_eq!(4, SET.len());
+
+        // Test with three or more keys
+        static SET2: phf::Set<&'static str> = phf_set! {
+            "foo" | "baz" | "qux",
+            "bar" | "quux" | "xyz",
+        };
+        assert!(SET2.contains("foo"));
+        assert!(SET2.contains("baz"));
+        assert!(SET2.contains("qux"));
+        assert!(SET2.contains("bar"));
+        assert!(SET2.contains("quux"));
+        assert!(SET2.contains("xyz"));
+        assert!(!SET2.contains("unknown"));
+        assert_eq!(6, SET2.len());
     }
 }
 
@@ -590,6 +644,34 @@ mod ordered_map {
         assert_eq!(Some(&3), MAP.get(&(2, "c")));
         assert_eq!(None, MAP.get(&(3, "d")));
     }
+
+    #[test]
+    fn test_or_pattern() {
+        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
+            "foo" | "baz" => 10,
+            "bar" | "qux" => 20,
+        );
+        assert_eq!(Some(&10), MAP.get("foo"));
+        assert_eq!(Some(&10), MAP.get("baz"));
+        assert_eq!(Some(&20), MAP.get("bar"));
+        assert_eq!(Some(&20), MAP.get("qux"));
+        assert_eq!(None, MAP.get("unknown"));
+        assert_eq!(4, MAP.len());
+
+        // Test with three or more keys
+        static MAP2: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
+            "foo" | "baz" | "qux" => 10,
+            "bar" | "quux" | "xyz" => 20,
+        );
+        assert_eq!(Some(&10), MAP2.get("foo"));
+        assert_eq!(Some(&10), MAP2.get("baz"));
+        assert_eq!(Some(&10), MAP2.get("qux"));
+        assert_eq!(Some(&20), MAP2.get("bar"));
+        assert_eq!(Some(&20), MAP2.get("quux"));
+        assert_eq!(Some(&20), MAP2.get("xyz"));
+        assert_eq!(None, MAP2.get("unknown"));
+        assert_eq!(6, MAP2.len());
+    }
 }
 
 mod ordered_set {
@@ -703,5 +785,33 @@ mod ordered_set {
         assert!(SET.contains(&(1, "b")));
         assert!(SET.contains(&(2, "c")));
         assert!(!SET.contains(&(3, "d")));
+    }
+
+    #[test]
+    fn test_or_pattern() {
+        static SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
+            "foo" | "baz",
+            "bar" | "qux",
+        };
+        assert!(SET.contains("foo"));
+        assert!(SET.contains("baz"));
+        assert!(SET.contains("bar"));
+        assert!(SET.contains("qux"));
+        assert!(!SET.contains("unknown"));
+        assert_eq!(4, SET.len());
+
+        // Test with three or more keys
+        static SET2: phf::OrderedSet<&'static str> = phf_ordered_set! {
+            "foo" | "baz" | "qux",
+            "bar" | "quux" | "xyz",
+        };
+        assert!(SET2.contains("foo"));
+        assert!(SET2.contains("baz"));
+        assert!(SET2.contains("qux"));
+        assert!(SET2.contains("bar"));
+        assert!(SET2.contains("quux"));
+        assert!(SET2.contains("xyz"));
+        assert!(!SET2.contains("unknown"));
+        assert_eq!(6, SET2.len());
     }
 }

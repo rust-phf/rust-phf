@@ -6,6 +6,9 @@ build = "build.rs"
 edition = "2021"
 publish = false
 
+[features]
+ptrhash = ["phf/ptrhash", "phf_codegen/ptrhash"]
+
 [dependencies]
 phf = { version = "^0.13.1", features = ["uncased", "unicase"] }
 uncased = { version = "0.9.7", default-features = false }

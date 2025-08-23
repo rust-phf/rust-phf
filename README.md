@@ -26,7 +26,7 @@ will not work, set `default-features = false` for the dependency:
 ```toml
 [dependencies]
 # to use `phf` in `no_std` environments
-phf = { version = "0.13.0", default-features = false }
+phf = { version = "0.13.1", default-features = false }
 ```
 
 ### phf_macros
@@ -69,7 +69,7 @@ pub fn parse_operator(operator: &str) -> Option<&'static str> {
 
 ```toml
 [dependencies]
-phf = { version = "0.13.0", features = ["macros"] }
+phf = { version = "0.13.1", features = ["macros"] }
 ```
 
 #### Note
@@ -85,8 +85,8 @@ To use `phf_codegen` on build.rs, you have to add dependencies under `[build-dep
 
 ```toml
 [build-dependencies]
-phf = { version = "0.13.0", default-features = false }
-phf_codegen = "0.13.0"
+phf = { version = "0.13.1", default-features = false }
+phf_codegen = "0.13.1"
 ```
 
 Then put code on build.rs:

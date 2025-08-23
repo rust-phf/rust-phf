@@ -7,5 +7,5 @@ rust-version = "1.66"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-phf = { version = "^0.13.0", features = ["macros", "uncased"] }
+phf = { version = "^0.13.1", features = ["macros", "uncased"] }
 uncased = "0.9.7"

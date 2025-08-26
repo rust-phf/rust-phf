@@ -1,3 +1,4 @@
+#![feature(likely_unlikely)]
 //! See [the `phf` crate's documentation][phf] for details.
 //!
 //! [phf]: https://docs.rs/phf
@@ -6,7 +7,7 @@
 use std::iter;
 
 use fastrand::Rng;
-use phf_shared::{HashKey, Hashes, PhfHash};
+use phf_shared::{FastModulo, HashKey, Hashes, PhfHash};
 
 const DEFAULT_LAMBDA: usize = 5;
 
@@ -52,6 +53,8 @@ struct Bucket {
 struct Generator {
     hashes: Vec<Hashes>,
     buckets: Vec<Bucket>,
+    table_len: FastModulo,
+    bucket_len: FastModulo,
     disps: Vec<(u32, u32)>,
     map: Vec<Option<usize>>,
     try_map: Vec<u64>,
@@ -76,6 +79,8 @@ impl Generator {
         Self {
             hashes,
             buckets,
+            table_len: FastModulo::new(table_len as u32),
+            bucket_len: FastModulo::new(buckets_len as u32),
             disps,
             map,
             try_map,
@@ -97,9 +102,8 @@ impl Generator {
     }
 
     fn try_generate_hash(&mut self) -> bool {
-        let buckets_len = self.buckets.len() as u32;
         for (i, hash) in self.hashes.iter().enumerate() {
-            self.buckets[(hash.g % buckets_len) as usize].keys.push(i);
+            self.buckets[(hash.g % self.bucket_len) as usize].keys.push(i);
         }
 
         // Sort descending
@@ -131,7 +135,7 @@ impl Generator {
                     for &key in &bucket.keys {
                         let idx =
                             (phf_shared::displace(self.hashes[key].f1, self.hashes[key].f2, d1, d2)
-                                % (table_len as u32)) as usize;
+                                % self.table_len) as usize;
                         if self.map[idx].is_some() || self.try_map[idx] == generation {
                             continue 'disps;
                         }

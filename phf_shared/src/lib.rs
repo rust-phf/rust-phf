@@ -11,6 +11,7 @@ extern crate std as core;
 use core::fmt;
 use core::hash::{Hash, Hasher};
 use core::num::Wrapping;
+use core::ops::Rem;
 use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
 
 #[non_exhaustive]
@@ -28,6 +29,66 @@ pub type HashKey = u64;
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
     (Wrapping(d2) + Wrapping(f1) * Wrapping(d1) + Wrapping(f2)).0
+}
+
+/// A wrapper type that pre-calculates a "magic number" to perform
+/// fast modulo operations for a given divisor.
+///
+/// This implementation is based on the algorithm from the paper
+/// "Faster Remainder by Direct Computation" by Lemire, Kaser, and Kurz.
+#[derive(Debug, Clone, Copy)]
+pub struct FastModulo {
+    #[doc(hidden)]
+    pub divisor: u32,
+    #[doc(hidden)]
+    pub magic: u64,
+}
+
+impl FastModulo {
+    #[inline]
+    pub const fn new(divisor: u32) -> Self {
+        if divisor == 0 {
+            return Self {
+                divisor: 0,
+                magic: 0,
+            };
+        }
+        // The magic number calculation is for d >= 1.
+        let magic = (u64::MAX / (divisor as u64)).wrapping_add(1);
+        Self { divisor, magic }
+    }
+}
+
+impl Rem<FastModulo> for u32 {
+    type Output = u32;
+
+    #[inline]
+    fn rem(self, rhs: FastModulo) -> Self::Output {
+        if rhs.divisor <= 1 {
+            return 0;
+        }
+
+        // The core algorithm from the paper:
+        // 1. Multiply the numerator by the 64-bit magic number.
+        //    Take the low 64 bits of the product, which is
+        //    equivalent to `(magic * numerator) mod 2^64`.
+        let low_bits = rhs.magic.wrapping_mul(self as u64);
+
+        // 2. Multiply the result by the original divisor using 128-bit arithmetic
+        //    to avoid overflow, and then take the high 64 bits of the product
+        //    (equivalent to `>> 64`).
+        ((low_bits as u128 * rhs.divisor as u128) >> 64) as u32
+    }
+}
+
+impl fmt::Display for FastModulo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "phf::FastModulo {{ divisor: {}, magic: {} }}",
+            self.divisor, self.magic
+        )
+    }
 }
 
 /// `key` is from `phf_generator::HashState`.
@@ -54,9 +115,14 @@ pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
 /// * `disps` is from `phf_generator::HashState::disps`.
 /// * `len` is the length of `phf_generator::HashState::map`.
 #[inline]
-pub fn get_index(hashes: &Hashes, disps: &[(u32, u32)], len: usize) -> u32 {
-    let (d1, d2) = disps[(hashes.g % (disps.len() as u32)) as usize];
-    displace(hashes.f1, hashes.f2, d1, d2) % (len as u32)
+pub fn get_index(
+    hashes: &Hashes,
+    disps: &[(u32, u32)],
+    entries_len: FastModulo,
+    displacements_len: FastModulo,
+) -> u32 {
+    let (d1, d2) = disps[(hashes.g % displacements_len) as usize];
+    displace(hashes.f1, hashes.f2, d1, d2) % entries_len
 }
 
 /// A trait implemented by types which can be used in PHF data structures.

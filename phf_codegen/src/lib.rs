@@ -139,7 +139,7 @@
 #![doc(html_root_url = "https://docs.rs/phf_codegen/0.13.1")]
 #![allow(clippy::new_without_default)]
 
-use phf_shared::{FmtConst, PhfHash};
+use phf_shared::{FastModulo, FmtConst, PhfHash};
 use std::borrow::Cow;
 use std::collections::HashSet;
 use std::fmt;
@@ -212,12 +212,16 @@ impl<'a, K: Hash + PhfHash + Eq + FmtConst> Map<'a, K> {
         }
 
         let state = phf_generator::generate_hash(&self.keys);
+        let disps_len = FastModulo::new(state.disps.len() as u32);
+        let entries_len = FastModulo::new(self.keys.len() as u32);
 
         DisplayMap {
             state,
             path: &self.path,
             keys: &self.keys,
             values: &self.values,
+            disps_len,
+            entries_len,
         }
     }
 }
@@ -228,6 +232,8 @@ pub struct DisplayMap<'a, K> {
     state: HashState,
     keys: &'a [K],
     values: &'a [Cow<'a, str>],
+    disps_len: FastModulo,
+    entries_len: FastModulo,
 }
 
 impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
@@ -273,7 +279,10 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
             f,
             "
     ],
-}}"
+    disps_len: {},
+    entries_len: {},
+}}",
+            self.disps_len, self.entries_len
         )
     }
 }
@@ -387,12 +396,16 @@ impl<'a, K: Hash + PhfHash + Eq + FmtConst> OrderedMap<'a, K> {
         }
 
         let state = phf_generator::generate_hash(&self.keys);
+        let disps_len = FastModulo::new(state.disps.len() as u32);
+        let idxs_len = FastModulo::new(self.keys.len() as u32);
 
         DisplayOrderedMap {
             state,
             path: &self.path,
             keys: &self.keys,
             values: &self.values,
+            disps_len,
+            idxs_len,
         }
     }
 }
@@ -403,6 +416,8 @@ pub struct DisplayOrderedMap<'a, K> {
     state: HashState,
     keys: &'a [K],
     values: &'a [Cow<'a, str>],
+    disps_len: FastModulo,
+    idxs_len: FastModulo,
 }
 
 impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
@@ -455,7 +470,10 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
             f,
             "
     ],
-}}"
+    disps_len: {},
+    idxs_len: {},
+}}",
+            self.disps_len, self.idxs_len
         )
     }
 }

@@ -27,6 +27,15 @@ phf_macros = { version = "^0.13.1", optional = true, path = "../phf_macros" }
 phf_shared = { version = "^0.13.1", default-features = false, path = "../phf_shared" }
 serde = { version = "1.0", default-features = false, optional = true }
 
+[dev-dependencies]
+criterion = "0.6.0"
+fastrand = "2.3.0"
+phf_generator = "0.13.1"
+
+[[bench]]
+name = "benches"
+harness = false
+
 [package.metadata.docs.rs]
 features = ["macros"]
 

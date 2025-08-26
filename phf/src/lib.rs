@@ -188,6 +188,8 @@ pub use self::ordered_map::OrderedMap;
 pub use self::ordered_set::OrderedSet;
 #[doc(inline)]
 pub use self::set::Set;
+#[doc(hidden)]
+pub use phf_shared::FastModulo;
 pub use phf_shared::PhfHash;
 
 pub mod map;

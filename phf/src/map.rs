@@ -4,7 +4,7 @@ use core::iter::FusedIterator;
 use core::iter::IntoIterator;
 use core::ops::Index;
 use core::slice;
-use phf_shared::{self, HashKey, PhfBorrow, PhfHash};
+use phf_shared::{self, FastModulo, HashKey, PhfBorrow, PhfHash};
 #[cfg(feature = "serde")]
 use serde::ser::{Serialize, SerializeMap, Serializer};
 
@@ -21,7 +21,11 @@ pub struct Map<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub disps: &'static [(u32, u32)],
     #[doc(hidden)]
+    pub disps_len: FastModulo,
+    #[doc(hidden)]
     pub entries: &'static [(K, V)],
+    #[doc(hidden)]
+    pub entries_len: FastModulo,
 }
 
 impl<K, V> fmt::Debug for Map<K, V>
@@ -76,7 +80,9 @@ impl<K, V> Map<K, V> {
         Self {
             key: 0,
             disps: &[],
+            disps_len: FastModulo::new(0),
             entries: &[],
+            entries_len: FastModulo::new(0),
         }
     }
 
@@ -132,7 +138,7 @@ impl<K, V> Map<K, V> {
             return None;
         } //Prevent panic on empty map
         let hashes = phf_shared::hash(key, &self.key);
-        let index = phf_shared::get_index(&hashes, self.disps, self.entries.len());
+        let index = phf_shared::get_index(&hashes, self.disps, self.entries_len, self.disps_len);
         let entry = &self.entries[index as usize];
         let b: &T = entry.0.borrow();
         if b == key {

@@ -4,7 +4,7 @@ use core::iter::FusedIterator;
 use core::iter::IntoIterator;
 use core::ops::Index;
 use core::slice;
-use phf_shared::{self, HashKey, PhfBorrow, PhfHash};
+use phf_shared::{self, FastModulo, HashKey, PhfBorrow, PhfHash};
 
 /// An order-preserving immutable map constructed at compile time.
 ///
@@ -22,7 +22,11 @@ pub struct OrderedMap<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub disps: &'static [(u32, u32)],
     #[doc(hidden)]
+    pub disps_len: FastModulo,
+    #[doc(hidden)]
     pub idxs: &'static [usize],
+    #[doc(hidden)]
+    pub idxs_len: FastModulo,
     #[doc(hidden)]
     pub entries: &'static [(K, V)],
 }
@@ -146,7 +150,7 @@ impl<K, V> OrderedMap<K, V> {
             return None;
         } //Prevent panic on empty map
         let hashes = phf_shared::hash(key, &self.key);
-        let idx_index = phf_shared::get_index(&hashes, self.disps, self.idxs.len());
+        let idx_index = phf_shared::get_index(&hashes, self.disps, self.idxs_len, self.disps_len);
         let idx = self.idxs[idx_index as usize];
         let entry = &self.entries[idx];
 

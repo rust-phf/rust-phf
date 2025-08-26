@@ -431,12 +431,16 @@ fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
         // Don't include attributes since we've filtered at macro expansion time
         quote!((#key, #value))
     });
+    let disps_len = state.disps.len() as u32;
+    let entries_len = state.map.len() as u32;
 
     quote! {
         phf::Map {
             key: #key,
             disps: &[#(#disps),*],
             entries: &[#(#entries),*],
+            disps_len: phf::FastModulo::new(#disps_len),
+            entries_len: phf::FastModulo::new(#entries_len),
         }
     }
 }
@@ -451,6 +455,8 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
         // Don't include attributes since we've filtered at macro expansion time
         quote!((#key, #value))
     });
+    let disps_len = state.disps.len() as u32;
+    let idxs_len = state.map.len() as u32;
 
     quote! {
         phf::OrderedMap {
@@ -458,6 +464,8 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
             disps: &[#(#disps),*],
             idxs: &[#(#idxs),*],
             entries: &[#(#entries),*],
+            disps_len: phf::FastModulo::new(#disps_len),
+            idxs_len: phf::FastModulo::new(#idxs_len),
         }
     }
 }

@@ -1,4 +1,3 @@
-#![feature(likely_unlikely)]
 //! See [the `phf` crate's documentation][phf] for details.
 //!
 //! [phf]: https://docs.rs/phf
@@ -103,7 +102,9 @@ impl Generator {
 
     fn try_generate_hash(&mut self) -> bool {
         for (i, hash) in self.hashes.iter().enumerate() {
-            self.buckets[(hash.g % self.bucket_len) as usize].keys.push(i);
+            self.buckets[(hash.g % self.bucket_len) as usize]
+                .keys
+                .push(i);
         }
 
         // Sort descending

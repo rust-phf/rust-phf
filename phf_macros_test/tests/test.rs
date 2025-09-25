@@ -287,6 +287,18 @@ mod map {
     }
 
     #[test]
+    fn test_unicase_ascii() {
+        use unicase::Ascii;
+        static MAP: phf::Map<Ascii<&'static str>, isize> = phf_map!(
+            Ascii::new("FOO") => 10,
+            Ascii::new("Bar") => 11,
+        );
+        assert!(Some(&10) == MAP.get(&Ascii::new("FOo")));
+        assert!(Some(&11) == MAP.get(&Ascii::new("bar")));
+        assert_eq!(None, MAP.get(&Ascii::new("asdf")));
+    }
+
+    #[test]
     fn test_uncased() {
         use uncased::UncasedStr;
         static MAP: phf::Map<&'static UncasedStr, isize> = phf_map!(
@@ -296,6 +308,65 @@ mod map {
         assert!(Some(&10) == MAP.get("FOo".into()));
         assert!(Some(&11) == MAP.get("bar".into()));
         assert_eq!(None, MAP.get("asdf".into()));
+    }
+
+    #[test]
+    fn test_cfgs() {
+        static MY_MAP: phf::Map<&'static str, u32> = phf_map! {
+            "foo" => 1, // should always be present
+            #[cfg(feature = "disabled_feature")]
+            "bar" => 2, // should not be present as we disable this feature
+            #[cfg(feature = "enabled_feature")]
+            "baz" => 3, // should be present as we enable this feature
+        };
+        assert_eq!(Some(&1), MY_MAP.get("foo"));
+        #[cfg(feature = "disabled_feature")]
+        assert_eq!(Some(&2), MY_MAP.get("bar"));
+        #[cfg(not(feature = "disabled_feature"))]
+        assert_eq!(None, MY_MAP.get("bar"));
+        #[cfg(feature = "enabled_feature")]
+        assert_eq!(Some(&3), MY_MAP.get("baz"));
+        #[cfg(not(feature = "enabled_feature"))]
+        assert_eq!(None, MY_MAP.get("baz"));
+    }
+
+    #[test]
+    fn test_tuples() {
+        static MAP: phf::Map<(u32, &str), u32> = phf_map! {
+            (0, "a") => 1,
+            (1, "b") => 2,
+            (2, "c") => 3,
+        };
+        assert_eq!(Some(&1), MAP.get(&(0, "a")));
+        assert_eq!(Some(&2), MAP.get(&(1, "b")));
+        assert_eq!(Some(&3), MAP.get(&(2, "c")));
+        assert_eq!(None, MAP.get(&(3, "d")));
+    }
+
+    #[test]
+    fn test_or_pattern() {
+        static MAP: phf::Map<&'static str, isize> = phf_map!(
+            "foo" | "baz" => 10,
+            "bar" => 20,
+        );
+        assert_eq!(Some(&10), MAP.get("foo"));
+        assert_eq!(Some(&10), MAP.get("baz"));
+        assert_eq!(Some(&20), MAP.get("bar"));
+        assert_eq!(None, MAP.get("qux"));
+
+        // Test with three or more keys
+        static MAP2: phf::Map<&'static str, isize> = phf_map!(
+            "foo" | "baz" | "qux" => 10,
+            "bar" | "quux" => 20,
+            "xyz" => 30,
+        );
+        assert_eq!(Some(&10), MAP2.get("foo"));
+        assert_eq!(Some(&10), MAP2.get("baz"));
+        assert_eq!(Some(&10), MAP2.get("qux"));
+        assert_eq!(Some(&20), MAP2.get("bar"));
+        assert_eq!(Some(&20), MAP2.get("quux"));
+        assert_eq!(Some(&30), MAP2.get("xyz"));
+        assert_eq!(None, MAP2.get("unknown"));
     }
 }
 
@@ -355,6 +426,67 @@ mod set {
         for e in &SET {
             assert_eq!(&"hello", e);
         }
+    }
+
+    #[test]
+    fn test_cfgs() {
+        static SET: phf::Set<&'static str> = phf_set! {
+            "foo", // should always be present
+            #[cfg(feature = "disabled_feature")]
+            "bar", // should not be present as we disable this feature
+            #[cfg(feature = "enabled_feature")]
+            "baz", // should be present as we enable this feature by default
+        };
+        assert!(SET.contains("foo"));
+        #[cfg(feature = "disabled_feature")]
+        assert!(SET.contains("bar"));
+        #[cfg(not(feature = "disabled_feature"))]
+        assert!(!SET.contains("bar"));
+        #[cfg(feature = "enabled_feature")]
+        assert!(SET.contains("baz"));
+        #[cfg(not(feature = "enabled_feature"))]
+        assert!(!SET.contains("baz"));
+    }
+
+    #[test]
+    fn test_tuples() {
+        static SET: phf::Set<(u32, &str)> = phf_set! {
+            (0, "a"),
+            (1, "b"),
+            (2, "c"),
+        };
+        assert!(SET.contains(&(0, "a")));
+        assert!(SET.contains(&(1, "b")));
+        assert!(SET.contains(&(2, "c")));
+        assert!(!SET.contains(&(3, "d")));
+    }
+
+    #[test]
+    fn test_or_pattern() {
+        static SET: phf::Set<&'static str> = phf_set! {
+            "foo" | "baz",
+            "bar" | "qux",
+        };
+        assert!(SET.contains("foo"));
+        assert!(SET.contains("baz"));
+        assert!(SET.contains("bar"));
+        assert!(SET.contains("qux"));
+        assert!(!SET.contains("unknown"));
+        assert_eq!(4, SET.len());
+
+        // Test with three or more keys
+        static SET2: phf::Set<&'static str> = phf_set! {
+            "foo" | "baz" | "qux",
+            "bar" | "quux" | "xyz",
+        };
+        assert!(SET2.contains("foo"));
+        assert!(SET2.contains("baz"));
+        assert!(SET2.contains("qux"));
+        assert!(SET2.contains("bar"));
+        assert!(SET2.contains("quux"));
+        assert!(SET2.contains("xyz"));
+        assert!(!SET2.contains("unknown"));
+        assert_eq!(6, SET2.len());
     }
 }
 
@@ -479,6 +611,67 @@ mod ordered_map {
             assert_eq!(&10, v)
         }
     }
+
+    #[test]
+    fn test_cfgs() {
+        static MY_MAP: phf::OrderedMap<&'static str, u32> = phf_ordered_map! {
+            "foo" => 1, // should always be present
+            #[cfg(feature = "disabled_feature")]
+            "bar" => 2, // should not be present as we disable this feature
+            #[cfg(feature = "enabled_feature")]
+            "baz" => 3, // should be present as we enable this feature
+        };
+        assert_eq!(Some(&1), MY_MAP.get("foo"));
+        #[cfg(feature = "disabled_feature")]
+        assert_eq!(Some(&2), MY_MAP.get("bar"));
+        #[cfg(not(feature = "disabled_feature"))]
+        assert_eq!(None, MY_MAP.get("bar"));
+        #[cfg(feature = "enabled_feature")]
+        assert_eq!(Some(&3), MY_MAP.get("baz"));
+        #[cfg(not(feature = "enabled_feature"))]
+        assert_eq!(None, MY_MAP.get("baz"));
+    }
+
+    #[test]
+    fn test_tuples() {
+        static MAP: phf::OrderedMap<(u32, &str), u32> = phf_ordered_map! {
+            (0, "a") => 1,
+            (1, "b") => 2,
+            (2, "c") => 3,
+        };
+        assert_eq!(Some(&1), MAP.get(&(0, "a")));
+        assert_eq!(Some(&2), MAP.get(&(1, "b")));
+        assert_eq!(Some(&3), MAP.get(&(2, "c")));
+        assert_eq!(None, MAP.get(&(3, "d")));
+    }
+
+    #[test]
+    fn test_or_pattern() {
+        static MAP: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
+            "foo" | "baz" => 10,
+            "bar" | "qux" => 20,
+        );
+        assert_eq!(Some(&10), MAP.get("foo"));
+        assert_eq!(Some(&10), MAP.get("baz"));
+        assert_eq!(Some(&20), MAP.get("bar"));
+        assert_eq!(Some(&20), MAP.get("qux"));
+        assert_eq!(None, MAP.get("unknown"));
+        assert_eq!(4, MAP.len());
+
+        // Test with three or more keys
+        static MAP2: phf::OrderedMap<&'static str, isize> = phf_ordered_map!(
+            "foo" | "baz" | "qux" => 10,
+            "bar" | "quux" | "xyz" => 20,
+        );
+        assert_eq!(Some(&10), MAP2.get("foo"));
+        assert_eq!(Some(&10), MAP2.get("baz"));
+        assert_eq!(Some(&10), MAP2.get("qux"));
+        assert_eq!(Some(&20), MAP2.get("bar"));
+        assert_eq!(Some(&20), MAP2.get("quux"));
+        assert_eq!(Some(&20), MAP2.get("xyz"));
+        assert_eq!(None, MAP2.get("unknown"));
+        assert_eq!(6, MAP2.len());
+    }
 }
 
 mod ordered_set {
@@ -559,5 +752,66 @@ mod ordered_set {
         for e in &SET {
             assert_eq!(&"foo", e);
         }
+    }
+
+    #[test]
+    fn test_cfgs() {
+        static SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
+            "foo", // should always be present
+            #[cfg(feature = "disabled_feature")]
+            "bar", // should not be present as we disable this feature
+            #[cfg(feature = "enabled_feature")]
+            "baz", // should be present as we enable this feature by default
+        };
+        assert!(SET.contains("foo"));
+        #[cfg(feature = "disabled_feature")]
+        assert!(SET.contains("bar"));
+        #[cfg(not(feature = "disabled_feature"))]
+        assert!(!SET.contains("bar"));
+        #[cfg(feature = "enabled_feature")]
+        assert!(SET.contains("baz"));
+        #[cfg(not(feature = "enabled_feature"))]
+        assert!(!SET.contains("baz"));
+    }
+
+    #[test]
+    fn test_tuples() {
+        static SET: phf::OrderedSet<(u32, &str)> = phf_ordered_set! {
+            (0, "a"),
+            (1, "b"),
+            (2, "c"),
+        };
+        assert!(SET.contains(&(0, "a")));
+        assert!(SET.contains(&(1, "b")));
+        assert!(SET.contains(&(2, "c")));
+        assert!(!SET.contains(&(3, "d")));
+    }
+
+    #[test]
+    fn test_or_pattern() {
+        static SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
+            "foo" | "baz",
+            "bar" | "qux",
+        };
+        assert!(SET.contains("foo"));
+        assert!(SET.contains("baz"));
+        assert!(SET.contains("bar"));
+        assert!(SET.contains("qux"));
+        assert!(!SET.contains("unknown"));
+        assert_eq!(4, SET.len());
+
+        // Test with three or more keys
+        static SET2: phf::OrderedSet<&'static str> = phf_ordered_set! {
+            "foo" | "baz" | "qux",
+            "bar" | "quux" | "xyz",
+        };
+        assert!(SET2.contains("foo"));
+        assert!(SET2.contains("baz"));
+        assert!(SET2.contains("qux"));
+        assert!(SET2.contains("bar"));
+        assert!(SET2.contains("quux"));
+        assert!(SET2.contains("xyz"));
+        assert!(!SET2.contains("unknown"));
+        assert_eq!(6, SET2.len());
     }
 }

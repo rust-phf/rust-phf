@@ -2,7 +2,7 @@
 //!
 //! [phf]: https://docs.rs/phf
 
-#![doc(html_root_url = "https://docs.rs/phf_shared/0.11")]
+#![doc(html_root_url = "https://docs.rs/phf_shared/0.13.1")]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(feature = "std")]
@@ -102,7 +102,7 @@ pub trait FmtConst {
 /// The same semantic requirements apply:
 ///
 /// > In particular `Eq`, `Ord` and `Hash` must be equivalent for borrowed and owned values:
-/// `x.borrow() == y.borrow()` should give the same result as `x == y`.
+/// > `x.borrow() == y.borrow()` should give the same result as `x == y`.
 ///
 /// (This crate's API only requires `Eq` and `PhfHash`, however.)
 ///
@@ -244,19 +244,19 @@ impl<'a, T: 'a + FmtConst + ?Sized> FmtConst for &'a T {
     }
 }
 
-impl<'a> PhfBorrow<str> for &'a str {
+impl PhfBorrow<str> for &str {
     fn borrow(&self) -> &str {
         self
     }
 }
 
-impl<'a> PhfBorrow<[u8]> for &'a [u8] {
+impl PhfBorrow<[u8]> for &[u8] {
     fn borrow(&self) -> &[u8] {
         self
     }
 }
 
-impl<'a, const N: usize> PhfBorrow<[u8; N]> for &'a [u8; N] {
+impl<const N: usize> PhfBorrow<[u8; N]> for &[u8; N] {
     fn borrow(&self) -> &[u8; N] {
         self
     }
@@ -308,6 +308,36 @@ where
 #[cfg(feature = "unicase")]
 impl<'b, 'a: 'b, S: ?Sized + 'a> PhfBorrow<unicase::UniCase<&'b S>> for unicase::UniCase<&'a S> {
     fn borrow(&self) -> &unicase::UniCase<&'b S> {
+        self
+    }
+}
+
+#[cfg(feature = "unicase")]
+impl<S> PhfHash for unicase::Ascii<S>
+where
+    unicase::Ascii<S>: Hash,
+{
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        self.hash(state)
+    }
+}
+
+#[cfg(feature = "unicase")]
+impl<S> FmtConst for unicase::Ascii<S>
+where
+    S: AsRef<str>,
+{
+    fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Ascii::new(")?;
+        self.as_ref().fmt_const(f)?;
+        f.write_str(")")
+    }
+}
+
+#[cfg(feature = "unicase")]
+impl<'b, 'a: 'b, S: ?Sized + 'a> PhfBorrow<unicase::Ascii<&'b S>> for unicase::Ascii<&'a S> {
+    fn borrow(&self) -> &unicase::Ascii<&'b S> {
         self
     }
 }
@@ -441,3 +471,52 @@ slice_impl!(u128);
 slice_impl!(i128);
 slice_impl!(bool);
 slice_impl!(char);
+
+macro_rules! tuple_impl {
+    ($($t:ident),+) => {
+        impl<$($t: PhfHash),+> PhfHash for ($($t,)+) {
+            fn phf_hash<HS: Hasher>(&self, state: &mut HS) {
+                #[allow(non_snake_case)]
+                let ($($t,)+) = self;
+                $(
+                    $t.phf_hash(state);
+                )+
+            }
+        }
+
+        impl<$($t: PhfHash),+> PhfBorrow<($($t,)+)> for ($($t,)+) {
+            fn borrow(&self) -> &($($t,)+) {
+                self
+            }
+        }
+
+        impl<$($t: FmtConst),+> FmtConst for ($($t,)+) {
+            fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                #[allow(non_snake_case)]
+                let ($($t,)+) = self;
+                write!(f, "(")?;
+                let mut first = true;
+                $(
+                    if !core::mem::replace(&mut first, false) {
+                        write!(f, ", ")?;
+                    }
+                    $t.fmt_const(f)?;
+                )+
+                write!(f, ")")
+            }
+        }
+    };
+}
+
+tuple_impl!(A);
+tuple_impl!(A, B);
+tuple_impl!(A, B, C);
+tuple_impl!(A, B, C, D);
+tuple_impl!(A, B, C, D, E);
+tuple_impl!(A, B, C, D, E, F);
+tuple_impl!(A, B, C, D, E, F, G);
+tuple_impl!(A, B, C, D, E, F, G, HT);
+tuple_impl!(A, B, C, D, E, F, G, HT, I);
+tuple_impl!(A, B, C, D, E, F, G, HT, I, J);
+tuple_impl!(A, B, C, D, E, F, G, HT, I, J, K);
+tuple_impl!(A, B, C, D, E, F, G, HT, I, J, K, L);

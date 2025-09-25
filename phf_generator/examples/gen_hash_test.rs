@@ -1,6 +1,5 @@
-use std::iter;
-
 use std::hint::black_box;
+use std::iter;
 
 use fastrand::Rng;
 
@@ -15,8 +14,8 @@ fn gen_vec(len: usize) -> Vec<String> {
         .collect()
 }
 
-#[allow(clippy::incompatible_msrv)]
 fn main() {
     let data = black_box(gen_vec(1_000_000));
-    black_box(generate_hash(&data));
+    let data_refs: Vec<&str> = data.iter().map(|s| s.as_str()).collect();
+    black_box(generate_hash(&data_refs));
 }

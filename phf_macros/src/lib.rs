@@ -11,11 +11,11 @@ use std::collections::HashSet;
 use std::hash::Hasher;
 use syn::parse::{self, Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, Error, Expr, ExprLit, Lit, Token, UnOp};
+use syn::{parse_macro_input, BinOp, Error, Expr, ExprLit, Lit, Token, UnOp};
 #[cfg(feature = "uncased")]
 use uncased_::Uncased;
 #[cfg(feature = "unicase")]
-use unicase_::UniCase;
+use unicase_::{Ascii, UniCase};
 
 #[derive(Hash, PartialEq, Eq, Clone)]
 enum ParsedKey {
@@ -35,8 +35,11 @@ enum ParsedKey {
     U128(u128),
     Usize(usize),
     Bool(bool),
+    Tuple(Vec<ParsedKey>),
     #[cfg(feature = "unicase")]
     UniCase(UniCase<String>),
+    #[cfg(feature = "unicase")]
+    UniCaseAscii(Ascii<String>),
     #[cfg(feature = "uncased")]
     Uncased(Uncased<'static>),
 }
@@ -63,8 +66,15 @@ impl PhfHash for ParsedKey {
             ParsedKey::U128(s) => s.phf_hash(state),
             ParsedKey::Usize(s) => s.phf_hash(state),
             ParsedKey::Bool(s) => s.phf_hash(state),
+            ParsedKey::Tuple(elements) => {
+                for element in elements {
+                    element.phf_hash(state);
+                }
+            }
             #[cfg(feature = "unicase")]
             ParsedKey::UniCase(s) => s.phf_hash(state),
+            #[cfg(feature = "unicase")]
+            ParsedKey::UniCaseAscii(s) => s.phf_hash(state),
             #[cfg(feature = "uncased")]
             ParsedKey::Uncased(s) => s.phf_hash(state),
         }
@@ -95,6 +105,14 @@ impl ParsedKey {
                     "u64" => Some(ParsedKey::U64(s.base10_parse::<u64>().unwrap())),
                     "u128" => Some(ParsedKey::U128(s.base10_parse::<u128>().unwrap())),
                     "usize" => Some(ParsedKey::Usize(s.base10_parse::<usize>().unwrap())),
+                    // Handle unsuffixed integer literals, default to i32
+                    "" => {
+                        if let Ok(val) = s.base10_parse::<i32>() {
+                            Some(ParsedKey::I32(val))
+                        } else {
+                            None
+                        }
+                    }
                     _ => None,
                 },
                 Lit::Bool(s) => Some(ParsedKey::Bool(s.value)),
@@ -117,12 +135,19 @@ impl ParsedKey {
                 Some(ParsedKey::Binary(buf))
             }
             Expr::Unary(unary) => {
-                // if we received an integer literal (always unsigned) greater than i__::max_value()
+                // Handle negation for signed integer types
+                // If we received an integer literal (always unsigned) greater than i__::max_value()
                 // then casting it to a signed integer type of the same width will negate it to
                 // the same absolute value so we don't need to negate it here
-                macro_rules! try_negate (
-                    ($val:expr) => {if $val < 0 { $val } else { -$val }}
-                );
+                macro_rules! try_negate {
+                    ($val:expr) => {
+                        if $val < 0 {
+                            $val
+                        } else {
+                            -$val
+                        }
+                    };
+                }
 
                 match unary.op {
                     UnOp::Neg(_) => match ParsedKey::from_expr(&unary.expr)? {
@@ -149,6 +174,17 @@ impl ParsedKey {
                     }
                     _ => None,
                 }
+            }
+            Expr::Tuple(tuple) => {
+                let mut elements = Vec::new();
+                for elem in &tuple.elems {
+                    if let Some(parsed_elem) = ParsedKey::from_expr(elem) {
+                        elements.push(parsed_elem);
+                    } else {
+                        return None;
+                    }
+                }
+                Some(ParsedKey::Tuple(elements))
             }
             Expr::Group(group) => ParsedKey::from_expr(&group.expr),
             Expr::Call(call) if call.args.len() == 1 => {
@@ -184,6 +220,8 @@ impl ParsedKey {
                     ("UniCase", "unicode") => Some(ParsedKey::UniCase(UniCase::unicode(_value))),
                     #[cfg(feature = "unicase")]
                     ("UniCase", "ascii") => Some(ParsedKey::UniCase(UniCase::ascii(_value))),
+                    #[cfg(feature = "unicase")]
+                    ("Ascii", "new") => Some(ParsedKey::UniCaseAscii(Ascii::new(_value))),
                     #[cfg(feature = "uncased")]
                     ("UncasedStr", "new") => Some(ParsedKey::Uncased(Uncased::new(_value))),
                     _ => None,
@@ -194,9 +232,11 @@ impl ParsedKey {
     }
 }
 
+#[derive(Clone)]
 struct Key {
-    parsed: ParsedKey,
-    expr: Expr,
+    parsed: Vec<ParsedKey>,
+    expr: Vec<Expr>,
+    attrs: Vec<syn::Attribute>,
 }
 
 impl PhfHash for Key {
@@ -204,23 +244,68 @@ impl PhfHash for Key {
     where
         H: Hasher,
     {
-        self.parsed.phf_hash(state)
+        // For OR patterns, we hash the first key (they should all hash to the same value)
+        if let Some(first) = self.parsed.first() {
+            first.phf_hash(state);
+        }
     }
 }
 
 impl Parse for Key {
     fn parse(input: ParseStream<'_>) -> parse::Result<Key> {
-        let expr = input.parse()?;
-        let parsed = ParsedKey::from_expr(&expr)
-            .ok_or_else(|| Error::new_spanned(&expr, "unsupported key expression"))?;
+        let attrs = input.call(syn::Attribute::parse_outer)?;
 
-        Ok(Key { parsed, expr })
+        // Parse the expression (which might contain OR patterns)
+        let expr = input.parse::<Expr>()?;
+
+        // Extract all keys from the expression (handling OR patterns)
+        let (exprs, parsed_keys) = extract_keys_from_expr(&expr)?;
+
+        Ok(Key {
+            parsed: parsed_keys,
+            expr: exprs,
+            attrs,
+        })
     }
 }
 
+/// Extract all keys from an expression, handling OR patterns
+fn extract_keys_from_expr(expr: &Expr) -> parse::Result<(Vec<Expr>, Vec<ParsedKey>)> {
+    match expr {
+        Expr::Binary(binary) => {
+            if let BinOp::BitOr(_) = binary.op {
+                // Handle OR pattern: left | right
+                let (left_exprs, left_keys) = extract_keys_from_expr(&binary.left)?;
+                let (right_exprs, right_keys) = extract_keys_from_expr(&binary.right)?;
+
+                let mut exprs = left_exprs;
+                exprs.extend(right_exprs);
+
+                let mut keys = left_keys;
+                keys.extend(right_keys);
+
+                Ok((exprs, keys))
+            } else {
+                // Single key
+                let parsed = ParsedKey::from_expr(expr)
+                    .ok_or_else(|| Error::new_spanned(expr, "unsupported key expression"))?;
+                Ok((vec![expr.clone()], vec![parsed]))
+            }
+        }
+        _ => {
+            // Single key
+            let parsed = ParsedKey::from_expr(expr)
+                .ok_or_else(|| Error::new_spanned(expr, "unsupported key expression"))?;
+            Ok((vec![expr.clone()], vec![parsed]))
+        }
+    }
+}
+
+#[derive(Clone)]
 struct Entry {
     key: Key,
     value: Expr,
+    attrs: Vec<syn::Attribute>,
 }
 
 impl PhfHash for Entry {
@@ -234,10 +319,11 @@ impl PhfHash for Entry {
 
 impl Parse for Entry {
     fn parse(input: ParseStream<'_>) -> parse::Result<Entry> {
+        let attrs = input.call(syn::Attribute::parse_outer)?;
         let key = input.parse()?;
         input.parse::<Token![=>]>()?;
         let value = input.parse()?;
-        Ok(Entry { key, value })
+        Ok(Entry { key, value, attrs })
     }
 }
 
@@ -246,9 +332,41 @@ struct Map(Vec<Entry>);
 impl Parse for Map {
     fn parse(input: ParseStream<'_>) -> parse::Result<Map> {
         let parsed = Punctuated::<Entry, Token![,]>::parse_terminated(input)?;
-        let map = parsed.into_iter().collect::<Vec<_>>();
-        check_duplicates(&map)?;
-        Ok(Map(map))
+        let mut expanded_entries = Vec::new();
+
+        // Expand OR patterns into multiple entries
+        for entry in parsed {
+            for (i, (parsed_key, expr)) in entry
+                .key
+                .parsed
+                .iter()
+                .zip(entry.key.expr.iter())
+                .enumerate()
+            {
+                let expanded_key = Key {
+                    parsed: vec![parsed_key.clone()],
+                    expr: vec![expr.clone()],
+                    attrs: if i == 0 {
+                        entry.key.attrs.clone()
+                    } else {
+                        Vec::new()
+                    },
+                };
+                let expanded_entry = Entry {
+                    key: expanded_key,
+                    value: entry.value.clone(),
+                    attrs: if i == 0 {
+                        entry.attrs.clone()
+                    } else {
+                        Vec::new()
+                    },
+                };
+                expanded_entries.push(expanded_entry);
+            }
+        }
+
+        check_duplicates(&expanded_entries)?;
+        Ok(Map(expanded_entries))
     }
 }
 
@@ -257,23 +375,47 @@ struct Set(Vec<Entry>);
 impl Parse for Set {
     fn parse(input: ParseStream<'_>) -> parse::Result<Set> {
         let parsed = Punctuated::<Key, Token![,]>::parse_terminated(input)?;
-        let set = parsed
-            .into_iter()
-            .map(|key| Entry {
-                key,
-                value: syn::parse_str("()").unwrap(),
-            })
-            .collect::<Vec<_>>();
-        check_duplicates(&set)?;
-        Ok(Set(set))
+        let unit_value: Expr = syn::parse_str("()").expect("Failed to parse unit value");
+
+        let mut expanded_entries = Vec::new();
+
+        // Expand OR patterns into multiple entries
+        for key in parsed {
+            for (i, (parsed_key, expr)) in key.parsed.iter().zip(key.expr.iter()).enumerate() {
+                let expanded_key = Key {
+                    parsed: vec![parsed_key.clone()],
+                    expr: vec![expr.clone()],
+                    attrs: if i == 0 {
+                        key.attrs.clone()
+                    } else {
+                        Vec::new()
+                    },
+                };
+                let expanded_entry = Entry {
+                    key: expanded_key,
+                    value: unit_value.clone(),
+                    attrs: if i == 0 {
+                        key.attrs.clone()
+                    } else {
+                        Vec::new()
+                    },
+                };
+                expanded_entries.push(expanded_entry);
+            }
+        }
+
+        check_duplicates(&expanded_entries)?;
+        Ok(Set(expanded_entries))
     }
 }
 
 fn check_duplicates(entries: &[Entry]) -> parse::Result<()> {
     let mut keys = HashSet::new();
     for entry in entries {
-        if !keys.insert(&entry.key.parsed) {
-            return Err(Error::new_spanned(&entry.key.expr, "duplicate key"));
+        if let Some(first) = entry.key.parsed.first() {
+            if !keys.insert(first) {
+                return Err(Error::new_spanned(&entry.key.expr[0], "duplicate key"));
+            }
         }
     }
     Ok(())
@@ -284,8 +426,10 @@ fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
     let secrets = state.secrets.iter().map(|s| quote!(#s));
     let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
     let entries = state.map.iter().map(|&idx| {
-        let key = &entries[idx].key.expr;
-        let value = &entries[idx].value;
+        let entry = &entries[idx];
+        let key = &entry.key.expr[0]; // Use the first expression
+        let value = &entry.value;
+        // Don't include attributes since we've filtered at macro expansion time
         quote!((#key, #value))
     });
 
@@ -305,8 +449,9 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
     let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
     let idxs = state.map.iter().map(|idx| quote!(#idx));
     let entries = entries.iter().map(|entry| {
-        let key = &entry.key.expr;
+        let key = &entry.key.expr[0]; // Use the first expression
         let value = &entry.value;
+        // Don't include attributes since we've filtered at macro expansion time
         quote!((#key, #value))
     });
 
@@ -324,33 +469,214 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
 #[proc_macro]
 pub fn phf_map(input: TokenStream) -> TokenStream {
     let map = parse_macro_input!(input as Map);
-    let state = phf_generator::generate_hash(&map.0);
 
-    build_map(&map.0, state).into()
+    // Check if any entries have cfg attributes
+    let has_cfg_attrs = map.0.iter().any(|entry| !entry.attrs.is_empty());
+
+    if !has_cfg_attrs {
+        // No cfg attributes - use the simple approach
+        let state = phf_generator::generate_hash(&map.0);
+        build_map(&map.0, state).into()
+    } else {
+        // Has cfg attributes - need to generate conditional map code
+        build_conditional_phf_map(&map.0).into()
+    }
+}
+
+/// Generate conditional cfg conditions for a given mask and conditional entries
+fn build_cfg_conditions(mask: usize, conditional: &[&Entry]) -> Vec<proc_macro2::TokenStream> {
+    let mut conditions = Vec::new();
+    for (i, &entry) in conditional.iter().enumerate() {
+        let include = (mask & (1 << i)) != 0;
+        if let Some(attr) = entry.attrs.first() {
+            if let Ok(meta) = attr.meta.require_list() {
+                let tokens = &meta.tokens;
+                if include {
+                    conditions.push(quote!(cfg!(#tokens)));
+                } else {
+                    conditions.push(quote!(!cfg!(#tokens)));
+                }
+            }
+        }
+    }
+    conditions
+}
+
+/// Combine multiple conditions into a single condition expression
+fn combine_conditions(conditions: Vec<proc_macro2::TokenStream>) -> proc_macro2::TokenStream {
+    if conditions.is_empty() {
+        quote!(true)
+    } else if conditions.len() == 1 {
+        conditions[0].clone()
+    } else {
+        quote!(#(#conditions)&&*)
+    }
+}
+
+/// Generate nested if-else chain from variants
+fn build_nested_conditional(
+    variants: Vec<(proc_macro2::TokenStream, proc_macro2::TokenStream)>,
+) -> proc_macro2::TokenStream {
+    if variants.is_empty() {
+        return quote!(compile_error!("No valid variants found"));
+    }
+
+    if variants.len() == 1 {
+        return variants[0].1.clone();
+    }
+
+    let mut result = variants.last().unwrap().1.clone();
+    for (condition, tokens) in variants.iter().rev().skip(1) {
+        result = quote! {
+            if #condition {
+                #tokens
+            } else {
+                #result
+            }
+        };
+    }
+    quote! { { #result } }
+}
+
+/// Generic function to build conditional PHF structures
+fn build_conditional_phf<F>(
+    entries: &[Entry],
+    simple_builder: F,
+    empty_structure: proc_macro2::TokenStream,
+) -> proc_macro2::TokenStream
+where
+    F: Fn(&[Entry], HashState) -> proc_macro2::TokenStream,
+{
+    let unconditional: Vec<_> = entries.iter().filter(|e| e.attrs.is_empty()).collect();
+    let conditional: Vec<_> = entries.iter().filter(|e| !e.attrs.is_empty()).collect();
+
+    if conditional.is_empty() {
+        let state = phf_generator::generate_hash(entries);
+        return simple_builder(entries, state);
+    }
+
+    let mut variants = Vec::new();
+    let num_conditional = conditional.len();
+
+    for mask in 0..(1 << num_conditional) {
+        let mut variant_entries = unconditional.clone();
+
+        for (i, &entry) in conditional.iter().enumerate() {
+            if (mask & (1 << i)) != 0 {
+                variant_entries.push(entry);
+            }
+        }
+
+        if variant_entries.is_empty() {
+            continue;
+        }
+
+        let entries_vec: Vec<Entry> = variant_entries.into_iter().cloned().collect();
+        let state = phf_generator::generate_hash(&entries_vec);
+        let structure_tokens = simple_builder(&entries_vec, state);
+
+        let conditions = build_cfg_conditions(mask, &conditional);
+        let condition = combine_conditions(conditions);
+
+        variants.push((condition, structure_tokens));
+    }
+
+    if variants.is_empty() {
+        empty_structure
+    } else {
+        build_nested_conditional(variants)
+    }
+}
+
+fn build_conditional_phf_map(entries: &[Entry]) -> proc_macro2::TokenStream {
+    build_conditional_phf(
+        entries,
+        build_map,
+        quote! {
+            phf::Map {
+                key: 0,
+                disps: &[],
+                entries: &[],
+            }
+        },
+    )
 }
 
 #[proc_macro]
 pub fn phf_set(input: TokenStream) -> TokenStream {
     let set = parse_macro_input!(input as Set);
-    let state = phf_generator::generate_hash(&set.0);
 
-    let map = build_map(&set.0, state);
-    quote!(phf::Set { map: #map }).into()
+    // Check if any entries have cfg attributes
+    let has_cfg_attrs = set.0.iter().any(|entry| !entry.attrs.is_empty());
+
+    if !has_cfg_attrs {
+        // No cfg attributes - use the simple approach
+        let state = phf_generator::generate_hash(&set.0);
+        let map = build_map(&set.0, state);
+        quote!(phf::Set { map: #map }).into()
+    } else {
+        // Has cfg attributes - need to generate conditional set code
+        build_conditional_phf_set(&set.0).into()
+    }
+}
+
+fn build_conditional_phf_set(entries: &[Entry]) -> proc_macro2::TokenStream {
+    // Similar to conditional map but wraps in Set
+    let map_tokens = build_conditional_phf_map(entries);
+    quote!(phf::Set { map: #map_tokens })
 }
 
 #[proc_macro]
 pub fn phf_ordered_map(input: TokenStream) -> TokenStream {
     let map = parse_macro_input!(input as Map);
-    let state = phf_generator::generate_hash(&map.0);
 
-    build_ordered_map(&map.0, state).into()
+    // Check if any entries have cfg attributes
+    let has_cfg_attrs = map.0.iter().any(|entry| !entry.attrs.is_empty());
+
+    if !has_cfg_attrs {
+        // No cfg attributes - use the simple approach
+        let state = phf_generator::generate_hash(&map.0);
+        build_ordered_map(&map.0, state).into()
+    } else {
+        // Has cfg attributes - need to generate conditional ordered map code
+        build_conditional_phf_ordered_map(&map.0).into()
+    }
+}
+
+fn build_conditional_phf_ordered_map(entries: &[Entry]) -> proc_macro2::TokenStream {
+    build_conditional_phf(
+        entries,
+        build_ordered_map,
+        quote! {
+            phf::OrderedMap {
+                key: 0,
+                disps: &[],
+                idxs: &[],
+                entries: &[],
+            }
+        },
+    )
 }
 
 #[proc_macro]
 pub fn phf_ordered_set(input: TokenStream) -> TokenStream {
     let set = parse_macro_input!(input as Set);
-    let state = phf_generator::generate_hash(&set.0);
 
-    let map = build_ordered_map(&set.0, state);
-    quote!(phf::OrderedSet { map: #map }).into()
+    let has_cfg_attrs = set.0.iter().any(|entry| !entry.attrs.is_empty());
+
+    if !has_cfg_attrs {
+        // No cfg attributes - use the simple approach
+        let state = phf_generator::generate_hash(&set.0);
+        let map = build_ordered_map(&set.0, state);
+        quote!(phf::OrderedSet { map: #map }).into()
+    } else {
+        // Has cfg attributes - need to generate conditional ordered set code
+        build_conditional_phf_ordered_set(&set.0).into()
+    }
+}
+
+fn build_conditional_phf_ordered_set(entries: &[Entry]) -> proc_macro2::TokenStream {
+    // Similar to conditional ordered map but wraps in OrderedSet
+    let map_tokens = build_conditional_phf_ordered_map(entries);
+    quote!(phf::OrderedSet { map: #map_tokens })
 }

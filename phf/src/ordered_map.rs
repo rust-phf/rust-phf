@@ -86,9 +86,9 @@ impl<K, V> OrderedMap<K, V> {
     }
 
     /// Returns a reference to the value that `key` maps to.
-    pub fn get<T: ?Sized>(&self, key: &T) -> Option<&V>
+    pub fn get<T>(&self, key: &T) -> Option<&V>
     where
-        T: Eq + PhfHash,
+        T: Eq + PhfHash + ?Sized,
         K: PhfBorrow<T>,
     {
         self.get_entry(key).map(|e| e.1)
@@ -98,18 +98,18 @@ impl<K, V> OrderedMap<K, V> {
     /// key.
     ///
     /// This can be useful for interning schemes.
-    pub fn get_key<T: ?Sized>(&self, key: &T) -> Option<&K>
+    pub fn get_key<T>(&self, key: &T) -> Option<&K>
     where
-        T: Eq + PhfHash,
+        T: Eq + PhfHash + ?Sized,
         K: PhfBorrow<T>,
     {
         self.get_entry(key).map(|e| e.0)
     }
 
     /// Determines if `key` is in the `OrderedMap`.
-    pub fn contains_key<T: ?Sized>(&self, key: &T) -> bool
+    pub fn contains_key<T>(&self, key: &T) -> bool
     where
-        T: Eq + PhfHash,
+        T: Eq + PhfHash + ?Sized,
         K: PhfBorrow<T>,
     {
         self.get(key).is_some()
@@ -117,9 +117,9 @@ impl<K, V> OrderedMap<K, V> {
 
     /// Returns the index of the key within the list used to initialize
     /// the ordered map.
-    pub fn get_index<T: ?Sized>(&self, key: &T) -> Option<usize>
+    pub fn get_index<T>(&self, key: &T) -> Option<usize>
     where
-        T: Eq + PhfHash,
+        T: Eq + PhfHash + ?Sized,
         K: PhfBorrow<T>,
     {
         self.get_internal(key).map(|(i, _)| i)
@@ -128,21 +128,21 @@ impl<K, V> OrderedMap<K, V> {
     /// Returns references to both the key and values at an index
     /// within the list used to initialize the ordered map. See `.get_index(key)`.
     pub fn index(&self, index: usize) -> Option<(&K, &V)> {
-        self.entries.get(index).map(|&(ref k, ref v)| (k, v))
+        self.entries.get(index).map(|(k, v)| (k, v))
     }
 
     /// Like `get`, but returns both the key and the value.
-    pub fn get_entry<T: ?Sized>(&self, key: &T) -> Option<(&K, &V)>
+    pub fn get_entry<T>(&self, key: &T) -> Option<(&K, &V)>
     where
-        T: Eq + PhfHash,
+        T: Eq + PhfHash + ?Sized,
         K: PhfBorrow<T>,
     {
         self.get_internal(key).map(|(_, e)| e)
     }
 
-    fn get_internal<T: ?Sized>(&self, key: &T) -> Option<(usize, (&K, &V))>
+    fn get_internal<T>(&self, key: &T) -> Option<(usize, (&K, &V))>
     where
-        T: Eq + PhfHash,
+        T: Eq + PhfHash + ?Sized,
         K: PhfBorrow<T>,
     {
         if self.disps.is_empty() {

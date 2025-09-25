@@ -5,13 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.12.0 (2025-06-19)
+
+<csr-id-08e74647f00f7d77cbb81e0cb73ed663798d000f/>
+
+### Chore
+
+ - <csr-id-08e74647f00f7d77cbb81e0cb73ed663798d000f/> Update version number in docs
+
+### Chore
+
+ - <csr-id-51d6baaa6ffce658fb9b56a96affaf0ddd0603e5/> Update changelog
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 8 commits contributed to the release over the course of 138 calendar days.
+ - 163 days passed between releases.
+ - 2 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Update changelog ([`51d6baa`](https://github.com/rust-phf/rust-phf/commit/51d6baaa6ffce658fb9b56a96affaf0ddd0603e5))
+    - Update version number in docs ([`08e7464`](https://github.com/rust-phf/rust-phf/commit/08e74647f00f7d77cbb81e0cb73ed663798d000f))
+    - Merge pull request #289 from thaliaarchi/master ([`a6df856`](https://github.com/rust-phf/rust-phf/commit/a6df856ade4cfbf2666fcabbd70c666ea8234abf))
+    - Add support for unicase::Ascii type ([`2806801`](https://github.com/rust-phf/rust-phf/commit/28068018dec5aab9b6ddc0da918431285db8cd34))
+    - Merge pull request #311 from GnomedDev/no-wasteful-allocations ([`03f7c51`](https://github.com/rust-phf/rust-phf/commit/03f7c51d2f9c5a52e4e8e1b48bd3ae7b9c6303a7))
+    - Merge pull request #309 from edef1c/uncased-macro ([`37a7794`](https://github.com/rust-phf/rust-phf/commit/37a779400b63b5d0b5d5ab63e2727bbfb9ce494d))
+    - Merge branch 'master' into no-wasteful-allocations ([`33b8aff`](https://github.com/rust-phf/rust-phf/commit/33b8affe77cea8bdeccb5c8d6c730c78231fc138))
+    - Merge branch 'master' into fastrand ([`576dd47`](https://github.com/rust-phf/rust-phf/commit/576dd47858a2db74eb4ef67a8385039ef17b867d))
+</details>
+
 ## 0.11.3 (2025-01-07)
 
 ### Commit Statistics
 
 <csr-read-only-do-not-edit/>
 
- - 3 commits contributed to the release over the course of 435 calendar days.
+ - 5 commits contributed to the release over the course of 435 calendar days.
  - 562 days passed between releases.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -23,7 +61,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - Adjusting changelogs prior to release of phf_shared v0.11.3, phf_generator v0.11.3, phf_macros v0.11.3, phf v0.11.3, phf_codegen v0.11.3 ([`a95dade`](https://github.com/rust-phf/rust-phf/commit/a95dade6f69866b7871f85dd3fd42984df2f3d28))
+    - Adjusting changelogs prior to release of phf_shared v0.11.3, phf_generator v0.11.3, phf_macros v0.11.3, phf v0.11.3, phf_codegen v0.11.3 ([`e111f4b`](https://github.com/rust-phf/rust-phf/commit/e111f4b53a965c188fdcbf03950321107d9b3987))
+    - [codegen] Store Cow<'a, str> in Map instead of String ([`7af99f3`](https://github.com/rust-phf/rust-phf/commit/7af99f3819d793bede32802c90fb3b59ed992dfc))
+    - Macro support for uncased ([`4359e17`](https://github.com/rust-phf/rust-phf/commit/4359e17371e4b93a45b8600cc56bc27aa95c5bb1))
     - Merge pull request #300 from JohnTitor/msrv-1.61 ([`323366d`](https://github.com/rust-phf/rust-phf/commit/323366d03966ddad2eaa3432df79c9da8339e319))
     - Bump MSRV to 1.61 ([`1795f7b`](https://github.com/rust-phf/rust-phf/commit/1795f7b66b16af0191f221dc957bc8a090c891ad))
 </details>

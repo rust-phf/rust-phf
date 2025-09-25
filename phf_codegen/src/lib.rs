@@ -15,8 +15,8 @@
 //!
 //! ```toml
 //! [build-dependencies]
-//! phf = { version = "0.11.1", default-features = false }
-//! phf_codegen = "0.11.1"
+//! phf = { version = "0.13.1", default-features = false }
+//! phf_codegen = "0.13.1"
 //! ```
 //!
 //! Then put code on build.rs:
@@ -78,22 +78,20 @@
 //! use std::io::{BufWriter, Write};
 //! use std::path::Path;
 //!
-//! fn main() {
-//!     let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
-//!     let mut file = BufWriter::new(File::create(&path).unwrap());
+//! let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
+//! let mut file = BufWriter::new(File::create(&path).unwrap());
 //!
-//!     writeln!(
-//!         &mut file,
-//!          "static KEYWORDS: phf::Map<&'static [u8], Keyword> = \n{};\n",
-//!          phf_codegen::Map::<&[u8]>::new()
-//!              .entry(b"loop", "Keyword::Loop")
-//!              .entry(b"continue", "Keyword::Continue")
-//!              .entry(b"break", "Keyword::Break")
-//!              .entry(b"fn", "Keyword::Fn")
-//!              .entry(b"extern", "Keyword::Extern")
-//!              .build()
-//!     ).unwrap();
-//! }
+//! writeln!(
+//!     &mut file,
+//!      "static KEYWORDS: phf::Map<&'static [u8], Keyword> = \n{};\n",
+//!      phf_codegen::Map::<&[u8]>::new()
+//!          .entry(b"loop", "Keyword::Loop")
+//!          .entry(b"continue", "Keyword::Continue")
+//!          .entry(b"break", "Keyword::Break")
+//!          .entry(b"fn", "Keyword::Fn")
+//!          .entry(b"extern", "Keyword::Extern")
+//!          .build()
+//! ).unwrap();
 //! ```
 //!
 //! lib.rs:
@@ -138,7 +136,7 @@
 //! // ...
 //! ```
 
-#![doc(html_root_url = "https://docs.rs/phf_codegen/0.11")]
+#![doc(html_root_url = "https://docs.rs/phf_codegen/0.13.1")]
 #![allow(clippy::new_without_default)]
 
 use phf_shared::{FmtConst, PhfHash};
@@ -291,6 +289,20 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
     ],
 }}"
         )
+    }
+}
+
+impl<'a, K, V> FromIterator<(K, V)> for Map<'a, K>
+where
+    K: Hash + PhfHash + Eq + FmtConst,
+    V: Into<Cow<'a, str>>,
+{
+    fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> Self {
+        let mut map = Map::new();
+        for (key, value) in iter {
+            map.entry(key, value);
+        }
+        map
     }
 }
 

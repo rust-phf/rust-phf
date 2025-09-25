@@ -1,22 +1,21 @@
 [package]
 name = "phf_generator"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.11.3"
+version = "0.13.1"
 license = "MIT"
 description = "PHF generation logic"
 repository = "https://github.com/rust-phf/rust-phf"
 edition = "2021"
-rust-version = "1.61"
+rust-version = "1.66"
 categories = ["data-structures"]
 readme = "README.md"
 
 [dependencies]
 fastrand = { version = "2.1.0", default-features = false }
-phf_shared = { version = "^0.11.2", default-features = false }
+phf_shared = { version = "^0.13.1", default-features = false }
 
 [dev-dependencies]
-criterion = "0.5.1"
-phf_shared = { version = "^0.11.2" }
+criterion = "0.7.0"
 
 [[bench]]
 name = "benches"

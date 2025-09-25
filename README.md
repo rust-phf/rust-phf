@@ -11,7 +11,7 @@ It currently uses the
 [CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) and can generate
 a 100,000 entry map in roughly .4 seconds.
 
-MSRV (minimum supported rust version) is Rust 1.61.
+MSRV (minimum supported rust version) is Rust 1.66.
 
 ## Usage
 
@@ -26,7 +26,7 @@ will not work, set `default-features = false` for the dependency:
 ```toml
 [dependencies]
 # to use `phf` in `no_std` environments
-phf = { version = "0.11", default-features = false }
+phf = { version = "0.13.1", default-features = false }
 ```
 
 ### phf_macros
@@ -51,22 +51,32 @@ static KEYWORDS: phf::Map<&'static str, Keyword> = phf_map! {
     "extern" => Keyword::Extern,
 };
 
+// You can also use OR (`|`) patterns to map multiple keys to the same value:
+static OPERATORS: phf::Map<&'static str, &'static str> = phf_map! {
+    "+" | "add" | "plus" => "addition",
+    "-" | "sub" | "minus" => "subtraction",
+    "*" | "mul" | "times" => "multiplication",
+};
+
 pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
     KEYWORDS.get(keyword).cloned()
+}
+
+pub fn parse_operator(operator: &str) -> Option<&'static str> {
+    OPERATORS.get(operator).copied()
 }
 ```
 
 ```toml
 [dependencies]
-phf = { version = "0.11", features = ["macros"] }
+phf = { version = "0.13.1", features = ["macros"] }
 ```
 
 #### Note
 
 Currently, the macro syntax has some limitations and may not
-work as you want. See [#183] or [#196] for example.
+work as you want. See [#196] for example.
 
-[#183]: https://github.com/rust-phf/rust-phf/issues/183
 [#196]: https://github.com/rust-phf/rust-phf/issues/196
 
 ### phf_codegen
@@ -75,8 +85,8 @@ To use `phf_codegen` on build.rs, you have to add dependencies under `[build-dep
 
 ```toml
 [build-dependencies]
-phf = { version = "0.11.1", default-features = false }
-phf_codegen = "0.11.1"
+phf = { version = "0.13.1", default-features = false }
+phf_codegen = "0.13.1"
 ```
 
 Then put code on build.rs:
@@ -104,6 +114,22 @@ fn main() {
     )
     .unwrap();
     write!(&mut file, ";\n").unwrap();
+
+    // Example with OR patterns (note: phf_codegen doesn't support OR patterns directly)
+    write!(
+        &mut file,
+        "static OPERATORS: phf::Map<&'static str, &'static str> = {}",
+        phf_codegen::Map::new()
+            .entry("+", "\"addition\"")
+            .entry("add", "\"addition\"")
+            .entry("plus", "\"addition\"")
+            .entry("-", "\"subtraction\"")
+            .entry("sub", "\"subtraction\"")
+            .entry("minus", "\"subtraction\"")
+            .build()
+    )
+    .unwrap();
+    write!(&mut file, ";\n").unwrap();
 }
 ```
 
@@ -123,5 +149,9 @@ include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
 pub fn parse_keyword(keyword: &str) -> Option<Keyword> {
     KEYWORDS.get(keyword).cloned()
+}
+
+pub fn parse_operator(operator: &str) -> Option<&'static str> {
+    OPERATORS.get(operator).copied()
 }
 ```

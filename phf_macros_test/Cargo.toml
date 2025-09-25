@@ -1,9 +1,9 @@
 [package]
-name = "phf_macros_tests"
+name = "phf_macros_test"
 version = "0.1.0"
 authors = ["Yuki Okushi"]
 edition = "2021"
-rust-version = "1.61"
+rust-version = "1.66"
 repository = "https://github.com/rust-phf/rust-phf"
 categories = ["data-structures"]
 
@@ -13,7 +13,12 @@ categories = ["data-structures"]
 
 [dev-dependencies]
 trybuild = "1.0"
-phf = { version = "0.11", features = ["macros"] }
-phf_macros = { version = "0.11", features = ["unicase", "uncased"] }
+phf = { path = "../phf", features = ["macros"] }
+phf_macros = { path = "../phf_macros", features = ["unicase", "uncased"] }
 unicase = "2.4.0"
 uncased = "0.9.7"
+
+[features]
+default = ["enabled_feature"]
+disabled_feature = []
+enabled_feature = []

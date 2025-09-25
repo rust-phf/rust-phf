@@ -16,3 +16,7 @@ phf = { path = "phf" }
 phf_generator = { path = "./phf_generator" }
 phf_macros = { path = "./phf_macros" }
 phf_shared = { path = "./phf_shared" }
+
+[profile.bench]
+codegen-units = 1
+lto = "fat"

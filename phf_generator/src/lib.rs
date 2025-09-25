@@ -6,7 +6,7 @@
 use std::iter;
 
 use fastrand::Rng;
-use phf_shared::{HashKey, Hashes, PhfHash};
+use phf_shared::{HashKey, HashSecrets, Hashes, PhfHash};
 
 const DEFAULT_LAMBDA: usize = 5;
 
@@ -14,6 +14,7 @@ const FIXED_SEED: u64 = 1234567890;
 
 pub struct HashState {
     pub key: HashKey,
+    pub secrets: HashSecrets,
     pub disps: Vec<(u32, u32)>,
     pub map: Vec<usize>,
 }
@@ -24,20 +25,31 @@ pub fn generate_hash<H: PhfHash>(entries: &[H]) -> HashState {
 
 pub fn generate_hash_with_hash_fn<T, F>(entries: &[T], hash_fn: F) -> HashState
 where
-    F: Fn(&T, &HashKey) -> Hashes,
+    F: Fn(&T, &HashKey, &HashSecrets) -> Hashes,
 {
     let mut generator = Generator::new(entries.len());
-    let mut rng = Rng::with_seed(FIXED_SEED);
+    let mut key_rng = Rng::with_seed(FIXED_SEED);
+    let mut secrets_rng = Rng::with_seed(FIXED_SEED.wrapping_add(1));
+    let mut secrets: HashSecrets = [0; 7];
 
-    iter::repeat_with(|| rng.u64(..))
-        .find(|key| {
-            let hashes = entries.iter().map(|entry| hash_fn(entry, key));
+    iter::repeat_with(|| key_rng.u64(..))
+        .enumerate()
+        .find(|(i, key)| {
+            if i % 1024 == 0 {
+                // occasionally re-generate the secrets to avoid the pathological seed-independent
+                // collisions present in most fast non-cryptographic hash functions
+                for slot in &mut secrets {
+                    *slot = secrets_rng.u64(..);
+                }
+            }
+
+            let hashes = entries.iter().map(|entry| hash_fn(entry, key, &secrets));
             generator.reset(hashes);
-
             generator.try_generate_hash()
         })
-        .map(|key| HashState {
+        .map(|(_, key)| HashState {
             key,
+            secrets,
             disps: generator.disps,
             map: generator.map.into_iter().map(|i| i.unwrap()).collect(),
         })

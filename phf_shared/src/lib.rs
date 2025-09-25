@@ -12,10 +12,6 @@ use core::fmt;
 use core::hash::{BuildHasher, Hash, Hasher};
 use core::num::Wrapping;
 
-use foldhash::folded_multiply;
-
-mod foldhash;
-
 #[non_exhaustive]
 pub struct Hashes {
     pub g: u32,
@@ -28,6 +24,14 @@ pub struct Hashes {
 /// Makes experimentation easier by only needing to be updated here.
 pub type HashKey = u64;
 
+/// A central typedef for hash secrets
+///
+/// Hash secrets are randomizable constants used to seed a hash function on longer string inputs.
+/// For many non-cryptographic hash functions, a single u64 seed is insufficient to avoid
+/// pathological seed-independent collisions, and so we enable randomizing more of the internal
+/// state with these secrets.
+pub type HashSecrets = [u64; 7];
+
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
     (Wrapping(d2) + Wrapping(f1) * Wrapping(d1) + Wrapping(f2)).0
@@ -35,18 +39,23 @@ pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 
 /// `key` is from `phf_generator::HashState`.
 #[inline]
-pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
-    use foldhash::fast::FixedState;
+pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey, secrets: &HashSecrets) -> Hashes {
+    use rapidhash::fast::SeedableState;
 
-    let mut hasher = FixedState::with_seed(*key).build_hasher();
+    let mut hasher = SeedableState::custom(*key, &secrets).build_hasher();
     x.phf_hash(&mut hasher);
 
-    let lower = hasher.finish();
-    let upper = folded_multiply(lower, foldhash::ARBITRARY0);
+    let hash = hasher.finish();
+
+    // perform one more mix step
+    let i = 0x243f6a8885a308d3u128.wrapping_mul(hash as u128);
+    let high = (i >> 64) as u64;
+    let low = i as u64;
+
     Hashes {
-        f1: (lower >> 32) as u32,
-        f2: lower as u32,
-        g: (upper ^ (upper >> 32)) as u32,
+        f1: (low ^ (high >> 32)) as u32,
+        f2: (high ^ (low >> 32)) as u32,
+        g: (high ^ hash ^ (hash >> 32)) as u32,
     }
 }
 

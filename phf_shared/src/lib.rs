@@ -45,16 +45,18 @@ pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey, secrets: &HashSecrets) ->
     let mut hasher = SeedableState::custom(*key, &secrets).build_hasher();
     x.phf_hash(&mut hasher);
 
+    // rapidhash::fast does not avalanche the hash, and so we must perform a final mix step after
     let hash = hasher.finish();
 
-    // perform one more mix step
-    let i = 0x243f6a8885a308d3u128.wrapping_mul(hash as u128);
+    // perform a final mix step to avalanche the bits, keeping both halves of the result separate
+    let i = 0x243f6a8885a308d3u128.wrapping_mul((secrets[1] ^ hash) as u128);
     let high = (i >> 64) as u64;
     let low = i as u64;
 
+    // fold the 128-bit multiply for f1 and f2, while creating a unique g value
     Hashes {
-        f1: (low ^ (high >> 32)) as u32,
-        f2: (high ^ (low >> 32)) as u32,
+        f1: (high ^ low) as u32,
+        f2: ((high ^ low) >> 32) as u32,
         g: (high ^ hash ^ (hash >> 32)) as u32,
     }
 }

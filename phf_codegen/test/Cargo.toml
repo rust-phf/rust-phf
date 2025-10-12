@@ -4,6 +4,7 @@ authors = ["Steven Fackler <sfackler@gmail.com>"]
 version = "0.0.0"
 build = "build.rs"
 edition = "2021"
+publish = false
 
 [dependencies]
 phf = { version = "^0.13.1", features = ["uncased", "unicase"] }

@@ -1,0 +1,14 @@
+[licenses]
+confidence-threshold = 0.90
+allow = [
+    "Apache-2.0",
+    "MIT",
+    "Unicode-3.0"
+]
+private = { ignore = true }
+
+[bans]
+multiple-versions = "deny"
+
+[bans.build]
+executables = "deny"

@@ -6,6 +6,7 @@ edition = "2021"
 rust-version = "1.66"
 repository = "https://github.com/rust-phf/rust-phf"
 categories = ["data-structures"]
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

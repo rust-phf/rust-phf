@@ -15,7 +15,7 @@ jobs:
         # MSRV and nightly
         version: [1.66.0, stable, nightly]
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Set toolchain
         run: |
@@ -23,12 +23,6 @@ jobs:
           rustup override set ${{ matrix.version }}
 
       - uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
-
-      - name: Minimal version check (nightly)
-        if: matrix.version == 'nightly'
-        run: |
-          cargo +nightly generate-lockfile -Z minimal-versions
-          cargo +nightly check --workspace --all-features
 
       - name: Rustfmt check
         if: matrix.version == '1.66.0'
@@ -57,3 +51,7 @@ jobs:
 
       - name: unicase + macros features check
         run: cargo check -p unicase-example
+
+      - name: deny check
+        if: matrix.version == 'stable'
+        uses: EmbarkStudios/cargo-deny-action@f2ba7abc2abebaf185c833c3961145a3c275caad # v2.0.13

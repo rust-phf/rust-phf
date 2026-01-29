@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         # MSRV and nightly
-        version: [1.66.0, stable, nightly]
+        version: [1.68.0, stable, nightly]
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
@@ -25,17 +25,17 @@ jobs:
       - uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
 
       - name: Rustfmt check
-        if: matrix.version == '1.66.0'
+        if: matrix.version == '1.68.0'
         run: |
           rustup component add rustfmt
           cargo fmt --all -- --check
 
       - name: Run `cargo test` on workspace
-        if: matrix.version != '1.66.0'
+        if: matrix.version != '1.68.0'
         run: cargo test --workspace --exclude=phf_codegen_test
 
       - name: phf_codegen test
-        if: matrix.version != '1.66.0'
+        if: matrix.version != '1.68.0'
         run: cargo test -p phf_codegen_test
 
       - name: trybuild test

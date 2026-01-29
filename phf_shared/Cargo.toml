@@ -6,7 +6,7 @@ license = "MIT"
 description = "Support code shared by PHF libraries"
 repository = "https://github.com/rust-phf/rust-phf"
 edition = "2021"
-rust-version = "1.66"
+rust-version = "1.68"
 categories = ["data-structures"]
 readme = "README.md"
 

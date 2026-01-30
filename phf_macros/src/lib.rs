@@ -423,6 +423,7 @@ fn check_duplicates(entries: &[Entry]) -> parse::Result<()> {
 
 fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
     let key = state.key;
+    let secrets = state.secrets.iter().map(|s| quote!(#s));
     let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
     let entries = state.map.iter().map(|&idx| {
         let entry = &entries[idx];
@@ -435,6 +436,7 @@ fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
     quote! {
         phf::Map {
             key: #key,
+            secrets: [#(#secrets),*],
             disps: &[#(#disps),*],
             entries: &[#(#entries),*],
         }
@@ -443,6 +445,7 @@ fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
 
 fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
     let key = state.key;
+    let secrets = state.secrets.iter().map(|s| quote!(#s));
     let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
     let idxs = state.map.iter().map(|idx| quote!(#idx));
     let entries = entries.iter().map(|entry| {
@@ -455,6 +458,7 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
     quote! {
         phf::OrderedMap {
             key: #key,
+            secrets: [#(#secrets),*],
             disps: &[#(#disps),*],
             idxs: &[#(#idxs),*],
             entries: &[#(#entries),*],

@@ -15,11 +15,8 @@ fastrand = { version = "2.1.0", default-features = false }
 phf_shared = { version = "^0.13.1", default-features = false }
 
 [dev-dependencies]
-criterion = "0.6.0"
+criterion = "0.7.0"
 
 [[bench]]
 name = "benches"
 harness = false
-
-[[bin]]
-name = "gen_hash_test"

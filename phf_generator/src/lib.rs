@@ -3,6 +3,9 @@
 //! [phf]: https://docs.rs/phf
 
 #![doc(html_root_url = "https://docs.rs/phf_generator/0.13.1")]
+
+pub mod ptrhash;
+
 use std::iter;
 
 use fastrand::Rng;

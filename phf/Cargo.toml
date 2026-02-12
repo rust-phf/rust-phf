@@ -7,7 +7,7 @@ description = "Runtime support for perfect hash function data structures"
 repository = "https://github.com/rust-phf/rust-phf"
 edition = "2021"
 readme = "../README.md"
-rust-version = "1.68"
+rust-version = "1.71"
 categories = ["data-structures", "no-std"]
 
 [lib]

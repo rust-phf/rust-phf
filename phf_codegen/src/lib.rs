@@ -145,7 +145,11 @@ use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 
+#[cfg(not(feature = "ptrhash"))]
 use phf_generator::HashState;
+
+#[cfg(feature = "ptrhash")]
+use phf_generator::ptrhash::HashState;
 
 struct Delegate<T>(T);
 
@@ -211,7 +215,11 @@ impl<'a, K: Hash + PhfHash + Eq + FmtConst> Map<'a, K> {
             }
         }
 
+        #[cfg(not(feature = "ptrhash"))]
         let state = phf_generator::generate_hash(&self.keys);
+
+        #[cfg(feature = "ptrhash")]
+        let state = phf_generator::ptrhash::generate_hash(&self.keys);
 
         DisplayMap {
             state,
@@ -231,6 +239,7 @@ pub struct DisplayMap<'a, K> {
 }
 
 impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
+    #[cfg(not(feature = "ptrhash"))]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // funky formatting here for nice output
         write!(
@@ -275,6 +284,60 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
     ],
 }}"
         )
+    }
+
+    #[cfg(feature = "ptrhash")]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // funky formatting here for nice output
+        write!(
+            f,
+            "{}::Map {{
+    key: {:?},
+    pilots: &[",
+            self.path, self.state.seed
+        )?;
+
+        // write pilots
+        for &pilot in &self.state.pilots {
+            write!(f, "{},", pilot)?;
+        }
+
+        write!(
+            f,
+            "
+    ],
+    remap: &[",
+        )?;
+
+        // write remap
+        for &index in &self.state.remap {
+            write!(f, "{},", index)?;
+        }
+        
+        write!(
+            f,
+            "
+    ],
+    entries: &[",
+        )?;
+
+        // write map entries
+        for &idx in &self.state.map {
+            write!(
+                f,
+                "
+        ({}, {}),",
+                Delegate(&self.keys[idx]),
+                &self.values[idx]
+            )?;
+        }
+
+        write!(
+            f,
+            "
+    ],
+}}"
+        )        
     }
 }
 
@@ -386,7 +449,11 @@ impl<'a, K: Hash + PhfHash + Eq + FmtConst> OrderedMap<'a, K> {
             }
         }
 
+        #[cfg(not(feature = "ptrhash"))]
         let state = phf_generator::generate_hash(&self.keys);
+
+        #[cfg(feature = "ptrhash")]
+        let state = phf_generator::ptrhash::generate_hash(&self.keys);
 
         DisplayOrderedMap {
             state,
@@ -406,6 +473,7 @@ pub struct DisplayOrderedMap<'a, K> {
 }
 
 impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
+    #[cfg(not(feature = "ptrhash"))]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -458,6 +526,64 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
 }}"
         )
     }
+
+    #[cfg(feature = "ptrhash")]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}::OrderedMap {{
+    key: {:?},
+    pilots: &[",
+            self.path, self.state.seed
+        )?;
+        for &pilot in &self.state.pilots {
+            write!(f, "{},", pilot)?;
+        }
+        write!(
+            f,
+            "
+    ],
+    remap: &[",
+        )?;
+        for &index in &self.state.remap {
+            write!(f, "{},", index)?;
+        }
+        write!(
+            f,
+            "
+    ],
+    idxs: &[",
+        )?;
+        for &idx in &self.state.map {
+            write!(
+                f,
+                "
+        {},",
+                idx
+            )?;
+        }
+        write!(
+            f,
+            "
+    ],
+    entries: &[",
+        )?;
+        for (key, value) in self.keys.iter().zip(self.values.iter()) {
+            write!(
+                f,
+                "
+        ({}, {}),",
+                Delegate(key),
+                value
+            )?;
+        }
+        write!(
+            f,
+            "
+    ],
+}}"
+        )        
+    }    
 }
 
 /// A builder for the `phf::OrderedSet` type.

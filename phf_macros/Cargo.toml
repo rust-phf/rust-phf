@@ -16,6 +16,7 @@ proc-macro = true
 [features]
 unicase = ["unicase_", "phf_shared/unicase"]
 uncased = ["uncased_", "phf_shared/uncased"]
+ptrhash = []
 
 [dependencies]
 syn = { version = "2", features = ["full"] }

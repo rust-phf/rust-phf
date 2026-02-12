@@ -21,6 +21,7 @@ std = ["phf_shared/std", "serde?/std"]
 uncased = ["phf_macros?/uncased", "phf_shared/uncased"]
 unicase = ["phf_macros?/unicase", "phf_shared/unicase"]
 macros = ["phf_macros"]
+ptrhash = ["phf_macros?/ptrhash"]
 
 [dependencies]
 phf_macros = { version = "^0.13.1", optional = true, path = "../phf_macros" }

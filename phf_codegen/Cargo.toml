@@ -10,6 +10,9 @@ readme = "../README.md"
 rust-version = "1.68"
 categories = ["data-structures"]
 
+[features]
+ptrhash = []
+
 [dependencies]
 phf_generator = "0.13.1"
 phf_shared = "0.13.1"

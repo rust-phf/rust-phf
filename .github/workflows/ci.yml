@@ -22,7 +22,7 @@ jobs:
           rustup set profile minimal
           rustup override set ${{ matrix.version }}
 
-      - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+      - uses: Swatinem/rust-cache@c676846f29d98ff6b0106d3608c7ffd4048af17b # v2.9.0
 
       - name: Rustfmt check
         if: matrix.version == '1.71.0'

@@ -13,6 +13,9 @@ use core::hash::{Hash, Hasher};
 use core::num::Wrapping;
 use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
 
+#[cfg(feature = "ptrhash")]
+pub mod ptrhash;
+
 #[non_exhaustive]
 pub struct Hashes {
     pub g: u32,

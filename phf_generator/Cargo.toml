@@ -10,6 +10,9 @@ rust-version = "1.71"
 categories = ["data-structures"]
 readme = "README.md"
 
+[features]
+ptrhash = ["phf_shared/ptrhash"]
+
 [dependencies]
 fastrand = { version = "2.1.0", default-features = false }
 phf_shared = { version = "^0.13.1", default-features = false }

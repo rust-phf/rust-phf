@@ -12,6 +12,9 @@ const DEFAULT_LAMBDA: usize = 5;
 
 const FIXED_SEED: u64 = 1234567890;
 
+#[cfg(feature = "ptrhash")]
+pub mod ptrhash;
+
 pub struct HashState {
     pub key: HashKey,
     pub disps: Vec<(u32, u32)>,

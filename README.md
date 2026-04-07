@@ -8,8 +8,8 @@ Rust-PHF is a library to generate efficient lookup tables at compile time using
 [perfect hash functions](http://en.wikipedia.org/wiki/Perfect_hash_function).
 
 It currently uses the
-[CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) and can generate
-a 100,000 entry map in roughly .4 seconds.
+[CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) by default and
+also ships an experimental `ptrhash` feature for an alternative MPHF layout.
 
 MSRV (minimum supported rust version) is Rust 1.71.
 
@@ -72,6 +72,14 @@ pub fn parse_operator(operator: &str) -> Option<&'static str> {
 phf = { version = "0.13.1", features = ["macros"] }
 ```
 
+To try the experimental alternative, enable `ptrhash` on both the generator and
+runtime crates you use:
+
+```toml
+[dependencies]
+phf = { version = "0.13.1", features = ["macros", "ptrhash"] }
+```
+
 #### Note
 
 Currently, the macro syntax has some limitations and may not
@@ -88,6 +96,10 @@ To use `phf_codegen` on build.rs, you have to add dependencies under `[build-dep
 phf = { version = "0.13.1", default-features = false }
 phf_codegen = "0.13.1"
 ```
+
+When using the experimental `ptrhash` layout, enable the `ptrhash` feature on
+both `phf_codegen` and the runtime `phf` dependency so the generated constants
+match the runtime struct layout.
 
 Then put code on build.rs:
 

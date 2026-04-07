@@ -465,18 +465,7 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
 #[proc_macro]
 pub fn phf_map(input: TokenStream) -> TokenStream {
     let map = parse_macro_input!(input as Map);
-
-    // Check if any entries have cfg attributes
-    let has_cfg_attrs = map.0.iter().any(|entry| !entry.attrs.is_empty());
-
-    if !has_cfg_attrs {
-        // No cfg attributes - use the simple approach
-        let state = phf_generator::generate_hash(&map.0);
-        build_map(&map.0, state).into()
-    } else {
-        // Has cfg attributes - need to generate conditional map code
-        build_conditional_phf_map(&map.0).into()
-    }
+    build_phf_map(&map.0).into()
 }
 
 /// Generate conditional cfg conditions for a given mask and conditional entries
@@ -584,7 +573,7 @@ where
     }
 }
 
-fn build_conditional_phf_map(entries: &[Entry]) -> proc_macro2::TokenStream {
+fn build_phf_map(entries: &[Entry]) -> proc_macro2::TokenStream {
     build_conditional_phf(
         entries,
         build_map,
@@ -601,45 +590,17 @@ fn build_conditional_phf_map(entries: &[Entry]) -> proc_macro2::TokenStream {
 #[proc_macro]
 pub fn phf_set(input: TokenStream) -> TokenStream {
     let set = parse_macro_input!(input as Set);
-
-    // Check if any entries have cfg attributes
-    let has_cfg_attrs = set.0.iter().any(|entry| !entry.attrs.is_empty());
-
-    if !has_cfg_attrs {
-        // No cfg attributes - use the simple approach
-        let state = phf_generator::generate_hash(&set.0);
-        let map = build_map(&set.0, state);
-        quote!(phf::Set { map: #map }).into()
-    } else {
-        // Has cfg attributes - need to generate conditional set code
-        build_conditional_phf_set(&set.0).into()
-    }
-}
-
-fn build_conditional_phf_set(entries: &[Entry]) -> proc_macro2::TokenStream {
-    // Similar to conditional map but wraps in Set
-    let map_tokens = build_conditional_phf_map(entries);
-    quote!(phf::Set { map: #map_tokens })
+    let map_tokens = build_phf_map(&set.0);
+    quote!(phf::Set { map: #map_tokens }).into()
 }
 
 #[proc_macro]
 pub fn phf_ordered_map(input: TokenStream) -> TokenStream {
     let map = parse_macro_input!(input as Map);
-
-    // Check if any entries have cfg attributes
-    let has_cfg_attrs = map.0.iter().any(|entry| !entry.attrs.is_empty());
-
-    if !has_cfg_attrs {
-        // No cfg attributes - use the simple approach
-        let state = phf_generator::generate_hash(&map.0);
-        build_ordered_map(&map.0, state).into()
-    } else {
-        // Has cfg attributes - need to generate conditional ordered map code
-        build_conditional_phf_ordered_map(&map.0).into()
-    }
+    build_phf_ordered_map(&map.0).into()
 }
 
-fn build_conditional_phf_ordered_map(entries: &[Entry]) -> proc_macro2::TokenStream {
+fn build_phf_ordered_map(entries: &[Entry]) -> proc_macro2::TokenStream {
     build_conditional_phf(
         entries,
         build_ordered_map,
@@ -657,22 +618,6 @@ fn build_conditional_phf_ordered_map(entries: &[Entry]) -> proc_macro2::TokenStr
 #[proc_macro]
 pub fn phf_ordered_set(input: TokenStream) -> TokenStream {
     let set = parse_macro_input!(input as Set);
-
-    let has_cfg_attrs = set.0.iter().any(|entry| !entry.attrs.is_empty());
-
-    if !has_cfg_attrs {
-        // No cfg attributes - use the simple approach
-        let state = phf_generator::generate_hash(&set.0);
-        let map = build_ordered_map(&set.0, state);
-        quote!(phf::OrderedSet { map: #map }).into()
-    } else {
-        // Has cfg attributes - need to generate conditional ordered set code
-        build_conditional_phf_ordered_set(&set.0).into()
-    }
-}
-
-fn build_conditional_phf_ordered_set(entries: &[Entry]) -> proc_macro2::TokenStream {
-    // Similar to conditional ordered map but wraps in OrderedSet
-    let map_tokens = build_conditional_phf_ordered_map(entries);
-    quote!(phf::OrderedSet { map: #map_tokens })
+    let map_tokens = build_phf_ordered_map(&set.0);
+    quote!(phf::OrderedSet { map: #map_tokens }).into()
 }

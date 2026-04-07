@@ -351,30 +351,16 @@ impl Parse for Map {
 
         // Expand OR patterns into multiple entries
         for entry in parsed {
-            for (i, (parsed_key, expr)) in entry
-                .key
-                .parsed
-                .iter()
-                .zip(entry.key.expr.iter())
-                .enumerate()
-            {
+            for (parsed_key, expr) in entry.key.parsed.iter().zip(entry.key.expr.iter()) {
                 let expanded_key = Key {
                     parsed: vec![parsed_key.clone()],
                     expr: vec![expr.clone()],
-                    attrs: if i == 0 {
-                        entry.key.attrs.clone()
-                    } else {
-                        Vec::new()
-                    },
+                    attrs: entry.key.attrs.clone(),
                 };
                 let expanded_entry = Entry {
                     key: expanded_key,
                     value: entry.value.clone(),
-                    attrs: if i == 0 {
-                        entry.attrs.clone()
-                    } else {
-                        Vec::new()
-                    },
+                    attrs: entry.attrs.clone(),
                 };
                 expanded_entries.push(expanded_entry);
             }
@@ -396,24 +382,16 @@ impl Parse for Set {
 
         // Expand OR patterns into multiple entries
         for key in parsed {
-            for (i, (parsed_key, expr)) in key.parsed.iter().zip(key.expr.iter()).enumerate() {
+            for (parsed_key, expr) in key.parsed.iter().zip(key.expr.iter()) {
                 let expanded_key = Key {
                     parsed: vec![parsed_key.clone()],
                     expr: vec![expr.clone()],
-                    attrs: if i == 0 {
-                        key.attrs.clone()
-                    } else {
-                        Vec::new()
-                    },
+                    attrs: key.attrs.clone(),
                 };
                 let expanded_entry = Entry {
                     key: expanded_key,
                     value: unit_value.clone(),
-                    attrs: if i == 0 {
-                        key.attrs.clone()
-                    } else {
-                        Vec::new()
-                    },
+                    attrs: key.attrs.clone(),
                 };
                 expanded_entries.push(expanded_entry);
             }

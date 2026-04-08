@@ -39,11 +39,20 @@ impl<H: Hasher> Hasher for PortableSipHasher<H> {
     fn write_u128(&mut self, i: u128) {
         self.inner.write_u128(i.to_le());
     }
+
     fn write_usize(&mut self, i: usize) {
-        self.inner.write_usize(i.to_le());
+        self.inner.write_u64((i as u64).to_le());
+    }
+    // The default `write_isize` implementation casts to `usize` first, so we end up with
+    // `i as usize as u64`, which is different on 32-bit and 64-bit architectures:
+    //
+    // 32-bit: `-1` -> `2^32 - 1` -> `2^32 - 1`
+    // 64-bit: `-1` -> `2^64 - 1` -> `2^64 - 1`
+    fn write_isize(&mut self, i: isize) {
+        self.inner.write_u64((i as u64).to_le());
     }
 
-    // Signed integers correctly forward to unsigned implementations.
+    // Fixed-size signed integers correctly forward to unsigned implementations.
 }
 
 impl<H: Hasher128> Hasher128 for PortableSipHasher<H> {

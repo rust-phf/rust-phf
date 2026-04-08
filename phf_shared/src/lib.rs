@@ -13,6 +13,9 @@ use core::hash::{Hash, Hasher};
 use core::num::Wrapping;
 use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
 
+mod hasher;
+use hasher::PortableSipHasher;
+
 #[cfg(feature = "ptrhash")]
 pub mod ptrhash;
 
@@ -36,7 +39,7 @@ pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 /// `key` is from `phf_generator::HashState`.
 #[inline]
 pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
-    let mut hasher = SipHasher13::new_with_keys(0, *key);
+    let mut hasher = PortableSipHasher::new(SipHasher13::new_with_keys(0, *key));
     x.phf_hash(&mut hasher);
 
     let Hash128 {
@@ -363,7 +366,7 @@ macro_rules! integer_impl (
         impl PhfHash for $t {
             #[inline]
             fn phf_hash<H: Hasher>(&self, state: &mut H) {
-                self.to_le().hash(state);
+                self.hash(state);
             }
 
             // `phf_hash_slice` cannot use `write` due to possible differences in endianness.

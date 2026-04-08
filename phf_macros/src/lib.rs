@@ -576,17 +576,14 @@ fn combine_conditions(conditions: Vec<proc_macro2::TokenStream>) -> proc_macro2:
 /// Generate nested if-else chain from variants
 fn build_nested_conditional(
     variants: Vec<(proc_macro2::TokenStream, proc_macro2::TokenStream)>,
+    fallback: proc_macro2::TokenStream,
 ) -> proc_macro2::TokenStream {
     if variants.is_empty() {
-        return quote!(compile_error!("No valid variants found"));
+        return fallback;
     }
 
-    if variants.len() == 1 {
-        return variants[0].1.clone();
-    }
-
-    let mut result = variants.last().unwrap().1.clone();
-    for (condition, tokens) in variants.iter().rev().skip(1) {
+    let mut result = fallback;
+    for (condition, tokens) in variants.iter().rev() {
         result = quote! {
             if #condition {
                 #tokens
@@ -617,6 +614,7 @@ where
 
     let mut variants = Vec::new();
     let num_conditional = conditional.len();
+    let mut has_empty_variant = false;
 
     for mask in 0..(1 << num_conditional) {
         let mut variant_entries = unconditional.clone();
@@ -628,6 +626,7 @@ where
         }
 
         if variant_entries.is_empty() {
+            has_empty_variant = true;
             continue;
         }
 
@@ -641,11 +640,12 @@ where
         variants.push((condition, structure_tokens));
     }
 
-    if variants.is_empty() {
+    let fallback = if has_empty_variant {
         empty_structure
     } else {
-        build_nested_conditional(variants)
-    }
+        variants.pop().unwrap().1
+    };
+    build_nested_conditional(variants, fallback)
 }
 
 fn build_conditional_phf_map(entries: &[Entry]) -> proc_macro2::TokenStream {

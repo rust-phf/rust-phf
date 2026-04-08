@@ -3,6 +3,9 @@
 //!
 //! [phf]: https://docs.rs/phf
 
+#[cfg(feature = "ptrhash")]
+use phf_generator::ptrhash::HashState;
+#[cfg(not(feature = "ptrhash"))]
 use phf_generator::HashState;
 use phf_shared::PhfHash;
 use proc_macro::TokenStream;
@@ -232,6 +235,18 @@ impl ParsedKey {
     }
 }
 
+fn generate_hash_state<H: PhfHash>(entries: &[H]) -> HashState {
+    #[cfg(not(feature = "ptrhash"))]
+    {
+        phf_generator::generate_hash(entries)
+    }
+
+    #[cfg(feature = "ptrhash")]
+    {
+        phf_generator::ptrhash::generate_hash(entries)
+    }
+}
+
 #[derive(Clone)]
 struct Key {
     parsed: Vec<ParsedKey>,
@@ -422,46 +437,95 @@ fn check_duplicates(entries: &[Entry]) -> parse::Result<()> {
 }
 
 fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
-    let key = state.key;
-    let secrets = state.secrets.iter().map(|s| quote!(#s));
-    let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
-    let entries = state.map.iter().map(|&idx| {
-        let entry = &entries[idx];
-        let key = &entry.key.expr[0]; // Use the first expression
-        let value = &entry.value;
-        // Don't include attributes since we've filtered at macro expansion time
-        quote!((#key, #value))
-    });
+    #[cfg(not(feature = "ptrhash"))]
+    {
+        let key = state.key;
+        let secrets = state.secrets.iter().map(|s| quote!(#s));
+        let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
+        let entries = state.map.iter().map(|&idx| {
+            let entry = &entries[idx];
+            let key = &entry.key.expr[0];
+            let value = &entry.value;
+            quote!((#key, #value))
+        });
 
-    quote! {
-        phf::Map {
-            key: #key,
-            secrets: [#(#secrets),*],
-            disps: &[#(#disps),*],
-            entries: &[#(#entries),*],
+        quote! {
+            phf::Map {
+                key: #key,
+                secrets: [#(#secrets),*],
+                disps: &[#(#disps),*],
+                entries: &[#(#entries),*],
+            }
+        }
+    }
+
+    #[cfg(feature = "ptrhash")]
+    {
+        let key = state.seed;
+        let pilots = state.pilots.iter().map(|pilot| quote!(#pilot));
+        let remap = state.remap.iter().map(|index| quote!(#index));
+        let entries = state.map.iter().map(|&idx| {
+            let entry = &entries[idx];
+            let key = &entry.key.expr[0];
+            let value = &entry.value;
+            quote!((#key, #value))
+        });
+
+        quote! {
+            phf::Map {
+                key: #key,
+                pilots: &[#(#pilots),*],
+                remap: &[#(#remap),*],
+                entries: &[#(#entries),*],
+            }
         }
     }
 }
 
 fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
-    let key = state.key;
-    let secrets = state.secrets.iter().map(|s| quote!(#s));
-    let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
-    let idxs = state.map.iter().map(|idx| quote!(#idx));
-    let entries = entries.iter().map(|entry| {
-        let key = &entry.key.expr[0]; // Use the first expression
-        let value = &entry.value;
-        // Don't include attributes since we've filtered at macro expansion time
-        quote!((#key, #value))
-    });
+    #[cfg(not(feature = "ptrhash"))]
+    {
+        let key = state.key;
+        let secrets = state.secrets.iter().map(|s| quote!(#s));
+        let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
+        let idxs = state.map.iter().map(|idx| quote!(#idx));
+        let entries = entries.iter().map(|entry| {
+            let key = &entry.key.expr[0];
+            let value = &entry.value;
+            quote!((#key, #value))
+        });
 
-    quote! {
-        phf::OrderedMap {
-            key: #key,
-            secrets: [#(#secrets),*],
-            disps: &[#(#disps),*],
-            idxs: &[#(#idxs),*],
-            entries: &[#(#entries),*],
+        quote! {
+            phf::OrderedMap {
+                key: #key,
+                secrets: [#(#secrets),*],
+                disps: &[#(#disps),*],
+                idxs: &[#(#idxs),*],
+                entries: &[#(#entries),*],
+            }
+        }
+    }
+
+    #[cfg(feature = "ptrhash")]
+    {
+        let key = state.seed;
+        let pilots = state.pilots.iter().map(|pilot| quote!(#pilot));
+        let remap = state.remap.iter().map(|index| quote!(#index));
+        let idxs = state.map.iter().map(|idx| quote!(#idx));
+        let entries = entries.iter().map(|entry| {
+            let key = &entry.key.expr[0];
+            let value = &entry.value;
+            quote!((#key, #value))
+        });
+
+        quote! {
+            phf::OrderedMap {
+                key: #key,
+                pilots: &[#(#pilots),*],
+                remap: &[#(#remap),*],
+                idxs: &[#(#idxs),*],
+                entries: &[#(#entries),*],
+            }
         }
     }
 }
@@ -475,7 +539,7 @@ pub fn phf_map(input: TokenStream) -> TokenStream {
 
     if !has_cfg_attrs {
         // No cfg attributes - use the simple approach
-        let state = phf_generator::generate_hash(&map.0);
+        let state = generate_hash_state(&map.0);
         build_map(&map.0, state).into()
     } else {
         // Has cfg attributes - need to generate conditional map code
@@ -516,17 +580,14 @@ fn combine_conditions(conditions: Vec<proc_macro2::TokenStream>) -> proc_macro2:
 /// Generate nested if-else chain from variants
 fn build_nested_conditional(
     variants: Vec<(proc_macro2::TokenStream, proc_macro2::TokenStream)>,
+    fallback: proc_macro2::TokenStream,
 ) -> proc_macro2::TokenStream {
     if variants.is_empty() {
-        return quote!(compile_error!("No valid variants found"));
+        return fallback;
     }
 
-    if variants.len() == 1 {
-        return variants[0].1.clone();
-    }
-
-    let mut result = variants.last().unwrap().1.clone();
-    for (condition, tokens) in variants.iter().rev().skip(1) {
+    let mut result = fallback;
+    for (condition, tokens) in variants.iter().rev() {
         result = quote! {
             if #condition {
                 #tokens
@@ -551,12 +612,13 @@ where
     let conditional: Vec<_> = entries.iter().filter(|e| !e.attrs.is_empty()).collect();
 
     if conditional.is_empty() {
-        let state = phf_generator::generate_hash(entries);
+        let state = generate_hash_state(entries);
         return simple_builder(entries, state);
     }
 
     let mut variants = Vec::new();
     let num_conditional = conditional.len();
+    let mut has_empty_variant = false;
 
     for mask in 0..(1 << num_conditional) {
         let mut variant_entries = unconditional.clone();
@@ -568,11 +630,12 @@ where
         }
 
         if variant_entries.is_empty() {
+            has_empty_variant = true;
             continue;
         }
 
         let entries_vec: Vec<Entry> = variant_entries.into_iter().cloned().collect();
-        let state = phf_generator::generate_hash(&entries_vec);
+        let state = generate_hash_state(&entries_vec);
         let structure_tokens = simple_builder(&entries_vec, state);
 
         let conditions = build_cfg_conditions(mask, &conditional);
@@ -581,25 +644,42 @@ where
         variants.push((condition, structure_tokens));
     }
 
-    if variants.is_empty() {
+    let fallback = if has_empty_variant {
         empty_structure
     } else {
-        build_nested_conditional(variants)
-    }
+        variants.pop().unwrap().1
+    };
+    build_nested_conditional(variants, fallback)
 }
 
 fn build_conditional_phf_map(entries: &[Entry]) -> proc_macro2::TokenStream {
-    build_conditional_phf(
-        entries,
-        build_map,
+    build_conditional_phf(entries, build_map, empty_map())
+}
+
+fn empty_map() -> proc_macro2::TokenStream {
+    #[cfg(not(feature = "ptrhash"))]
+    {
         quote! {
             phf::Map {
                 key: 0,
+                secrets: [0; 7],
                 disps: &[],
                 entries: &[],
             }
-        },
-    )
+        }
+    }
+
+    #[cfg(feature = "ptrhash")]
+    {
+        quote! {
+            phf::Map {
+                key: 0,
+                pilots: &[],
+                remap: &[],
+                entries: &[],
+            }
+        }
+    }
 }
 
 #[proc_macro]
@@ -611,7 +691,7 @@ pub fn phf_set(input: TokenStream) -> TokenStream {
 
     if !has_cfg_attrs {
         // No cfg attributes - use the simple approach
-        let state = phf_generator::generate_hash(&set.0);
+        let state = generate_hash_state(&set.0);
         let map = build_map(&set.0, state);
         quote!(phf::Set { map: #map }).into()
     } else {
@@ -635,7 +715,7 @@ pub fn phf_ordered_map(input: TokenStream) -> TokenStream {
 
     if !has_cfg_attrs {
         // No cfg attributes - use the simple approach
-        let state = phf_generator::generate_hash(&map.0);
+        let state = generate_hash_state(&map.0);
         build_ordered_map(&map.0, state).into()
     } else {
         // Has cfg attributes - need to generate conditional ordered map code
@@ -644,18 +724,35 @@ pub fn phf_ordered_map(input: TokenStream) -> TokenStream {
 }
 
 fn build_conditional_phf_ordered_map(entries: &[Entry]) -> proc_macro2::TokenStream {
-    build_conditional_phf(
-        entries,
-        build_ordered_map,
+    build_conditional_phf(entries, build_ordered_map, empty_ordered_map())
+}
+
+fn empty_ordered_map() -> proc_macro2::TokenStream {
+    #[cfg(not(feature = "ptrhash"))]
+    {
         quote! {
             phf::OrderedMap {
                 key: 0,
+                secrets: [0; 7],
                 disps: &[],
                 idxs: &[],
                 entries: &[],
             }
-        },
-    )
+        }
+    }
+
+    #[cfg(feature = "ptrhash")]
+    {
+        quote! {
+            phf::OrderedMap {
+                key: 0,
+                pilots: &[],
+                remap: &[],
+                idxs: &[],
+                entries: &[],
+            }
+        }
+    }
 }
 
 #[proc_macro]
@@ -666,7 +763,7 @@ pub fn phf_ordered_set(input: TokenStream) -> TokenStream {
 
     if !has_cfg_attrs {
         // No cfg attributes - use the simple approach
-        let state = phf_generator::generate_hash(&set.0);
+        let state = generate_hash_state(&set.0);
         let map = build_ordered_map(&set.0, state);
         quote!(phf::OrderedSet { map: #map }).into()
     } else {

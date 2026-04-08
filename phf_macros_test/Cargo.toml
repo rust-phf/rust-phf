@@ -3,9 +3,10 @@ name = "phf_macros_test"
 version = "0.1.0"
 authors = ["Yuki Okushi"]
 edition = "2021"
-rust-version = "1.66"
+rust-version = "1.71"
 repository = "https://github.com/rust-phf/rust-phf"
 categories = ["data-structures"]
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,10 +16,11 @@ categories = ["data-structures"]
 trybuild = "1.0"
 phf = { path = "../phf", features = ["macros"] }
 phf_macros = { path = "../phf_macros", features = ["unicase", "uncased"] }
-unicase = "2.4.0"
+unicase = "2.8.1"
 uncased = "0.9.7"
 
 [features]
 default = ["enabled_feature"]
 disabled_feature = []
 enabled_feature = []
+ptrhash = ["phf/ptrhash", "phf_macros/ptrhash"]

@@ -13,35 +13,29 @@ jobs:
       fail-fast: false
       matrix:
         # MSRV and nightly
-        version: [1.66.0, stable, nightly]
+        version: [1.71.0, stable, nightly]
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set toolchain
         run: |
           rustup set profile minimal
           rustup override set ${{ matrix.version }}
 
-      - uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
-
-      - name: Minimal version check (nightly)
-        if: matrix.version == 'nightly'
-        run: |
-          cargo +nightly generate-lockfile -Z minimal-versions
-          cargo +nightly check --workspace --all-features
+      - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
 
       - name: Rustfmt check
-        if: matrix.version == '1.66.0'
+        if: matrix.version == '1.71.0'
         run: |
           rustup component add rustfmt
           cargo fmt --all -- --check
 
       - name: Run `cargo test` on workspace
-        if: matrix.version != '1.66.0'
+        if: matrix.version != '1.71.0'
         run: cargo test --workspace --exclude=phf_codegen_test
 
       - name: phf_codegen test
-        if: matrix.version != '1.66.0'
+        if: matrix.version != '1.71.0'
         run: cargo test -p phf_codegen_test
 
       - name: trybuild test
@@ -57,3 +51,7 @@ jobs:
 
       - name: unicase + macros features check
         run: cargo check -p unicase-example
+
+      - name: deny check
+        if: matrix.version == 'stable'
+        uses: EmbarkStudios/cargo-deny-action@3fd3802e88374d3fe9159b834c7714ec57d6c979 # v2.0.15

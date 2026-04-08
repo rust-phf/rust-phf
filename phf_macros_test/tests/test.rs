@@ -328,6 +328,15 @@ mod map {
         assert_eq!(Some(&3), MY_MAP.get("baz"));
         #[cfg(not(feature = "enabled_feature"))]
         assert_eq!(None, MY_MAP.get("baz"));
+
+        static EMPTY_MAP: phf::Map<&'static str, u32> = phf_map! {
+            #[cfg(feature = "disabled_feature")]
+            "foo" => 1,
+        };
+        #[cfg(feature = "disabled_feature")]
+        assert_eq!(EMPTY_MAP.len(), 1);
+        #[cfg(not(feature = "disabled_feature"))]
+        assert_eq!(EMPTY_MAP.len(), 0);
     }
 
     #[test]
@@ -446,6 +455,15 @@ mod set {
         assert!(SET.contains("baz"));
         #[cfg(not(feature = "enabled_feature"))]
         assert!(!SET.contains("baz"));
+
+        static EMPTY_SET: phf::Set<&'static str> = phf_set! {
+            #[cfg(feature = "disabled_feature")]
+            "foo",
+        };
+        #[cfg(feature = "disabled_feature")]
+        assert_eq!(EMPTY_SET.len(), 1);
+        #[cfg(not(feature = "disabled_feature"))]
+        assert_eq!(EMPTY_SET.len(), 0);
     }
 
     #[test]

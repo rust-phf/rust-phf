@@ -4,13 +4,17 @@ authors = ["Steven Fackler <sfackler@gmail.com>"]
 version = "0.0.0"
 build = "build.rs"
 edition = "2021"
+publish = false
+
+[features]
+ptrhash = ["phf/ptrhash", "phf_codegen/ptrhash"]
 
 [dependencies]
 phf = { version = "^0.13.1", features = ["uncased", "unicase"] }
 uncased = { version = "0.9.7", default-features = false }
-unicase = "2.4.0"
+unicase = "2.8.1"
 
 [build-dependencies]
 phf_codegen = { version = "^0.13.1", path = ".." }
-unicase = "2.4.0"
+unicase = "2.8.1"
 uncased = { version = "0.9.7", default-features = false }

@@ -19,6 +19,10 @@
 //! phf_codegen = "0.13.1"
 //! ```
 //!
+//! When using the experimental `ptrhash` feature, enable it on both
+//! `phf_codegen` and the runtime `phf` dependency so the generated constants
+//! and runtime layout stay in sync.
+//!
 //! Then put code on build.rs:
 //!
 //! ```ignore
@@ -145,6 +149,9 @@ use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 
+#[cfg(feature = "ptrhash")]
+use phf_generator::ptrhash::HashState;
+#[cfg(not(feature = "ptrhash"))]
 use phf_generator::HashState;
 
 struct Delegate<T>(T);
@@ -152,6 +159,18 @@ struct Delegate<T>(T);
 impl<T: FmtConst> fmt::Display for Delegate<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt_const(f)
+    }
+}
+
+fn generate_hash_state<H: PhfHash>(keys: &[H]) -> HashState {
+    #[cfg(not(feature = "ptrhash"))]
+    {
+        phf_generator::generate_hash(keys)
+    }
+
+    #[cfg(feature = "ptrhash")]
+    {
+        phf_generator::ptrhash::generate_hash(keys)
     }
 }
 
@@ -211,7 +230,7 @@ impl<'a, K: Hash + PhfHash + Eq + FmtConst> Map<'a, K> {
             }
         }
 
-        let state = phf_generator::generate_hash(&self.keys);
+        let state = generate_hash_state(&self.keys);
 
         DisplayMap {
             state,
@@ -231,6 +250,7 @@ pub struct DisplayMap<'a, K> {
 }
 
 impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
+    #[cfg(not(feature = "ptrhash"))]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // funky formatting here for nice output
         write!(
@@ -238,14 +258,15 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
             "{}::Map {{
     key: {:?},
     secrets: [",
-        self.path, self.state.key)?;
+            self.path, self.state.key
+        )?;
 
         for secret in &self.state.secrets {
             write!(
                 f,
                 "\
         {},",
-               secret,
+                secret,
             )?;
         }
 
@@ -253,7 +274,8 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
             f,
             "
     ],
-    disps: &[")?;
+    disps: &["
+        )?;
 
         // write map displacements
         for &(d1, d2) in &self.state.disps {
@@ -273,6 +295,66 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
         )?;
 
         // write map entries
+        for &idx in &self.state.map {
+            write!(
+                f,
+                "
+        ({}, {}),",
+                Delegate(&self.keys[idx]),
+                &self.values[idx]
+            )?;
+        }
+
+        write!(
+            f,
+            "
+    ],
+}}"
+        )
+    }
+
+    #[cfg(feature = "ptrhash")]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}::Map {{
+    key: {:?},
+    pilots: &[",
+            self.path, self.state.seed
+        )?;
+
+        for &pilot in &self.state.pilots {
+            write!(
+                f,
+                "
+        {},",
+                pilot
+            )?;
+        }
+
+        write!(
+            f,
+            "
+    ],
+    remap: &[",
+        )?;
+
+        for &index in &self.state.remap {
+            write!(
+                f,
+                "
+        {},",
+                index
+            )?;
+        }
+
+        write!(
+            f,
+            "
+    ],
+    entries: &[",
+        )?;
+
         for &idx in &self.state.map {
             write!(
                 f,
@@ -400,7 +482,7 @@ impl<'a, K: Hash + PhfHash + Eq + FmtConst> OrderedMap<'a, K> {
             }
         }
 
-        let state = phf_generator::generate_hash(&self.keys);
+        let state = generate_hash_state(&self.keys);
 
         DisplayOrderedMap {
             state,
@@ -420,13 +502,15 @@ pub struct DisplayOrderedMap<'a, K> {
 }
 
 impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
+    #[cfg(not(feature = "ptrhash"))]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{}::OrderedMap {{
     key: {:?},
     secrets: [",
-            self.path, self.state.key)?;
+            self.path, self.state.key
+        )?;
 
         for secret in &self.state.secrets {
             write!(
@@ -441,7 +525,8 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
             f,
             "
     ],
-    disps: &[")?;
+    disps: &["
+        )?;
 
         for &(d1, d2) in &self.state.disps {
             write!(
@@ -480,6 +565,82 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
                 value
             )?;
         }
+        write!(
+            f,
+            "
+    ],
+}}"
+        )
+    }
+
+    #[cfg(feature = "ptrhash")]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}::OrderedMap {{
+    key: {:?},
+    pilots: &[",
+            self.path, self.state.seed
+        )?;
+
+        for &pilot in &self.state.pilots {
+            write!(
+                f,
+                "
+        {},",
+                pilot
+            )?;
+        }
+
+        write!(
+            f,
+            "
+    ],
+    remap: &[",
+        )?;
+
+        for &index in &self.state.remap {
+            write!(
+                f,
+                "
+        {},",
+                index
+            )?;
+        }
+
+        write!(
+            f,
+            "
+    ],
+    idxs: &[",
+        )?;
+
+        for &idx in &self.state.map {
+            write!(
+                f,
+                "
+        {},",
+                idx
+            )?;
+        }
+
+        write!(
+            f,
+            "
+    ],
+    entries: &[",
+        )?;
+
+        for (key, value) in self.keys.iter().zip(self.values.iter()) {
+            write!(
+                f,
+                "
+        ({}, {}),",
+                Delegate(key),
+                value
+            )?;
+        }
+
         write!(
             f,
             "

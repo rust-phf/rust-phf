@@ -12,6 +12,9 @@ use core::fmt;
 use core::hash::{BuildHasher, Hash, Hasher};
 use core::num::Wrapping;
 
+#[cfg(feature = "ptrhash")]
+pub mod ptrhash;
+
 #[non_exhaustive]
 pub struct Hashes {
     pub g: u32,

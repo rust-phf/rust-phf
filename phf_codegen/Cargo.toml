@@ -7,8 +7,11 @@ description = "Codegen library for PHF types"
 repository = "https://github.com/rust-phf/rust-phf"
 edition = "2021"
 readme = "../README.md"
-rust-version = "1.66"
+rust-version = "1.71"
 categories = ["data-structures"]
+
+[features]
+ptrhash = ["phf_generator/ptrhash"]
 
 [dependencies]
 phf_generator = "0.13.1"

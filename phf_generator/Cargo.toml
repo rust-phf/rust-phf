@@ -6,17 +6,23 @@ license = "MIT"
 description = "PHF generation logic"
 repository = "https://github.com/rust-phf/rust-phf"
 edition = "2021"
-rust-version = "1.66"
+rust-version = "1.71"
 categories = ["data-structures"]
 readme = "README.md"
+
+[features]
+ptrhash = ["phf_shared/ptrhash"]
 
 [dependencies]
 fastrand = { version = "2.1.0", default-features = false }
 phf_shared = { version = "^0.13.1", default-features = false }
 
 [dev-dependencies]
-criterion = "0.7.0"
+criterion = "0.8.0"
 
 [[bench]]
 name = "benches"
 harness = false
+
+[[bin]]
+name = "gen_hash_test"

@@ -7,7 +7,7 @@ license = "MIT"
 description = "Macros to generate types in the phf crate"
 repository = "https://github.com/rust-phf/rust-phf"
 readme = "../README.md"
-rust-version = "1.66"
+rust-version = "1.71"
 categories = ["data-structures"]
 
 [lib]
@@ -16,6 +16,7 @@ proc-macro = true
 [features]
 unicase = ["unicase_", "phf_shared/unicase"]
 uncased = ["uncased_", "phf_shared/uncased"]
+ptrhash = ["phf_generator/ptrhash"]
 
 [dependencies]
 syn = { version = "2", features = ["full"] }

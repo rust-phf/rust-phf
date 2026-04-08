@@ -4,7 +4,9 @@ use core::iter::FusedIterator;
 use core::iter::IntoIterator;
 use core::ops::Index;
 use core::slice;
-use phf_shared::{self, HashKey, HashSecrets, PhfBorrow, PhfHash};
+#[cfg(not(feature = "ptrhash"))]
+use phf_shared::HashSecrets;
+use phf_shared::{self, HashKey, PhfBorrow, PhfHash};
 
 /// An order-preserving immutable map constructed at compile time.
 ///
@@ -16,6 +18,7 @@ use phf_shared::{self, HashKey, HashSecrets, PhfBorrow, PhfHash};
 /// The fields of this struct are public so that they may be initialized by the
 /// `phf_ordered_map!` macro and code generation. They are subject to change at
 /// any time and should never be accessed directly.
+#[cfg(not(feature = "ptrhash"))]
 pub struct OrderedMap<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub key: HashKey,
@@ -23,6 +26,30 @@ pub struct OrderedMap<K: 'static, V: 'static> {
     pub secrets: HashSecrets,
     #[doc(hidden)]
     pub disps: &'static [(u32, u32)],
+    #[doc(hidden)]
+    pub idxs: &'static [usize],
+    #[doc(hidden)]
+    pub entries: &'static [(K, V)],
+}
+
+/// An order-preserving immutable map constructed at compile time.
+///
+/// Unlike a `Map`, iteration order is guaranteed to match the definition
+/// order.
+///
+/// ## Note
+///
+/// The fields of this struct are public so that they may be initialized by the
+/// `phf_ordered_map!` macro and code generation. They are subject to change at
+/// any time and should never be accessed directly.
+#[cfg(feature = "ptrhash")]
+pub struct OrderedMap<K: 'static, V: 'static> {
+    #[doc(hidden)]
+    pub key: HashKey,
+    #[doc(hidden)]
+    pub pilots: &'static [u8],
+    #[doc(hidden)]
+    pub remap: &'static [u32],
     #[doc(hidden)]
     pub idxs: &'static [usize],
     #[doc(hidden)]
@@ -56,10 +83,20 @@ where
     K: PartialEq,
     V: PartialEq,
 {
+    #[cfg(not(feature = "ptrhash"))]
     fn eq(&self, other: &Self) -> bool {
         self.key == other.key
             && self.secrets == other.secrets
             && self.disps == other.disps
+            && self.idxs == other.idxs
+            && self.entries == other.entries
+    }
+
+    #[cfg(feature = "ptrhash")]
+    fn eq(&self, other: &Self) -> bool {
+        self.key == other.key
+            && self.pilots == other.pilots
+            && self.remap == other.remap
             && self.idxs == other.idxs
             && self.entries == other.entries
     }
@@ -145,19 +182,48 @@ impl<K, V> OrderedMap<K, V> {
         T: Eq + PhfHash + ?Sized,
         K: PhfBorrow<T>,
     {
-        if self.disps.is_empty() {
-            return None;
-        } //Prevent panic on empty map
-        let hashes = phf_shared::hash(key, &self.key, &self.secrets);
-        let idx_index = phf_shared::get_index(&hashes, self.disps, self.idxs.len());
-        let idx = self.idxs[idx_index as usize];
-        let entry = &self.entries[idx];
+        #[cfg(not(feature = "ptrhash"))]
+        {
+            if self.disps.is_empty() {
+                return None;
+            }
 
-        let b: &T = entry.0.borrow();
-        if b == key {
-            Some((idx, (&entry.0, &entry.1)))
-        } else {
-            None
+            let hashes = phf_shared::hash(key, &self.key, &self.secrets);
+            let idx_index = phf_shared::get_index(&hashes, self.disps, self.idxs.len());
+            let idx = self.idxs[idx_index as usize];
+            let entry = &self.entries[idx];
+
+            let borrowed: &T = entry.0.borrow();
+            if borrowed == key {
+                Some((idx, (&entry.0, &entry.1)))
+            } else {
+                None
+            }
+        }
+
+        #[cfg(feature = "ptrhash")]
+        {
+            if self.entries.is_empty() {
+                return None;
+            }
+
+            let hash = phf_shared::ptrhash::hash(key, &self.key);
+            let idx_index = phf_shared::ptrhash::get_index(
+                self.key,
+                hash,
+                self.pilots,
+                self.remap,
+                self.idxs.len(),
+            );
+            let idx = self.idxs[idx_index as usize];
+            let entry = &self.entries[idx];
+
+            let borrowed: &T = entry.0.borrow();
+            if borrowed == key {
+                Some((idx, (&entry.0, &entry.1)))
+            } else {
+                None
+            }
         }
     }
 

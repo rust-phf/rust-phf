@@ -2,10 +2,10 @@
 //! [perfect hash functions](http://en.wikipedia.org/wiki/Perfect_hash_function).
 //!
 //! It currently uses the
-//! [CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) and can generate
-//! a 100,000 entry map in roughly .4 seconds.
+//! [CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) by default and
+//! also ships an experimental `ptrhash` feature for an alternative MPHF layout.
 //!
-//! MSRV (minimum supported rust version) is Rust 1.66.
+//! MSRV (minimum supported rust version) is Rust 1.71.
 //!
 //! ## Usage
 //!
@@ -17,6 +17,15 @@
 //!```toml
 //! [dependencies]
 //! phf = { version = "0.13.1", features = ["macros"] }
+//! ```
+//!
+//! To try the experimental MPHF alternative instead of the default CHD layout,
+//! enable the `ptrhash` feature on every `phf` crate involved in generation and
+//! runtime lookup:
+//!
+//! ```toml
+//! [dependencies]
+//! phf = { version = "0.13.1", features = ["macros", "ptrhash"] }
 //! ```
 //!
 //! To compile the `phf` crate with a dependency on
@@ -64,9 +73,8 @@
 //! ## Note
 //!
 //! Currently, the macro syntax has some limitations and may not
-//! work as you want. See [#183] or [#196] for example.
+//! work as you want. See [#196] for example.
 //!
-//! [#183]: https://github.com/rust-phf/rust-phf/issues/183
 //! [#196]: https://github.com/rust-phf/rust-phf/issues/196
 
 #![doc(html_root_url = "https://docs.rs/phf/0.13.1")]

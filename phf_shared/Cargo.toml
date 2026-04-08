@@ -13,7 +13,6 @@ readme = "README.md"
 [lib]
 name = "phf_shared"
 path = "src/lib.rs"
-test = false
 
 [features]
 default = ["std"]

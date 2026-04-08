@@ -16,7 +16,7 @@ publish = false
 trybuild = "1.0"
 phf = { path = "../phf", features = ["macros"] }
 phf_macros = { path = "../phf_macros", features = ["unicase", "uncased"] }
-unicase = "2.4.0"
+unicase = "2.8.1"
 uncased = "0.9.7"
 
 [features]

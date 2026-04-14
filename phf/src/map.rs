@@ -4,6 +4,8 @@ use core::iter::FusedIterator;
 use core::iter::IntoIterator;
 use core::ops::Index;
 use core::slice;
+#[cfg(not(feature = "ptrhash"))]
+use phf_shared::HashSecrets;
 use phf_shared::{self, HashKey, PhfBorrow, PhfHash};
 #[cfg(feature = "serde")]
 use serde::ser::{Serialize, SerializeMap, Serializer};
@@ -19,6 +21,8 @@ use serde::ser::{Serialize, SerializeMap, Serializer};
 pub struct Map<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub key: HashKey,
+    #[doc(hidden)]
+    pub secrets: HashSecrets,
     #[doc(hidden)]
     pub disps: &'static [(u32, u32)],
     #[doc(hidden)]
@@ -79,7 +83,10 @@ where
 {
     #[cfg(not(feature = "ptrhash"))]
     fn eq(&self, other: &Self) -> bool {
-        self.key == other.key && self.disps == other.disps && self.entries == other.entries
+        self.key == other.key
+            && self.secrets == other.secrets
+            && self.disps == other.disps
+            && self.entries == other.entries
     }
 
     #[cfg(feature = "ptrhash")]
@@ -105,6 +112,7 @@ impl<K, V> Map<K, V> {
         #[cfg(not(feature = "ptrhash"))]
         return Self {
             key: 0,
+            secrets: [0; 7],
             disps: &[],
             entries: &[],
         };
@@ -170,7 +178,7 @@ impl<K, V> Map<K, V> {
         if self.disps.is_empty() {
             return None;
         } //Prevent panic on empty map
-        let hashes = phf_shared::hash(key, &self.key);
+        let hashes = phf_shared::hash(key, &self.key, &self.secrets);
         let index = phf_shared::get_index(&hashes, self.disps, self.entries.len());
         let entry = &self.entries[index as usize];
         let b: &T = entry.0.borrow();

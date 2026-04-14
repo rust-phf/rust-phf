@@ -440,6 +440,7 @@ fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
     #[cfg(not(feature = "ptrhash"))]
     {
         let key = state.key;
+        let secrets = state.secrets.iter().map(|s| quote!(#s));
         let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
         let entries = state.map.iter().map(|&idx| {
             let entry = &entries[idx];
@@ -451,6 +452,7 @@ fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
         quote! {
             phf::Map {
                 key: #key,
+                secrets: [#(#secrets),*],
                 disps: &[#(#disps),*],
                 entries: &[#(#entries),*],
             }
@@ -484,6 +486,7 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
     #[cfg(not(feature = "ptrhash"))]
     {
         let key = state.key;
+        let secrets = state.secrets.iter().map(|s| quote!(#s));
         let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
         let idxs = state.map.iter().map(|idx| quote!(#idx));
         let entries = entries.iter().map(|entry| {
@@ -495,6 +498,7 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
         quote! {
             phf::OrderedMap {
                 key: #key,
+                secrets: [#(#secrets),*],
                 disps: &[#(#disps),*],
                 idxs: &[#(#idxs),*],
                 entries: &[#(#entries),*],
@@ -658,6 +662,7 @@ fn empty_map() -> proc_macro2::TokenStream {
         quote! {
             phf::Map {
                 key: 0,
+                secrets: [0; 7],
                 disps: &[],
                 entries: &[],
             }
@@ -728,6 +733,7 @@ fn empty_ordered_map() -> proc_macro2::TokenStream {
         quote! {
             phf::OrderedMap {
                 key: 0,
+                secrets: [0; 7],
                 disps: &[],
                 idxs: &[],
                 entries: &[],

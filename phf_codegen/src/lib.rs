@@ -257,8 +257,24 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
             f,
             "{}::Map {{
     key: {:?},
-    disps: &[",
+    secrets: [",
             self.path, self.state.key
+        )?;
+
+        for secret in &self.state.secrets {
+            write!(
+                f,
+                "\
+        {},",
+                secret,
+            )?;
+        }
+
+        write!(
+            f,
+            "
+    ],
+    disps: &["
         )?;
 
         // write map displacements
@@ -492,9 +508,26 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
             f,
             "{}::OrderedMap {{
     key: {:?},
-    disps: &[",
+    secrets: [",
             self.path, self.state.key
         )?;
+
+        for secret in &self.state.secrets {
+            write!(
+                f,
+                "\
+        {},",
+                secret,
+            )?;
+        }
+
+        write!(
+            f,
+            "
+    ],
+    disps: &["
+        )?;
+
         for &(d1, d2) in &self.state.disps {
             write!(
                 f,

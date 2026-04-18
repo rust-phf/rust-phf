@@ -1,12 +1,12 @@
 use core::hash::Hasher;
 use siphasher::sip::SipHasher13;
 
-use crate::{HashKey, PhfHash};
+use crate::{HashKey, PhfHash, PortableSipHasher};
 
 /// `key` is from `phf_generator::ptrhash::HashState`.
 #[inline]
 pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> u64 {
-    let mut hasher = SipHasher13::new_with_keys(0, *key);
+    let mut hasher = PortableSipHasher::new(SipHasher13::new_with_keys(0, *key));
     x.phf_hash(&mut hasher);
     hasher.finish()
 }

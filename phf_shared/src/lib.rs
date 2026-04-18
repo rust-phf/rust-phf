@@ -13,6 +13,9 @@ use core::hash::{Hash, Hasher};
 use core::num::Wrapping;
 use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
 
+mod hasher;
+use hasher::PortableSipHasher;
+
 #[cfg(feature = "ptrhash")]
 pub mod ptrhash;
 
@@ -36,7 +39,7 @@ pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 /// `key` is from `phf_generator::HashState`.
 #[inline]
 pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
-    let mut hasher = SipHasher13::new_with_keys(0, *key);
+    let mut hasher = PortableSipHasher::new(SipHasher13::new_with_keys(0, *key));
     x.phf_hash(&mut hasher);
 
     let Hash128 {
@@ -76,6 +79,7 @@ pub trait PhfHash {
     where
         Self: Sized,
     {
+        state.write_u64(data.len() as u64);
         for piece in data {
             piece.phf_hash(state);
         }
@@ -261,13 +265,6 @@ impl PhfHash for str {
     }
 }
 
-impl PhfHash for [u8] {
-    #[inline]
-    fn phf_hash<H: Hasher>(&self, state: &mut H) {
-        state.write(self);
-    }
-}
-
 impl FmtConst for [u8] {
     #[inline]
     fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -365,43 +362,72 @@ impl PhfBorrow<uncased::UncasedStr> for &uncased::UncasedStr {
     }
 }
 
-macro_rules! sip_impl (
-    (le $t:ty) => (
-        impl PhfHash for $t {
-            #[inline]
-            fn phf_hash<H: Hasher>(&self, state: &mut H) {
-                self.to_le().hash(state);
-            }
-        }
-    );
+macro_rules! integer_impl (
     ($t:ty) => (
         impl PhfHash for $t {
             #[inline]
             fn phf_hash<H: Hasher>(&self, state: &mut H) {
                 self.hash(state);
             }
+
+            // `phf_hash_slice` cannot use `write` due to possible differences in endianness.
         }
     )
 );
 
-sip_impl!(u8);
-sip_impl!(i8);
-sip_impl!(le u16);
-sip_impl!(le i16);
-sip_impl!(le u32);
-sip_impl!(le i32);
-sip_impl!(le u64);
-sip_impl!(le i64);
-sip_impl!(le usize);
-sip_impl!(le isize);
-sip_impl!(le u128);
-sip_impl!(le i128);
-sip_impl!(bool);
+integer_impl!(u16);
+integer_impl!(i16);
+integer_impl!(u32);
+integer_impl!(i32);
+integer_impl!(u64);
+integer_impl!(i64);
+integer_impl!(usize);
+integer_impl!(isize);
+integer_impl!(u128);
+integer_impl!(i128);
+
+macro_rules! single_byte_impl (
+    ($t:ty) => (
+        impl PhfHash for $t {
+            #[inline]
+            fn phf_hash<H: Hasher>(&self, state: &mut H) {
+                self.hash(state);
+            }
+
+            #[inline]
+            fn phf_hash_slice<H: Hasher>(slice: &[$t], state: &mut H) {
+                // There is sadly no `[i8]::as_bytes` or `[bool]::as_bytes`.
+                state.write_u64(slice.len() as u64);
+                state.write(unsafe { &*(slice as *const [$t] as *const [u8]) });
+            }
+        }
+    )
+);
+
+single_byte_impl!(u8);
+single_byte_impl!(i8);
+// https://doc.rust-lang.org/reference/types/boolean.html#r-type.bool.repr guarantees that `bool`
+// has a fixed layout.
+single_byte_impl!(bool);
 
 impl PhfHash for char {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
         (*self as u32).phf_hash(state)
+    }
+}
+
+impl<T: PhfHash, const N: usize> PhfHash for [T; N] {
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        <[T]>::phf_hash(self, state);
+    }
+}
+
+impl<T: PhfHash> PhfHash for [T] {
+    #[inline]
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        T::phf_hash_slice(self, state);
     }
 }
 
@@ -412,15 +438,6 @@ fn fmt_array<T: core::fmt::Debug>(array: &[T], f: &mut fmt::Formatter<'_>) -> fm
 
 macro_rules! array_impl (
     ($t:ty) => (
-        impl<const N: usize> PhfHash for [$t; N] {
-            #[inline]
-            fn phf_hash<H: Hasher>(&self, state: &mut H) {
-                for v in &self[..] {
-                    v.phf_hash(state);
-                }
-            }
-        }
-
         impl<const N: usize> FmtConst for [$t; N] {
             fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 fmt_array(self, f)
@@ -449,33 +466,6 @@ array_impl!(u128);
 array_impl!(i128);
 array_impl!(bool);
 array_impl!(char);
-
-macro_rules! slice_impl (
-    ($t:ty) => {
-        impl PhfHash for [$t] {
-            #[inline]
-            fn phf_hash<H: Hasher>(&self, state: &mut H) {
-                for v in self {
-                    v.phf_hash(state);
-                }
-            }
-        }
-    };
-);
-
-slice_impl!(i8);
-slice_impl!(u16);
-slice_impl!(i16);
-slice_impl!(u32);
-slice_impl!(i32);
-slice_impl!(u64);
-slice_impl!(i64);
-slice_impl!(usize);
-slice_impl!(isize);
-slice_impl!(u128);
-slice_impl!(i128);
-slice_impl!(bool);
-slice_impl!(char);
 
 macro_rules! tuple_impl {
     ($($t:ident),+) => {
@@ -525,3 +515,117 @@ tuple_impl!(A, B, C, D, E, F, G, HT, I);
 tuple_impl!(A, B, C, D, E, F, G, HT, I, J);
 tuple_impl!(A, B, C, D, E, F, G, HT, I, J, K);
 tuple_impl!(A, B, C, D, E, F, G, HT, I, J, K, L);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(PartialEq, Debug)]
+    enum HashCall {
+        Bytes(Vec<u8>),
+        U8(u8),
+        U16(u16),
+        U32(u32),
+        U64(u64),
+        U128(u128),
+        Usize(usize),
+        I8(i8),
+        I16(i16),
+        I32(i32),
+        I64(i64),
+        I128(i128),
+        Isize(isize),
+        // Ideally we'd handle `write_length_prefix` and `write_str` as well, but they are unstable.
+    }
+
+    #[derive(PartialEq, Debug)]
+    struct TestHasher {
+        calls: Vec<HashCall>,
+    }
+
+    impl Hasher for TestHasher {
+        fn finish(&self) -> u64 {
+            panic!("only used for tests");
+        }
+        fn write(&mut self, bytes: &[u8]) {
+            self.calls.push(HashCall::Bytes(bytes.to_vec()));
+        }
+        fn write_u8(&mut self, i: u8) {
+            self.calls.push(HashCall::U8(i));
+        }
+        fn write_u16(&mut self, i: u16) {
+            self.calls.push(HashCall::U16(i));
+        }
+        fn write_u32(&mut self, i: u32) {
+            self.calls.push(HashCall::U32(i));
+        }
+        fn write_u64(&mut self, i: u64) {
+            self.calls.push(HashCall::U64(i));
+        }
+        fn write_u128(&mut self, i: u128) {
+            self.calls.push(HashCall::U128(i));
+        }
+        fn write_usize(&mut self, i: usize) {
+            self.calls.push(HashCall::Usize(i));
+        }
+        fn write_i8(&mut self, i: i8) {
+            self.calls.push(HashCall::I8(i));
+        }
+        fn write_i16(&mut self, i: i16) {
+            self.calls.push(HashCall::I16(i));
+        }
+        fn write_i32(&mut self, i: i32) {
+            self.calls.push(HashCall::I32(i));
+        }
+        fn write_i64(&mut self, i: i64) {
+            self.calls.push(HashCall::I64(i));
+        }
+        fn write_i128(&mut self, i: i128) {
+            self.calls.push(HashCall::I128(i));
+        }
+        fn write_isize(&mut self, i: isize) {
+            self.calls.push(HashCall::Isize(i));
+        }
+    }
+
+    fn test_hash<T: PhfHash>(x: T) -> Vec<HashCall> {
+        let mut state = TestHasher { calls: Vec::new() };
+        x.phf_hash(&mut state);
+        state.calls
+    }
+
+    #[test]
+    fn byte_slices_are_hashed_efficiently() {
+        assert_eq!(
+            test_hash(&[1u8, 2, 3]),
+            [HashCall::U64(3), HashCall::Bytes([1, 2, 3].to_vec())]
+        );
+        assert_eq!(
+            test_hash(&[1i8, 2, 3]),
+            [HashCall::U64(3), HashCall::Bytes([1, 2, 3].to_vec())]
+        );
+        assert_eq!(
+            test_hash(&[false, true]),
+            [HashCall::U64(2), HashCall::Bytes([0, 1].to_vec())]
+        );
+    }
+
+    #[test]
+    fn slices_and_arrays_are_hashed_consistently() {
+        assert_eq!(test_hash(&[1u8, 2, 3]), test_hash(&[1u8, 2, 3][..]));
+        assert_eq!(test_hash(&[1u16, 2, 3]), test_hash(&[1u16, 2, 3][..]));
+    }
+
+    #[test]
+    fn variable_width_slice_elements_are_delimited() {
+        assert_ne!(test_hash(&["ab", "c"]), test_hash(&["a", "bc"]));
+
+        let key = 0;
+        let left = hash(&["ab", "c"], &key);
+        let right = hash(&["a", "bc"], &key);
+        assert!(
+            (left.g, left.f1, left.f2) != (right.g, right.f1, right.f2),
+            "different string arrays must not produce identical PHF hashes"
+        );
+    }
+}

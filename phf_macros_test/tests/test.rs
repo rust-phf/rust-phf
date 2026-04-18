@@ -202,18 +202,15 @@ mod map {
 
     #[test]
     fn test_isize_keys() {
-        if cfg!(target_pointer_width = "16") {
-            test_key_type!(isize, 0isize => 0, 1isize => 1, 32767isize => 2, -32768isize => 3);
-        } else if cfg!(target_pointer_width = "32") {
-            test_key_type!(isize, 0isize => 0, 1isize => 1, 2147483647isize => 2, -2147483648isize => 3);
-        } else if cfg!(target_pointer_width = "64") {
-            test_key_type!(
-                isize, 0isize => 0, 1isize => 1,
-                9223372036854775807isize => 2, -9223372036854775808isize => 3
-            );
-        } else {
-            panic!("target_pointer_width is not 16, 32, or 64")
-        }
+        #[cfg(target_pointer_width = "16")]
+        test_key_type!(isize, 0isize => 0, 1isize => 1, 32767isize => 2, -32768isize => 3);
+        #[cfg(target_pointer_width = "32")]
+        test_key_type!(isize, 0isize => 0, 1isize => 1, 2147483647isize => 2, -2147483648isize => 3);
+        #[cfg(target_pointer_width = "64")]
+        test_key_type!(
+            isize, 0isize => 0, 1isize => 1,
+            9223372036854775807isize => 2, -9223372036854775808isize => 3
+        );
     }
 
     #[test]
@@ -246,15 +243,12 @@ mod map {
 
     #[test]
     fn test_usize_keys() {
-        if cfg!(target_pointer_width = "16") {
-            test_key_type!(usize, 0usize => 0, 1usize => 1, 65535usize => 2);
-        } else if cfg!(target_pointer_width = "32") {
-            test_key_type!(usize, 0usize => 0, 1usize => 1, 4294967295usize => 2);
-        } else if cfg!(target_pointer_width = "64") {
-            test_key_type!(usize, 0usize => 0, 1usize => 1, 18446744073709551615usize => 2);
-        } else {
-            panic!("target_pointer_width is not 16, 32, or 64")
-        }
+        #[cfg(target_pointer_width = "16")]
+        test_key_type!(usize, 0usize => 0, 1usize => 1, 65535usize => 2);
+        #[cfg(target_pointer_width = "32")]
+        test_key_type!(usize, 0usize => 0, 1usize => 1, 4294967295usize => 2);
+        #[cfg(target_pointer_width = "64")]
+        test_key_type!(usize, 0usize => 0, 1usize => 1, 18446744073709551615usize => 2);
     }
 
     #[test]

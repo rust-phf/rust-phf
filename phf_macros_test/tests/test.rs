@@ -665,6 +665,24 @@ mod ordered_map {
     }
 
     #[test]
+    fn test_cfg_order() {
+        static MY_MAP: phf::OrderedMap<&'static str, u32> = phf_ordered_map! {
+            #[cfg(true)]
+            "foo" => 1,
+            "bar" => 2,
+        };
+        assert_eq!(MY_MAP.index(0), Some((&"foo", &1)));
+        assert_eq!(MY_MAP.index(1), Some((&"bar", &2)));
+
+        static MY_MAP2: phf::OrderedMap<&'static str, u32> = phf_ordered_map! {
+            #[cfg(false)]
+            "foo" => 1,
+            "bar" => 2,
+        };
+        assert_eq!(MY_MAP2.index(0), Some((&"bar", &2)));
+    }
+
+    #[test]
     fn test_tuples() {
         static MAP: phf::OrderedMap<(u32, &str), u32> = phf_ordered_map! {
             (0, "a") => 1,
@@ -806,6 +824,23 @@ mod ordered_set {
         assert!(!SET.contains("baz"));
     }
 
+    #[test]
+    fn test_cfg_order() {
+        static MY_SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
+            #[cfg(true)]
+            "foo",
+            "bar",
+        };
+        assert_eq!(MY_SET.index(0), Some(&"foo"));
+        assert_eq!(MY_SET.index(1), Some(&"bar"));
+
+        static MY_SET2: phf::OrderedSet<&'static str> = phf_ordered_set! {
+            #[cfg(false)]
+            "foo",
+            "bar",
+        };
+        assert_eq!(MY_SET2.index(0), Some(&"bar"));
+    }
     #[test]
     fn test_tuples() {
         static SET: phf::OrderedSet<(u32, &str)> = phf_ordered_set! {

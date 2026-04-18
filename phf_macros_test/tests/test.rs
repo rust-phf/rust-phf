@@ -370,6 +370,15 @@ mod map {
         assert_eq!(Some(&20), MAP2.get("quux"));
         assert_eq!(Some(&30), MAP2.get("xyz"));
         assert_eq!(None, MAP2.get("unknown"));
+
+        // Test with #[cfg]
+        static MAP3: phf::Map<&'static str, isize> = phf_map!(
+            #[cfg(false)] "foo" | "bar" => 1,
+            "baz" => 2,
+        );
+        assert!(!MAP3.contains_key("foo"));
+        assert!(!MAP3.contains_key("bar"));
+        assert!(MAP3.contains_key("baz"));
     }
 }
 
@@ -499,6 +508,17 @@ mod set {
         assert!(SET2.contains("xyz"));
         assert!(!SET2.contains("unknown"));
         assert_eq!(6, SET2.len());
+
+        // Test with #[cfg]
+        static SET3: phf::Set<&'static str> = phf_set!(
+            #[cfg(false)]
+            "foo"
+                | "bar",
+            "baz",
+        );
+        assert!(!SET3.contains("foo"));
+        assert!(!SET3.contains("bar"));
+        assert!(SET3.contains("baz"));
     }
 }
 

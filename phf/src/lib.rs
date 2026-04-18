@@ -188,6 +188,51 @@ pub use phf_macros::phf_set;
 /// Requires the `macros` feature. Same usage as [`phf_set`].
 pub use phf_macros::phf_ordered_set;
 
+#[cfg(feature = "macros")]
+#[doc(hidden)]
+// Invoked by proc macros to resolve `#[cfg]`s in the caller context.
+#[macro_export]
+macro_rules! __resolve_cfg {
+    // No `#[cfg]`s left to evaluate.
+    ($callback:ident [ $($acc:tt)* ] { $($in:tt)* }) => {
+        $crate::$callback! { $($acc)* $($in)* }
+    };
+
+    // Evaluate a `#[cfg]`.
+    (
+        $callback:ident
+        [ $($acc:tt)* ]
+        { $($in1:tt)* }
+        { $(#[$meta:meta])+ $($in2:tt)* }
+        $($rest:tt)*
+    ) => {{
+        // Macro shadowing is allowed if the shadowed macro is unused.
+        #[allow(unused)]
+        macro_rules! resolver {
+            () => {
+                $crate::__resolve_cfg! {
+                    $callback
+                    [ $($acc)* $($in1)* ]
+                    $($rest)*
+                }
+            };
+        }
+
+        $(#[$meta])+
+        macro_rules! resolver {
+            () => {
+                $crate::__resolve_cfg! {
+                    $callback
+                    [ $($acc)* $($in1)* $($in2)* ]
+                    $($rest)*
+                }
+            };
+        }
+
+        resolver! {}
+    }};
+}
+
 #[doc(inline)]
 pub use self::map::Map;
 #[doc(inline)]

@@ -91,9 +91,9 @@ impl Generator {
     {
         self.buckets.iter_mut().for_each(|b| b.keys.clear());
         self.buckets.sort_by_key(|b| b.idx);
-        self.disps.iter_mut().for_each(|d| *d = (0, 0));
-        self.map.iter_mut().for_each(|m| *m = None);
-        self.try_map.iter_mut().for_each(|m| *m = 0);
+        self.disps.fill((0, 0));
+        self.map.fill(None);
+        self.try_map.fill(0);
 
         self.hashes.clear();
         self.hashes.extend(hashes);

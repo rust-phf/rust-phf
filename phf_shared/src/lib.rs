@@ -79,6 +79,7 @@ pub trait PhfHash {
     where
         Self: Sized,
     {
+        state.write_u64(data.len() as u64);
         for piece in data {
             piece.phf_hash(state);
         }
@@ -396,6 +397,7 @@ macro_rules! single_byte_impl (
             #[inline]
             fn phf_hash_slice<H: Hasher>(slice: &[$t], state: &mut H) {
                 // There is sadly no `[i8]::as_bytes` or `[bool]::as_bytes`.
+                state.write_u64(slice.len() as u64);
                 state.write(unsafe { &*(slice as *const [$t] as *const [u8]) });
             }
         }
@@ -596,15 +598,15 @@ mod tests {
     fn byte_slices_are_hashed_efficiently() {
         assert_eq!(
             test_hash(&[1u8, 2, 3]),
-            [HashCall::Bytes([1, 2, 3].to_vec())]
+            [HashCall::U64(3), HashCall::Bytes([1, 2, 3].to_vec())]
         );
         assert_eq!(
             test_hash(&[1i8, 2, 3]),
-            [HashCall::Bytes([1, 2, 3].to_vec())]
+            [HashCall::U64(3), HashCall::Bytes([1, 2, 3].to_vec())]
         );
         assert_eq!(
             test_hash(&[false, true]),
-            [HashCall::Bytes([0, 1].to_vec())]
+            [HashCall::U64(2), HashCall::Bytes([0, 1].to_vec())]
         );
     }
 
@@ -612,5 +614,18 @@ mod tests {
     fn slices_and_arrays_are_hashed_consistently() {
         assert_eq!(test_hash(&[1u8, 2, 3]), test_hash(&[1u8, 2, 3][..]));
         assert_eq!(test_hash(&[1u16, 2, 3]), test_hash(&[1u16, 2, 3][..]));
+    }
+
+    #[test]
+    fn variable_width_slice_elements_are_delimited() {
+        assert_ne!(test_hash(&["ab", "c"]), test_hash(&["a", "bc"]));
+
+        let key = 0;
+        let left = hash(&["ab", "c"], &key);
+        let right = hash(&["a", "bc"], &key);
+        assert!(
+            (left.g, left.f1, left.f2) != (right.g, right.f1, right.f2),
+            "different string arrays must not produce identical PHF hashes"
+        );
     }
 }

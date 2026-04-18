@@ -521,7 +521,16 @@ pub fn phf_map(input: TokenStream) -> TokenStream {
     }
 }
 
-/// Generate conditional cfg conditions for a given mask and conditional entries
+fn cfg_condition_key(entry: &Entry) -> String {
+    entry
+        .attrs
+        .first()
+        .and_then(|attr| attr.meta.require_list().ok())
+        .map(|meta| meta.tokens.to_string())
+        .unwrap_or_default()
+}
+
+/// Generate conditional cfg conditions for a given mask and conditional groups
 fn build_cfg_conditions(mask: usize, conditional: &[&Entry]) -> Vec<proc_macro2::TokenStream> {
     let mut conditions = Vec::new();
     for (i, &entry) in conditional.iter().enumerate() {
@@ -582,8 +591,28 @@ fn build_conditional_phf<F>(
 where
     F: Fn(&[Entry], HashState) -> proc_macro2::TokenStream,
 {
-    let unconditional: Vec<_> = entries.iter().filter(|e| e.attrs.is_empty()).collect();
-    let conditional: Vec<_> = entries.iter().filter(|e| !e.attrs.is_empty()).collect();
+    let mut unconditional = Vec::new();
+    let mut conditional = Vec::new();
+    let mut conditional_groups = Vec::new();
+
+    for entry in entries {
+        if entry.attrs.is_empty() {
+            unconditional.push(entry);
+            continue;
+        }
+
+        let key = cfg_condition_key(entry);
+        let group_idx = if let Some(i) = conditional_groups
+            .iter()
+            .position(|(group_key, _)| group_key == &key)
+        {
+            i
+        } else {
+            conditional_groups.push((key, entry));
+            conditional_groups.len() - 1
+        };
+        conditional.push((group_idx, entry));
+    }
 
     if conditional.is_empty() {
         let state = generate_hash_state(entries);
@@ -591,14 +620,16 @@ where
     }
 
     let mut variants = Vec::new();
-    let num_conditional = conditional.len();
+    let num_conditional = conditional_groups.len();
+    let conditional_group_entries: Vec<_> =
+        conditional_groups.iter().map(|(_, entry)| *entry).collect();
     let mut has_empty_variant = false;
 
     for mask in 0..(1 << num_conditional) {
         let mut variant_entries = unconditional.clone();
 
-        for (i, &entry) in conditional.iter().enumerate() {
-            if (mask & (1 << i)) != 0 {
+        for &(group_idx, entry) in &conditional {
+            if (mask & (1 << group_idx)) != 0 {
                 variant_entries.push(entry);
             }
         }
@@ -612,7 +643,7 @@ where
         let state = generate_hash_state(&entries_vec);
         let structure_tokens = simple_builder(&entries_vec, state);
 
-        let conditions = build_cfg_conditions(mask, &conditional);
+        let conditions = build_cfg_conditions(mask, &conditional_group_entries);
         let condition = combine_conditions(conditions);
 
         variants.push((condition, structure_tokens));

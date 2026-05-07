@@ -188,6 +188,73 @@ pub use phf_macros::phf_set;
 /// Requires the `macros` feature. Same usage as [`phf_set`].
 pub use phf_macros::phf_ordered_set;
 
+// `__resolve_cfg` re-enters the proc macro after filtering `#[cfg]`
+// attributes. This supports both `phf::phf_map!` re-exports and direct
+// `phf_macros::phf_map!` users where `phf/macros` is not enabled.
+#[cfg(feature = "macros")]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __call_macro {
+    ($callback:ident { $($tokens:tt)* }) => {
+        $crate::$callback! { $($tokens)* }
+    };
+}
+
+#[cfg(not(feature = "macros"))]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __call_macro {
+    ($callback:ident { $($tokens:tt)* }) => {
+        phf_macros::$callback! { $($tokens)* }
+    };
+}
+
+#[doc(hidden)]
+// Invoked by proc macros to resolve `#[cfg]`s in the caller context.
+#[macro_export]
+macro_rules! __resolve_cfg {
+    // No `#[cfg]`s left to evaluate.
+    ($callback:ident [ $($acc:tt)* ] { $($in:tt)* }) => {
+        $crate::__call_macro! {
+            $callback { $($acc)* $($in)* }
+        }
+    };
+
+    // Evaluate a `#[cfg]`.
+    (
+        $callback:ident
+        [ $($acc:tt)* ]
+        { $($in1:tt)* }
+        { $(#[$meta:meta])+ $($in2:tt)* }
+        $($rest:tt)*
+    ) => {{
+        // Macro shadowing is allowed if the shadowed macro is unused.
+        #[allow(unused)]
+        macro_rules! resolver {
+            () => {
+                $crate::__resolve_cfg! {
+                    $callback
+                    [ $($acc)* $($in1)* ]
+                    $($rest)*
+                }
+            };
+        }
+
+        $(#[$meta])+
+        macro_rules! resolver {
+            () => {
+                $crate::__resolve_cfg! {
+                    $callback
+                    [ $($acc)* $($in1)* $($in2)* ]
+                    $($rest)*
+                }
+            };
+        }
+
+        resolver! {}
+    }};
+}
+
 #[doc(inline)]
 pub use self::map::Map;
 #[doc(inline)]

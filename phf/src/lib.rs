@@ -188,14 +188,36 @@ pub use phf_macros::phf_set;
 /// Requires the `macros` feature. Same usage as [`phf_set`].
 pub use phf_macros::phf_ordered_set;
 
+// `__resolve_cfg` re-enters the proc macro after filtering `#[cfg]`
+// attributes. This supports both `phf::phf_map!` re-exports and direct
+// `phf_macros::phf_map!` users where `phf/macros` is not enabled.
 #[cfg(feature = "macros")]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __call_macro {
+    ($callback:ident { $($tokens:tt)* }) => {
+        $crate::$callback! { $($tokens)* }
+    };
+}
+
+#[cfg(not(feature = "macros"))]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __call_macro {
+    ($callback:ident { $($tokens:tt)* }) => {
+        phf_macros::$callback! { $($tokens)* }
+    };
+}
+
 #[doc(hidden)]
 // Invoked by proc macros to resolve `#[cfg]`s in the caller context.
 #[macro_export]
 macro_rules! __resolve_cfg {
     // No `#[cfg]`s left to evaluate.
     ($callback:ident [ $($acc:tt)* ] { $($in:tt)* }) => {
-        $crate::$callback! { $($acc)* $($in)* }
+        $crate::__call_macro! {
+            $callback { $($acc)* $($in)* }
+        }
     };
 
     // Evaluate a `#[cfg]`.

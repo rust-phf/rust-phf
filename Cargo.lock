@@ -365,6 +365,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "phf_macros_no_macros_test"
+version = "0.1.0"
+dependencies = [
+ "phf",
+ "phf_macros",
+]
+
+[[package]]
 name = "phf_macros_test"
 version = "0.1.0"
 dependencies = [

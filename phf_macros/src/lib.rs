@@ -312,6 +312,10 @@ impl Map {
     }
 }
 
+fn key_has_cfg_attr(key: &parse::Key) -> bool {
+    key.attrs.iter().any(|attr| attr.path().is_ident("cfg"))
+}
+
 fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
     #[cfg(not(feature = "ptrhash"))]
     {
@@ -414,13 +418,13 @@ fn resolve_cfg<T: AsMapEntry + ToTokens>(
     let mut unconditional = Vec::new();
     for pair in entries.pairs() {
         let entry = pair.value();
-        if entry.key().attrs.is_empty() {
-            unconditional.push(pair);
-        } else {
+        if key_has_cfg_attr(entry.key()) {
             // Pushing groups unconditionally simplifies the decl macro side.
             quote! { { #(#unconditional)* } }.to_tokens(&mut cfg_args);
             unconditional.clear();
             quote! { { #pair } }.to_tokens(&mut cfg_args);
+        } else {
+            unconditional.push(pair);
         }
     }
     quote! { { #(#unconditional)* } }.to_tokens(&mut cfg_args);
@@ -441,7 +445,7 @@ fn emit_code(
     builder: fn(&[Entry], HashState) -> proc_macro2::TokenStream,
 ) -> TokenStream {
     // If any entries have cfg attributes, resolve them via decl macro
-    let has_cfg_attrs = entries.iter().any(|entry| !entry.key().attrs.is_empty());
+    let has_cfg_attrs = entries.iter().any(|entry| key_has_cfg_attr(entry.key()));
     if has_cfg_attrs {
         return resolve_cfg(macro_name, entries);
     }

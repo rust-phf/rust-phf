@@ -1,4 +1,5 @@
-//! `syn` types for macro input.
+//! `syn` types for macro input. Sets are adapted as map entries with `()`
+//! values so the map-building path can be shared.
 
 use proc_macro2::TokenStream;
 use quote::ToTokens;
@@ -90,7 +91,7 @@ impl AsMapEntry for Key {
         self
     }
     fn value(&self) -> Expr {
-        syn::parse_str("()").expect("Failed to parse unit value")
+        syn::parse_quote!(())
     }
 }
 

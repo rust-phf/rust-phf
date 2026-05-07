@@ -662,6 +662,17 @@ mod ordered_map {
         assert_eq!(Some(&3), MY_MAP.get("baz"));
         #[cfg(not(feature = "enabled_feature"))]
         assert_eq!(None, MY_MAP.get("baz"));
+
+        static EMPTY_MAP: phf::OrderedMap<&'static str, u32> = phf_ordered_map! {
+            #[cfg(feature = "disabled_feature")]
+            "foo" => 1,
+        };
+        #[cfg(feature = "disabled_feature")]
+        assert_eq!(EMPTY_MAP.len(), 1);
+        #[cfg(not(feature = "disabled_feature"))]
+        assert_eq!(EMPTY_MAP.len(), 0);
+        #[cfg(not(feature = "disabled_feature"))]
+        assert_eq!(EMPTY_MAP.index(0), None);
     }
 
     #[test]
@@ -822,6 +833,17 @@ mod ordered_set {
         assert!(SET.contains("baz"));
         #[cfg(not(feature = "enabled_feature"))]
         assert!(!SET.contains("baz"));
+
+        static EMPTY_SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
+            #[cfg(feature = "disabled_feature")]
+            "foo",
+        };
+        #[cfg(feature = "disabled_feature")]
+        assert_eq!(EMPTY_SET.len(), 1);
+        #[cfg(not(feature = "disabled_feature"))]
+        assert_eq!(EMPTY_SET.len(), 0);
+        #[cfg(not(feature = "disabled_feature"))]
+        assert_eq!(EMPTY_SET.index(0), None);
     }
 
     #[test]

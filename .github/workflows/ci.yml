@@ -32,7 +32,15 @@ jobs:
 
       - name: Run `cargo test` on workspace
         if: matrix.version != '1.71.0'
-        run: cargo test --workspace --exclude=phf_codegen_test
+        run: cargo test --workspace --exclude=phf_codegen_test --exclude=phf_macros_no_macros_test
+
+      - name: phf_macros test without phf/macros
+        if: matrix.version != '1.71.0'
+        run: cargo test -p phf_macros_no_macros_test
+
+      - name: phf_macros ptrhash test without phf/macros
+        if: matrix.version != '1.71.0'
+        run: cargo test -p phf_macros_no_macros_test --features ptrhash
 
       - name: phf_codegen test
         if: matrix.version != '1.71.0'

@@ -8,9 +8,10 @@ use std::iter;
 use fastrand::Rng;
 use phf_shared::{HashKey, Hashes, PhfHash};
 
-const DEFAULT_LAMBDA: usize = 5;
+const DEFAULT_LAMBDA: usize = 3;
 
 const FIXED_SEED: u64 = 1234567890;
+const EMPTY_SLOT: usize = usize::MAX;
 
 #[cfg(feature = "ptrhash")]
 pub mod ptrhash;
@@ -42,21 +43,26 @@ where
         .map(|key| HashState {
             key,
             disps: generator.disps,
-            map: generator.map.into_iter().map(|i| i.unwrap()).collect(),
+            map: generator.map,
         })
         .expect("failed to solve PHF")
 }
 
 struct Bucket {
     idx: usize,
-    keys: Vec<usize>,
+    start: usize,
+    len: usize,
+    cursor: usize,
 }
 
 struct Generator {
     hashes: Vec<Hashes>,
     buckets: Vec<Bucket>,
+    bucket_order: Vec<usize>,
+    bucket_keys: Vec<usize>,
+    key_buckets: Vec<usize>,
     disps: Vec<(u32, u32)>,
-    map: Vec<Option<usize>>,
+    map: Vec<usize>,
     try_map: Vec<u64>,
 }
 
@@ -68,17 +74,25 @@ impl Generator {
         let buckets: Vec<_> = (0..buckets_len)
             .map(|i| Bucket {
                 idx: i,
-                keys: vec![],
+                start: 0,
+                len: 0,
+                cursor: 0,
             })
             .collect();
+        let bucket_order = (0..buckets_len).collect();
+        let bucket_keys = vec![0; table_len];
+        let key_buckets = vec![0; table_len];
         let disps = vec![(0u32, 0u32); buckets_len];
 
-        let map = vec![None; table_len];
+        let map = vec![EMPTY_SLOT; table_len];
         let try_map = vec![0u64; table_len];
 
         Self {
             hashes,
             buckets,
+            bucket_order,
+            bucket_keys,
+            key_buckets,
             disps,
             map,
             try_map,
@@ -89,10 +103,13 @@ impl Generator {
     where
         I: Iterator<Item = Hashes>,
     {
-        self.buckets.iter_mut().for_each(|b| b.keys.clear());
-        self.buckets.sort_by_key(|b| b.idx);
+        self.buckets.iter_mut().for_each(|b| {
+            b.start = 0;
+            b.len = 0;
+            b.cursor = 0;
+        });
         self.disps.fill((0, 0));
-        self.map.fill(None);
+        self.map.fill(EMPTY_SLOT);
         self.try_map.fill(0);
 
         self.hashes.clear();
@@ -101,13 +118,31 @@ impl Generator {
 
     fn try_generate_hash(&mut self) -> bool {
         let buckets_len = self.buckets.len() as u32;
+
+        // Store bucket contents in one flat buffer instead of allocating a Vec per bucket.
         for (i, hash) in self.hashes.iter().enumerate() {
-            self.buckets[(hash.g % buckets_len) as usize].keys.push(i);
+            let bucket = (hash.g % buckets_len) as usize;
+            self.key_buckets[i] = bucket;
+            let bucket = &mut self.buckets[bucket];
+            bucket.len += 1;
         }
 
-        // Sort descending
-        self.buckets
-            .sort_by(|a, b| a.keys.len().cmp(&b.keys.len()).reverse());
+        let mut start = 0;
+        for bucket in &mut self.buckets {
+            bucket.start = start;
+            bucket.cursor = start;
+            start += bucket.len;
+        }
+
+        for (i, &bucket) in self.key_buckets.iter().enumerate() {
+            let bucket = &mut self.buckets[bucket];
+            self.bucket_keys[bucket.cursor] = i;
+            bucket.cursor += 1;
+        }
+
+        let buckets = &self.buckets;
+        self.bucket_order
+            .sort_unstable_by(|&a, &b| buckets[b].len.cmp(&buckets[a].len).then_with(|| a.cmp(&b)));
 
         let table_len = self.hashes.len();
 
@@ -125,17 +160,20 @@ impl Generator {
         // chosen the right disps.
         let mut values_to_add = vec![];
 
-        'buckets: for bucket in &self.buckets {
+        'buckets: for &bucket_idx in &self.bucket_order {
+            let bucket = &self.buckets[bucket_idx];
+            let keys = &self.bucket_keys[bucket.start..bucket.start + bucket.len];
+
             for d1 in 0..(table_len as u32) {
                 'disps: for d2 in 0..(table_len as u32) {
                     values_to_add.clear();
                     generation += 1;
 
-                    for &key in &bucket.keys {
+                    for &key in keys {
                         let idx =
                             (phf_shared::displace(self.hashes[key].f1, self.hashes[key].f2, d1, d2)
                                 % (table_len as u32)) as usize;
-                        if self.map[idx].is_some() || self.try_map[idx] == generation {
+                        if self.map[idx] != EMPTY_SLOT || self.try_map[idx] == generation {
                             continue 'disps;
                         }
                         self.try_map[idx] = generation;
@@ -145,7 +183,7 @@ impl Generator {
                     // We've picked a good set of disps
                     self.disps[bucket.idx] = (d1, d2);
                     for &(idx, key) in &values_to_add {
-                        self.map[idx] = Some(key);
+                        self.map[idx] = key;
                     }
                     continue 'buckets;
                 }

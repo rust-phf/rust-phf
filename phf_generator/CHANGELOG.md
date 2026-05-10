@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Changed
+
+ - Speed up hash generation by using flatter bucket storage and smaller bucket groups, trading a larger displacement table for less placement search work.
+
 ## 0.12.0 (2025-06-19)
 
 <csr-id-08e74647f00f7d77cbb81e0cb73ed663798d000f/>
@@ -252,4 +258,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Add doc roots ([`e22cdea`](https://github.com/rust-phf/rust-phf/commit/e22cdea2b24ce65b4de25adbb6cce727f20ac2f5))
     - Move generation logic to its own crate ([`cfeee87`](https://github.com/rust-phf/rust-phf/commit/cfeee8714caa4ecb3199df2a2ac149fe6a28ecc0))
 </details>
-

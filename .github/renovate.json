@@ -3,5 +3,18 @@
   "extends": [
     "config:recommended",
     "helpers:pinGitHubActionDigests"
+  ],
+  "packageRules": [
+    {
+      "description": "Keep zizmor-action in sync with the zizmor versions it supports.",
+      "matchManagers": ["github-actions"],
+      "matchDepNames": [
+        "ghcr.io/zizmorcore/zizmor",
+        "zizmorcore/zizmor-action"
+      ],
+      "groupName": "zizmor",
+      "groupSlug": "zizmor",
+      "separateMajorMinor": false
+    }
   ]
 }

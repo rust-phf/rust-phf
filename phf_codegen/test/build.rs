@@ -123,6 +123,56 @@ fn main() -> io::Result<()> {
             .build()
     )?;
 
+    writeln!(
+        &mut file,
+        "static BYTE_VEC_KEYS: ::phf::Map<&'static [u8], u32> = \n{};",
+        phf_codegen::Map::<Vec<u8>>::new()
+            .entry(b"foo".to_vec(), "0")
+            .entry(b"bar".to_vec(), "1")
+            .entry(b"baz".to_vec(), "2")
+            .build()
+    )?;
+
+    writeln!(
+        &mut file,
+        "static U32_VEC_KEYS: ::phf::Map<&'static [u32], &'static str> = \n{};",
+        phf_codegen::Map::<Vec<u32>>::new()
+            .entry(vec![1u32, 2, 3], "\"a\"")
+            .entry(vec![4u32, 5, 6], "\"b\"")
+            .entry(vec![7u32, 8, 9], "\"c\"")
+            .build()
+    )?;
+
+    writeln!(
+        &mut file,
+        "static U32_VEC_SET: ::phf::Set<&'static [u32]> = \n{};",
+        phf_codegen::Set::<Vec<u32>>::new()
+            .entry(vec![1u32, 2, 3])
+            .entry(vec![4u32, 5, 6])
+            .entry(vec![7u32, 8, 9])
+            .build()
+    )?;
+
+    writeln!(
+        &mut file,
+        "static U32_VEC_ORDERED_MAP: ::phf::OrderedMap<&'static [u32], &'static str> = \n{};",
+        phf_codegen::OrderedMap::<Vec<u32>>::new()
+            .entry(vec![1u32, 2, 3], "\"a\"")
+            .entry(vec![4u32, 5, 6], "\"b\"")
+            .entry(vec![7u32, 8, 9], "\"c\"")
+            .build()
+    )?;
+
+    writeln!(
+        &mut file,
+        "static U32_VEC_ORDERED_SET: ::phf::OrderedSet<&'static [u32]> = \n{};",
+        phf_codegen::OrderedSet::<Vec<u32>>::new()
+            .entry(vec![1u32, 2, 3])
+            .entry(vec![4u32, 5, 6])
+            .entry(vec![7u32, 8, 9])
+            .build()
+    )?;
+
     // Test FromIterator implementation
     writeln!(
         &mut file,

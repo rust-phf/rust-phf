@@ -20,8 +20,8 @@ error[E0277]: the trait bound `UniCase<&str>: phf_shared::PhfBorrow<_>` is not s
    |              required by a bound introduced by this call
    |
    = help: the following other types implement trait `phf_shared::PhfBorrow<B>`:
-             `&[u8; N]` implements `phf_shared::PhfBorrow<[u8; N]>`
-             `&[u8]` implements `phf_shared::PhfBorrow<[u8]>`
+             `&[T; N]` implements `phf_shared::PhfBorrow<[T; N]>`
+             `&[T]` implements `phf_shared::PhfBorrow<[T]>`
              `&str` implements `phf_shared::PhfBorrow<str>`
              `(A, B)` implements `phf_shared::PhfBorrow<(A, B)>`
              `(A, B, C)` implements `phf_shared::PhfBorrow<(A, B, C)>`

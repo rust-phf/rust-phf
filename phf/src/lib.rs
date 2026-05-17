@@ -5,7 +5,7 @@
 //! [CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) by default and
 //! also ships an experimental `ptrhash` feature for an alternative MPHF layout.
 //!
-//! MSRV (minimum supported rust version) is Rust 1.71.
+//! MSRV (minimum supported rust version) is Rust 1.85.
 //!
 //! ## Usage
 //!

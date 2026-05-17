@@ -3,17 +3,17 @@
 //!
 //! [phf]: https://docs.rs/phf
 
-#[cfg(feature = "ptrhash")]
-use phf_generator::ptrhash::HashState;
 #[cfg(not(feature = "ptrhash"))]
 use phf_generator::HashState;
+#[cfg(feature = "ptrhash")]
+use phf_generator::ptrhash::HashState;
 use phf_shared::PhfHash;
 use proc_macro::TokenStream;
-use quote::{quote, ToTokens};
+use quote::{ToTokens, quote};
 use std::collections::HashSet;
 use std::hash::Hasher;
 use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, BinOp, Error, Expr, ExprLit, Lit, Token, UnOp};
+use syn::{BinOp, Error, Expr, ExprLit, Lit, Token, UnOp, parse_macro_input};
 #[cfg(feature = "uncased")]
 use uncased_::Uncased;
 #[cfg(feature = "unicase")]
@@ -146,11 +146,7 @@ impl ParsedKey {
                 // the same absolute value so we don't need to negate it here
                 macro_rules! try_negate {
                     ($val:expr) => {
-                        if $val < 0 {
-                            $val
-                        } else {
-                            -$val
-                        }
+                        if $val < 0 { $val } else { -$val }
                     };
                 }
 

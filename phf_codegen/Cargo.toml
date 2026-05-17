@@ -5,9 +5,9 @@ version = "0.13.1"
 license = "MIT"
 description = "Codegen library for PHF types"
 repository = "https://github.com/rust-phf/rust-phf"
-edition = "2021"
+edition = "2024"
 readme = "../README.md"
-rust-version = "1.71"
+rust-version = "1.85"
 categories = ["data-structures"]
 
 [features]

@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::{self, BufWriter, Write};
 use std::path::Path;
 
-use quote::{quote, ToTokens};
+use quote::{ToTokens, quote};
 use uncased::UncasedStr;
 use unicase::{Ascii, UniCase};
 

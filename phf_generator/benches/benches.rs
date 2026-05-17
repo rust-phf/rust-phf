@@ -1,16 +1,16 @@
 use std::hint::black_box;
 use std::iter;
 
-use criterion::measurement::Measurement;
 #[cfg(feature = "ptrhash")]
 use criterion::Throughput;
-use criterion::{criterion_group, criterion_main, Bencher, BenchmarkId, Criterion};
+use criterion::measurement::Measurement;
+use criterion::{Bencher, BenchmarkId, Criterion, criterion_group, criterion_main};
 
 use fastrand::Rng;
 
 use phf_generator::generate_hash;
 #[cfg(feature = "ptrhash")]
-use phf_generator::{ptrhash, HashState};
+use phf_generator::{HashState, ptrhash};
 
 fn gen_numbers(len: usize) -> Vec<u64> {
     let mut rng = Rng::with_seed(0xAAAAAAAAAAAAAAAA);

@@ -162,6 +162,16 @@ impl<T: FmtConst> fmt::Display for Delegate<T> {
     }
 }
 
+#[cfg(feature = "quote")]
+fn write_tokens(tokens: &mut proc_macro2::TokenStream, value: impl fmt::Display) {
+    tokens.extend(
+        value
+            .to_string()
+            .parse::<proc_macro2::TokenStream>()
+            .expect("phf_codegen generated invalid Rust tokens"),
+    );
+}
+
 fn generate_hash_state<H: PhfHash>(keys: &[H]) -> HashState {
     #[cfg(not(feature = "ptrhash"))]
     {
@@ -217,7 +227,10 @@ impl<'a, K: Hash + PhfHash + Eq + FmtConst> Map<'a, K> {
     }
 
     /// Calculate the hash parameters and return a struct implementing
-    /// [`Display`](::std::fmt::Display) which will print the constructed `phf::Map`.
+    /// [`Display`](::std::fmt::Display) for the constructed `phf::Map`.
+    ///
+    /// With the `quote` feature enabled, the returned value also implements
+    /// `quote::ToTokens`.
     ///
     /// # Panics
     ///
@@ -358,6 +371,13 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
     }
 }
 
+#[cfg(feature = "quote")]
+impl<'a, K: FmtConst + 'a> quote::ToTokens for DisplayMap<'a, K> {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        write_tokens(tokens, self);
+    }
+}
+
 impl<'a, K, V> FromIterator<(K, V)> for Map<'a, K>
 where
     K: Hash + PhfHash + Eq + FmtConst,
@@ -396,7 +416,10 @@ impl<'a, T: Hash + PhfHash + Eq + FmtConst> Set<'a, T> {
     }
 
     /// Calculate the hash parameters and return a struct implementing
-    /// [`Display`](::std::fmt::Display) which will print the constructed `phf::Set`.
+    /// [`Display`](::std::fmt::Display) for the constructed `phf::Set`.
+    ///
+    /// With the `quote` feature enabled, the returned value also implements
+    /// `quote::ToTokens`.
     ///
     /// # Panics
     ///
@@ -416,6 +439,13 @@ pub struct DisplaySet<'a, T> {
 impl<'a, T: FmtConst + 'a> fmt::Display for DisplaySet<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}::Set {{ map: {} }}", self.inner.path, self.inner)
+    }
+}
+
+#[cfg(feature = "quote")]
+impl<'a, T: FmtConst + 'a> quote::ToTokens for DisplaySet<'a, T> {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        write_tokens(tokens, self);
     }
 }
 
@@ -452,8 +482,10 @@ impl<'a, K: Hash + PhfHash + Eq + FmtConst> OrderedMap<'a, K> {
     }
 
     /// Calculate the hash parameters and return a struct implementing
-    /// [`Display`](::std::fmt::Display) which will print the constructed
-    /// `phf::OrderedMap`.
+    /// [`Display`](::std::fmt::Display) for the constructed `phf::OrderedMap`.
+    ///
+    /// With the `quote` feature enabled, the returned value also implements
+    /// `quote::ToTokens`.
     ///
     /// # Panics
     ///
@@ -617,6 +649,13 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
     }
 }
 
+#[cfg(feature = "quote")]
+impl<'a, K: FmtConst + 'a> quote::ToTokens for DisplayOrderedMap<'a, K> {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        write_tokens(tokens, self);
+    }
+}
+
 /// A builder for the `phf::OrderedSet` type.
 pub struct OrderedSet<'a, T> {
     map: OrderedMap<'a, T>,
@@ -643,8 +682,10 @@ impl<'a, T: Hash + PhfHash + Eq + FmtConst> OrderedSet<'a, T> {
     }
 
     /// Calculate the hash parameters and return a struct implementing
-    /// [`Display`](::std::fmt::Display) which will print the constructed
-    /// `phf::OrderedSet`.
+    /// [`Display`](::std::fmt::Display) for the constructed `phf::OrderedSet`.
+    ///
+    /// With the `quote` feature enabled, the returned value also implements
+    /// `quote::ToTokens`.
     ///
     /// # Panics
     ///
@@ -668,5 +709,12 @@ impl<'a, T: FmtConst + 'a> fmt::Display for DisplayOrderedSet<'a, T> {
             "{}::OrderedSet {{ map: {} }}",
             self.inner.path, self.inner
         )
+    }
+}
+
+#[cfg(feature = "quote")]
+impl<'a, T: FmtConst + 'a> quote::ToTokens for DisplayOrderedSet<'a, T> {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        write_tokens(tokens, self);
     }
 }

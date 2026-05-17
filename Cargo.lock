@@ -330,6 +330,8 @@ version = "0.13.1"
 dependencies = [
  "phf_generator",
  "phf_shared",
+ "proc-macro2",
+ "quote",
 ]
 
 [[package]]
@@ -338,6 +340,8 @@ version = "0.0.0"
 dependencies = [
  "phf",
  "phf_codegen",
+ "proc-macro2",
+ "quote",
  "uncased",
  "unicase",
 ]

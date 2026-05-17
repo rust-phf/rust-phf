@@ -161,4 +161,22 @@ mod test {
         assert!(!MIXED_TUPLE_MAP.contains_key(&(false, 1u8, "test")));
         assert!(!MIXED_TUPLE_MAP.contains_key(&(true, 4u8, "missing")));
     }
+
+    #[test]
+    fn quote_token_interop() {
+        assert_eq!("a", TO_TOKEN_STREAM_MAP[&1]);
+        assert_eq!("b", TO_TOKEN_STREAM_MAP[&2]);
+        assert_eq!("c", TO_TOKEN_STREAM_MAP[&3]);
+        assert!(QUOTED_SET.contains(&1));
+        assert!(QUOTED_SET.contains(&2));
+        assert!(QUOTED_SET.contains(&3));
+        assert_eq!(
+            &["a", "b", "c"][..],
+            &QUOTED_ORDERED_MAP.values().cloned().collect::<Vec<_>>()[..]
+        );
+        assert_eq!(
+            &[1, 2, 3][..],
+            &QUOTED_ORDERED_SET.iter().cloned().collect::<Vec<_>>()[..]
+        );
+    }
 }

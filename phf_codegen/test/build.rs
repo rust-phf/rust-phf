@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::{self, BufWriter, Write};
 use std::path::Path;
 
+use quote::{quote, ToTokens};
 use uncased::UncasedStr;
 use unicase::{Ascii, UniCase};
 
@@ -174,5 +175,38 @@ fn main() -> io::Result<()> {
             .entry((false, 2u8, "demo"), "\"value2\"")
             .entry((true, 3u8, "example"), "\"value3\"")
             .build()
+    )?;
+
+    let mut quoted_map_tokens = phf_codegen::Map::new();
+    quoted_map_tokens
+        .entry(1u32, "\"a\"")
+        .entry(2u32, "\"b\"")
+        .entry(3u32, "\"c\"");
+    let quoted_map_tokens: proc_macro2::TokenStream = quoted_map_tokens.build().to_token_stream();
+
+    let mut quoted_set = phf_codegen::Set::new();
+    quoted_set.entry(1u32).entry(2u32).entry(3u32);
+    let quoted_set = quoted_set.build();
+
+    let mut quoted_ordered_map = phf_codegen::OrderedMap::new();
+    quoted_ordered_map
+        .entry(1u32, "\"a\"")
+        .entry(2u32, "\"b\"")
+        .entry(3u32, "\"c\"");
+    let quoted_ordered_map = quoted_ordered_map.build();
+
+    let mut quoted_ordered_set = phf_codegen::OrderedSet::new();
+    quoted_ordered_set.entry(1u32).entry(2u32).entry(3u32);
+    let quoted_ordered_set = quoted_ordered_set.build();
+
+    writeln!(
+        &mut file,
+        "{}",
+        quote! {
+            static TO_TOKEN_STREAM_MAP: ::phf::Map<u32, &'static str> = #quoted_map_tokens;
+            static QUOTED_SET: ::phf::Set<u32> = #quoted_set;
+            static QUOTED_ORDERED_MAP: ::phf::OrderedMap<u32, &'static str> = #quoted_ordered_map;
+            static QUOTED_ORDERED_SET: ::phf::OrderedSet<u32> = #quoted_ordered_set;
+        }
     )
 }

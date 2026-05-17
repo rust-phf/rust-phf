@@ -109,6 +109,51 @@ mod test {
     }
 
     #[test]
+    fn byte_vec_keys() {
+        assert_eq!(0, BYTE_VEC_KEYS[&b"foo"[..]]);
+        assert_eq!(1, BYTE_VEC_KEYS[&b"bar"[..]]);
+        assert_eq!(2, BYTE_VEC_KEYS[&b"baz"[..]]);
+    }
+
+    #[test]
+    fn u32_vec_keys() {
+        assert_eq!("a", U32_VEC_KEYS[&[1u32, 2, 3][..]]);
+        assert_eq!("b", U32_VEC_KEYS[&[4u32, 5, 6][..]]);
+        assert_eq!("c", U32_VEC_KEYS[&[7u32, 8, 9][..]]);
+        assert!(!U32_VEC_KEYS.contains_key(&[10u32, 11, 12][..]));
+    }
+
+    #[test]
+    fn u32_vec_set() {
+        assert!(U32_VEC_SET.contains(&[1u32, 2, 3][..]));
+        assert!(U32_VEC_SET.contains(&[4u32, 5, 6][..]));
+        assert!(U32_VEC_SET.contains(&[7u32, 8, 9][..]));
+        assert!(!U32_VEC_SET.contains(&[10u32, 11, 12][..]));
+    }
+
+    #[test]
+    fn u32_vec_ordered_map() {
+        assert_eq!("a", U32_VEC_ORDERED_MAP[&[1u32, 2, 3][..]]);
+        assert_eq!("b", U32_VEC_ORDERED_MAP[&[4u32, 5, 6][..]]);
+        assert_eq!("c", U32_VEC_ORDERED_MAP[&[7u32, 8, 9][..]]);
+        assert_eq!(
+            &[&[1u32, 2, 3][..], &[4u32, 5, 6][..], &[7u32, 8, 9][..]],
+            &U32_VEC_ORDERED_MAP.keys().copied().collect::<Vec<_>>()[..]
+        );
+    }
+
+    #[test]
+    fn u32_vec_ordered_set() {
+        assert!(U32_VEC_ORDERED_SET.contains(&[1u32, 2, 3][..]));
+        assert!(U32_VEC_ORDERED_SET.contains(&[4u32, 5, 6][..]));
+        assert!(U32_VEC_ORDERED_SET.contains(&[7u32, 8, 9][..]));
+        assert_eq!(
+            &[&[1u32, 2, 3][..], &[4u32, 5, 6][..], &[7u32, 8, 9][..]],
+            &U32_VEC_ORDERED_SET.iter().copied().collect::<Vec<_>>()[..]
+        );
+    }
+
+    #[test]
     fn empty_map() {
         assert_eq!(None, EMPTY.get(&1));
     }

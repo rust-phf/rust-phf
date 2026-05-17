@@ -203,13 +203,6 @@ impl PhfBorrow<str> for String {
 }
 
 #[cfg(feature = "std")]
-impl PhfBorrow<[u8]> for Vec<u8> {
-    fn borrow(&self) -> &[u8] {
-        self
-    }
-}
-
-#[cfg(feature = "std")]
 delegate_debug!(String);
 
 #[cfg(feature = "std")]
@@ -221,10 +214,10 @@ impl PhfHash for String {
 }
 
 #[cfg(feature = "std")]
-impl PhfHash for Vec<u8> {
+impl<T: PhfHash> PhfHash for Vec<T> {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
-        (**self).phf_hash(state)
+        self.as_slice().phf_hash(state)
     }
 }
 
@@ -246,14 +239,21 @@ impl PhfBorrow<str> for &str {
     }
 }
 
-impl PhfBorrow<[u8]> for &[u8] {
-    fn borrow(&self) -> &[u8] {
+#[cfg(feature = "std")]
+impl<T> PhfBorrow<[T]> for Vec<T> {
+    fn borrow(&self) -> &[T] {
         self
     }
 }
 
-impl<const N: usize> PhfBorrow<[u8; N]> for &[u8; N] {
-    fn borrow(&self) -> &[u8; N] {
+impl<T> PhfBorrow<[T]> for &[T] {
+    fn borrow(&self) -> &[T] {
+        self
+    }
+}
+
+impl<T, const N: usize> PhfBorrow<[T; N]> for &[T; N] {
+    fn borrow(&self) -> &[T; N] {
         self
     }
 }
@@ -262,14 +262,6 @@ impl PhfHash for str {
     #[inline]
     fn phf_hash<H: Hasher>(&self, state: &mut H) {
         self.as_bytes().phf_hash(state)
-    }
-}
-
-impl FmtConst for [u8] {
-    #[inline]
-    fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // slices need a leading reference
-        write!(f, "&{:?}", self)
     }
 }
 
@@ -432,9 +424,31 @@ impl<T: PhfHash> PhfHash for [T] {
 }
 
 // minimize duplicated code since formatting drags in quite a bit
+fn fmt_slice<T: core::fmt::Debug>(slice: &[T], f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    // slices need a leading reference
+    write!(f, "&{:?}", slice)
+}
+
 fn fmt_array<T: core::fmt::Debug>(array: &[T], f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(f, "{:?}", array)
 }
+
+macro_rules! slice_impl (
+    ($t:ty) => (
+        impl FmtConst for [$t] {
+            fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                fmt_slice(self, f)
+            }
+        }
+
+        #[cfg(feature = "std")]
+        impl FmtConst for Vec<$t> {
+            fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                self.as_slice().fmt_const(f)
+            }
+        }
+    )
+);
 
 macro_rules! array_impl (
     ($t:ty) => (
@@ -451,6 +465,21 @@ macro_rules! array_impl (
         }
     )
 );
+
+slice_impl!(u8);
+slice_impl!(i8);
+slice_impl!(u16);
+slice_impl!(i16);
+slice_impl!(u32);
+slice_impl!(i32);
+slice_impl!(u64);
+slice_impl!(i64);
+slice_impl!(usize);
+slice_impl!(isize);
+slice_impl!(u128);
+slice_impl!(i128);
+slice_impl!(bool);
+slice_impl!(char);
 
 array_impl!(u8);
 array_impl!(i8);
@@ -614,6 +643,19 @@ mod tests {
     fn slices_and_arrays_are_hashed_consistently() {
         assert_eq!(test_hash(&[1u8, 2, 3]), test_hash(&[1u8, 2, 3][..]));
         assert_eq!(test_hash(&[1u16, 2, 3]), test_hash(&[1u16, 2, 3][..]));
+    }
+
+    #[test]
+    fn array_reference_borrow_is_generic() {
+        fn assert_borrow<K, B: ?Sized>()
+        where
+            K: PhfBorrow<B>,
+        {
+        }
+
+        assert_borrow::<&[u32; 2], [u32; 2]>();
+        assert_borrow::<&[bool; 2], [bool; 2]>();
+        assert_borrow::<&[char; 2], [char; 2]>();
     }
 
     #[test]

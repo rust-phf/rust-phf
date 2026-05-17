@@ -5,7 +5,7 @@ use core::iter::IntoIterator;
 
 use phf_shared::{PhfBorrow, PhfHash};
 
-use crate::{map, Map};
+use crate::{Map, map};
 
 /// An immutable set constructed at compile time.
 ///

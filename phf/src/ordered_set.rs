@@ -1,5 +1,5 @@
 //! An order-preserving immutable set constructed at compile time.
-use crate::{ordered_map, OrderedMap, PhfHash};
+use crate::{OrderedMap, PhfHash, ordered_map};
 use core::fmt;
 use core::iter::FusedIterator;
 use core::iter::IntoIterator;

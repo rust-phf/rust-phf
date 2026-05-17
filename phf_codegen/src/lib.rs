@@ -149,10 +149,10 @@ use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 
-#[cfg(feature = "ptrhash")]
-use phf_generator::ptrhash::HashState;
 #[cfg(not(feature = "ptrhash"))]
 use phf_generator::HashState;
+#[cfg(feature = "ptrhash")]
+use phf_generator::ptrhash::HashState;
 
 struct Delegate<T>(T);
 

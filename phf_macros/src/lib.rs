@@ -87,57 +87,132 @@ impl PhfHash for ParsedKey {
 }
 
 impl ParsedKey {
-    fn from_expr(expr: &Expr) -> Option<ParsedKey> {
+    fn has_same_type_as(&self, other: &ParsedKey) -> bool {
+        match (self, other) {
+            (ParsedKey::Str(_), ParsedKey::Str(_))
+            | (ParsedKey::Binary(_), ParsedKey::Binary(_))
+            | (ParsedKey::Char(_), ParsedKey::Char(_))
+            | (ParsedKey::I8(_), ParsedKey::I8(_))
+            | (ParsedKey::I16(_), ParsedKey::I16(_))
+            | (ParsedKey::I32(_), ParsedKey::I32(_))
+            | (ParsedKey::I64(_), ParsedKey::I64(_))
+            | (ParsedKey::I128(_), ParsedKey::I128(_))
+            | (ParsedKey::Isize(_), ParsedKey::Isize(_))
+            | (ParsedKey::U8(_), ParsedKey::U8(_))
+            | (ParsedKey::U16(_), ParsedKey::U16(_))
+            | (ParsedKey::U32(_), ParsedKey::U32(_))
+            | (ParsedKey::U64(_), ParsedKey::U64(_))
+            | (ParsedKey::U128(_), ParsedKey::U128(_))
+            | (ParsedKey::Usize(_), ParsedKey::Usize(_))
+            | (ParsedKey::Bool(_), ParsedKey::Bool(_)) => true,
+            (ParsedKey::Tuple(left), ParsedKey::Tuple(right)) => {
+                left.len() == right.len()
+                    && left
+                        .iter()
+                        .zip(right)
+                        .all(|(left, right)| left.has_same_type_as(right))
+            }
+            #[cfg(feature = "unicase")]
+            (ParsedKey::UniCase(_), ParsedKey::UniCase(_)) => true,
+            #[cfg(feature = "unicase")]
+            (ParsedKey::UniCaseAscii(_), ParsedKey::UniCaseAscii(_)) => true,
+            #[cfg(feature = "uncased")]
+            (ParsedKey::Uncased(_), ParsedKey::Uncased(_)) => true,
+            _ => false,
+        }
+    }
+
+    fn from_unsuffixed_int(s: &syn::LitInt, hint: Option<&ParsedKey>) -> syn::Result<ParsedKey> {
+        match hint {
+            Some(ParsedKey::I8(_)) => Ok(ParsedKey::I8(s.base10_parse::<u8>().unwrap() as i8)),
+            Some(ParsedKey::I16(_)) => Ok(ParsedKey::I16(s.base10_parse::<u16>().unwrap() as i16)),
+            Some(ParsedKey::I32(_)) => Ok(ParsedKey::I32(s.base10_parse::<u32>().unwrap() as i32)),
+            Some(ParsedKey::I64(_)) => Ok(ParsedKey::I64(s.base10_parse::<u64>().unwrap() as i64)),
+            Some(ParsedKey::I128(_)) => {
+                Ok(ParsedKey::I128(s.base10_parse::<u128>().unwrap() as i128))
+            }
+            Some(ParsedKey::Isize(_)) => {
+                Ok(ParsedKey::Isize(s.base10_parse::<usize>().unwrap() as isize))
+            }
+            Some(ParsedKey::U8(_)) => Ok(ParsedKey::U8(s.base10_parse::<u8>().unwrap())),
+            Some(ParsedKey::U16(_)) => Ok(ParsedKey::U16(s.base10_parse::<u16>().unwrap())),
+            Some(ParsedKey::U32(_)) => Ok(ParsedKey::U32(s.base10_parse::<u32>().unwrap())),
+            Some(ParsedKey::U64(_)) => Ok(ParsedKey::U64(s.base10_parse::<u64>().unwrap())),
+            Some(ParsedKey::U128(_)) => Ok(ParsedKey::U128(s.base10_parse::<u128>().unwrap())),
+            Some(ParsedKey::Usize(_)) => Ok(ParsedKey::Usize(s.base10_parse::<usize>().unwrap())),
+            Some(_) => Err(Error::new_spanned(
+                s,
+                "integer key literal type could not be inferred from the first key",
+            )),
+            None => Err(Error::new_spanned(
+                s,
+                "integer key literals in the first key must have an explicit type suffix",
+            )),
+        }
+    }
+
+    fn from_expr(expr: &Expr, hint: Option<&ParsedKey>) -> syn::Result<ParsedKey> {
         match expr {
             Expr::Lit(lit) => match &lit.lit {
-                Lit::Str(s) => Some(ParsedKey::Str(s.value())),
-                Lit::ByteStr(s) => Some(ParsedKey::Binary(s.value())),
-                Lit::Byte(s) => Some(ParsedKey::U8(s.value())),
-                Lit::Char(s) => Some(ParsedKey::Char(s.value())),
+                Lit::Str(s) => Ok(ParsedKey::Str(s.value())),
+                Lit::ByteStr(s) => Ok(ParsedKey::Binary(s.value())),
+                Lit::Byte(s) => Ok(ParsedKey::U8(s.value())),
+                Lit::Char(s) => Ok(ParsedKey::Char(s.value())),
                 Lit::Int(s) => match s.suffix() {
                     // we've lost the sign at this point, so `-128i8` looks like `128i8`,
                     // which doesn't fit in an `i8`; parse it as a `u8` and cast (to `0i8`),
                     // which is handled below, by `Unary`
-                    "i8" => Some(ParsedKey::I8(s.base10_parse::<u8>().unwrap() as i8)),
-                    "i16" => Some(ParsedKey::I16(s.base10_parse::<u16>().unwrap() as i16)),
-                    "i32" => Some(ParsedKey::I32(s.base10_parse::<u32>().unwrap() as i32)),
-                    "i64" => Some(ParsedKey::I64(s.base10_parse::<u64>().unwrap() as i64)),
-                    "i128" => Some(ParsedKey::I128(s.base10_parse::<u128>().unwrap() as i128)),
-                    "isize" => Some(ParsedKey::Isize(s.base10_parse::<usize>().unwrap() as isize)),
-                    "u8" => Some(ParsedKey::U8(s.base10_parse::<u8>().unwrap())),
-                    "u16" => Some(ParsedKey::U16(s.base10_parse::<u16>().unwrap())),
-                    "u32" => Some(ParsedKey::U32(s.base10_parse::<u32>().unwrap())),
-                    "u64" => Some(ParsedKey::U64(s.base10_parse::<u64>().unwrap())),
-                    "u128" => Some(ParsedKey::U128(s.base10_parse::<u128>().unwrap())),
-                    "usize" => Some(ParsedKey::Usize(s.base10_parse::<usize>().unwrap())),
-                    // Handle unsuffixed integer literals, default to i32
-                    "" => {
-                        if let Ok(val) = s.base10_parse::<i32>() {
-                            Some(ParsedKey::I32(val))
-                        } else {
-                            None
-                        }
-                    }
-                    _ => None,
+                    "i8" => Ok(ParsedKey::I8(s.base10_parse::<u8>().unwrap() as i8)),
+                    "i16" => Ok(ParsedKey::I16(s.base10_parse::<u16>().unwrap() as i16)),
+                    "i32" => Ok(ParsedKey::I32(s.base10_parse::<u32>().unwrap() as i32)),
+                    "i64" => Ok(ParsedKey::I64(s.base10_parse::<u64>().unwrap() as i64)),
+                    "i128" => Ok(ParsedKey::I128(s.base10_parse::<u128>().unwrap() as i128)),
+                    "isize" => Ok(ParsedKey::Isize(s.base10_parse::<usize>().unwrap() as isize)),
+                    "u8" => Ok(ParsedKey::U8(s.base10_parse::<u8>().unwrap())),
+                    "u16" => Ok(ParsedKey::U16(s.base10_parse::<u16>().unwrap())),
+                    "u32" => Ok(ParsedKey::U32(s.base10_parse::<u32>().unwrap())),
+                    "u64" => Ok(ParsedKey::U64(s.base10_parse::<u64>().unwrap())),
+                    "u128" => Ok(ParsedKey::U128(s.base10_parse::<u128>().unwrap())),
+                    "usize" => Ok(ParsedKey::Usize(s.base10_parse::<usize>().unwrap())),
+                    "" => ParsedKey::from_unsuffixed_int(s, hint),
+                    _ => Err(Error::new_spanned(s, "unsupported integer literal suffix")),
                 },
-                Lit::Bool(s) => Some(ParsedKey::Bool(s.value)),
-                _ => None,
+                Lit::Bool(s) => Ok(ParsedKey::Bool(s.value)),
+                _ => Err(Error::new_spanned(expr, "unsupported key expression")),
             },
             Expr::Array(array) => {
                 let mut buf = vec![];
+                let can_infer_u8 = matches!(hint, Some(ParsedKey::Binary(_)));
                 for expr in &array.elems {
                     match expr {
                         Expr::Lit(lit) => match &lit.lit {
                             Lit::Int(s) => match s.suffix() {
-                                "u8" | "" => buf.push(s.base10_parse::<u8>().unwrap()),
-                                _ => return None,
+                                "u8" => buf.push(s.base10_parse::<u8>().unwrap()),
+                                "" => {
+                                    if can_infer_u8 || !buf.is_empty() {
+                                        buf.push(s.base10_parse::<u8>().unwrap());
+                                    } else {
+                                        return Err(Error::new_spanned(
+                                            s,
+                                            "integer key literals in the first key must have an explicit type suffix",
+                                        ));
+                                    }
+                                }
+                                _ => {
+                                    return Err(Error::new_spanned(
+                                        s,
+                                        "array key literals must be suffixed `u8`",
+                                    ));
+                                }
                             },
-                            _ => return None,
+                            _ => {
+                                return Err(Error::new_spanned(expr, "unsupported key expression"));
+                            }
                         },
-                        _ => return None,
+                        _ => return Err(Error::new_spanned(expr, "unsupported key expression")),
                     }
                 }
-                Some(ParsedKey::Binary(buf))
+                Ok(ParsedKey::Binary(buf))
             }
             Expr::Unary(unary) => {
                 // Handle negation for signed integer types
@@ -151,14 +226,14 @@ impl ParsedKey {
                 }
 
                 match unary.op {
-                    UnOp::Neg(_) => match ParsedKey::from_expr(&unary.expr)? {
-                        ParsedKey::I8(v) => Some(ParsedKey::I8(try_negate!(v))),
-                        ParsedKey::I16(v) => Some(ParsedKey::I16(try_negate!(v))),
-                        ParsedKey::I32(v) => Some(ParsedKey::I32(try_negate!(v))),
-                        ParsedKey::I64(v) => Some(ParsedKey::I64(try_negate!(v))),
-                        ParsedKey::I128(v) => Some(ParsedKey::I128(try_negate!(v))),
-                        ParsedKey::Isize(v) => Some(ParsedKey::Isize(try_negate!(v))),
-                        _ => None,
+                    UnOp::Neg(_) => match ParsedKey::from_expr(&unary.expr, hint)? {
+                        ParsedKey::I8(v) => Ok(ParsedKey::I8(try_negate!(v))),
+                        ParsedKey::I16(v) => Ok(ParsedKey::I16(try_negate!(v))),
+                        ParsedKey::I32(v) => Ok(ParsedKey::I32(try_negate!(v))),
+                        ParsedKey::I64(v) => Ok(ParsedKey::I64(try_negate!(v))),
+                        ParsedKey::I128(v) => Ok(ParsedKey::I128(try_negate!(v))),
+                        ParsedKey::Isize(v) => Ok(ParsedKey::Isize(try_negate!(v))),
+                        _ => Err(Error::new_spanned(expr, "unsupported key expression")),
                     },
                     UnOp::Deref(_) => {
                         let mut expr = &*unary.expr;
@@ -169,35 +244,43 @@ impl ParsedKey {
                             Expr::Lit(ExprLit {
                                 lit: Lit::ByteStr(s),
                                 ..
-                            }) => Some(ParsedKey::Binary(s.value())),
-                            _ => None,
+                            }) => Ok(ParsedKey::Binary(s.value())),
+                            _ => Err(Error::new_spanned(expr, "unsupported key expression")),
                         }
                     }
-                    _ => None,
+                    _ => Err(Error::new_spanned(expr, "unsupported key expression")),
                 }
             }
             Expr::Tuple(tuple) => {
                 let mut elements = Vec::new();
-                for elem in &tuple.elems {
-                    if let Some(parsed_elem) = ParsedKey::from_expr(elem) {
-                        elements.push(parsed_elem);
-                    } else {
-                        return None;
-                    }
+                for (idx, elem) in tuple.elems.iter().enumerate() {
+                    let elem_hint = match hint {
+                        Some(ParsedKey::Tuple(hints)) => hints.get(idx),
+                        _ => None,
+                    };
+                    elements.push(ParsedKey::from_expr(elem, elem_hint)?);
                 }
-                Some(ParsedKey::Tuple(elements))
+                Ok(ParsedKey::Tuple(elements))
             }
-            Expr::Group(group) => ParsedKey::from_expr(&group.expr),
+            Expr::Group(group) => ParsedKey::from_expr(&group.expr, hint),
             Expr::Call(call) if call.args.len() == 1 => {
                 let last;
                 let last_ahead;
 
                 if let Expr::Path(ep) = call.func.as_ref() {
                     let mut segments = ep.path.segments.iter();
-                    last = segments.next_back()?.ident.to_string();
-                    last_ahead = segments.next_back()?.ident.to_string();
+                    last = segments
+                        .next_back()
+                        .ok_or_else(|| Error::new_spanned(expr, "unsupported key expression"))?
+                        .ident
+                        .to_string();
+                    last_ahead = segments
+                        .next_back()
+                        .ok_or_else(|| Error::new_spanned(expr, "unsupported key expression"))?
+                        .ident
+                        .to_string();
                 } else {
-                    return None;
+                    return Err(Error::new_spanned(expr, "unsupported key expression"));
                 }
 
                 let mut arg = call.args.first().unwrap();
@@ -212,23 +295,23 @@ impl ParsedKey {
                         lit: Lit::Str(s),
                     }) => s.value(),
                     _ => {
-                        return None;
+                        return Err(Error::new_spanned(expr, "unsupported key expression"));
                     }
                 };
 
                 match (&*last_ahead, &*last) {
                     #[cfg(feature = "unicase")]
-                    ("UniCase", "unicode") => Some(ParsedKey::UniCase(UniCase::unicode(_value))),
+                    ("UniCase", "unicode") => Ok(ParsedKey::UniCase(UniCase::unicode(_value))),
                     #[cfg(feature = "unicase")]
-                    ("UniCase", "ascii") => Some(ParsedKey::UniCase(UniCase::ascii(_value))),
+                    ("UniCase", "ascii") => Ok(ParsedKey::UniCase(UniCase::ascii(_value))),
                     #[cfg(feature = "unicase")]
-                    ("Ascii", "new") => Some(ParsedKey::UniCaseAscii(Ascii::new(_value))),
+                    ("Ascii", "new") => Ok(ParsedKey::UniCaseAscii(Ascii::new(_value))),
                     #[cfg(feature = "uncased")]
-                    ("UncasedStr", "new") => Some(ParsedKey::Uncased(Uncased::new(_value))),
-                    _ => None,
+                    ("UncasedStr", "new") => Ok(ParsedKey::Uncased(Uncased::new(_value))),
+                    _ => Err(Error::new_spanned(expr, "unsupported key expression")),
                 }
             }
-            _ => None,
+            _ => Err(Error::new_spanned(expr, "unsupported key expression")),
         }
     }
 }
@@ -263,12 +346,14 @@ impl PhfHash for Entry {
 
 struct Map {
     entries: Vec<Entry>,
+    key_hint: Option<ParsedKey>,
 }
 
 impl Map {
     fn from_parsed(entries: Punctuated<impl AsMapEntry, Token![,]>) -> syn::Result<Self> {
         let mut map = Self {
             entries: Vec::new(),
+            key_hint: None,
         };
         for entry in entries {
             map.add_variants_from(&entry.key().expr, &entry.value())?;
@@ -288,9 +373,19 @@ impl Map {
             }
         }
         // Single key
+        let parsed_key = ParsedKey::from_expr(key, self.key_hint.as_ref())?;
+        if let Some(key_hint) = &self.key_hint {
+            if !parsed_key.has_same_type_as(key_hint) {
+                return Err(Error::new_spanned(
+                    key,
+                    "key type does not match the first key",
+                ));
+            }
+        } else {
+            self.key_hint = Some(parsed_key.clone());
+        }
         self.entries.push(Entry {
-            parsed_key: ParsedKey::from_expr(key)
-                .ok_or_else(|| Error::new_spanned(key, "unsupported key expression"))?,
+            parsed_key,
             key_expr: key.clone(),
             value_expr: value.clone(),
         });

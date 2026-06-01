@@ -154,7 +154,7 @@ mod map {
     fn test_array_keys() {
         static MAP: phf::Map<[u8; 2], isize> = phf_map!(
             [0u8, 1] => 0,
-            [2, 3u8] => 1,
+            [2, 3] => 1,
             [4, 5] => 2,
         );
         assert_eq!(Some(&0), MAP.get(&[0u8, 1u8]));
@@ -231,6 +231,21 @@ mod map {
     #[test]
     fn test_u64_keys() {
         test_key_type!(u64, 0u64 => 0, 1u64 => 1, 18446744073709551615u64 => 2);
+    }
+
+    #[test]
+    fn test_inferred_integer_keys() {
+        static MAP: phf::Map<u64, u64> = phf_map! {
+            0u64 => 0,
+            1 => 1,
+            2 => 2,
+            3 => 3,
+            4 => 4,
+        };
+
+        for i in 0u64..5 {
+            assert_eq!(Some(&i), MAP.get(&i));
+        }
     }
 
     #[test]
@@ -336,14 +351,14 @@ mod map {
     #[test]
     fn test_tuples() {
         static MAP: phf::Map<(u32, &str), u32> = phf_map! {
-            (0, "a") => 1,
+            (0u32, "a") => 1,
             (1, "b") => 2,
             (2, "c") => 3,
         };
-        assert_eq!(Some(&1), MAP.get(&(0, "a")));
-        assert_eq!(Some(&2), MAP.get(&(1, "b")));
-        assert_eq!(Some(&3), MAP.get(&(2, "c")));
-        assert_eq!(None, MAP.get(&(3, "d")));
+        assert_eq!(Some(&1), MAP.get(&(0u32, "a")));
+        assert_eq!(Some(&2), MAP.get(&(1u32, "b")));
+        assert_eq!(Some(&3), MAP.get(&(2u32, "c")));
+        assert_eq!(None, MAP.get(&(3u32, "d")));
     }
 
     #[test]
@@ -441,6 +456,20 @@ mod set {
     }
 
     #[test]
+    fn test_inferred_integer_keys() {
+        static SET: phf::Set<u64> = phf_set! {
+            0u64,
+            1,
+            2,
+        };
+
+        assert!(SET.contains(&0u64));
+        assert!(SET.contains(&1u64));
+        assert!(SET.contains(&2u64));
+        assert!(!SET.contains(&3u64));
+    }
+
+    #[test]
     fn test_cfgs() {
         static SET: phf::Set<&'static str> = phf_set! {
             "foo", // should always be present
@@ -472,14 +501,14 @@ mod set {
     #[test]
     fn test_tuples() {
         static SET: phf::Set<(u32, &str)> = phf_set! {
-            (0, "a"),
+            (0u32, "a"),
             (1, "b"),
             (2, "c"),
         };
-        assert!(SET.contains(&(0, "a")));
-        assert!(SET.contains(&(1, "b")));
-        assert!(SET.contains(&(2, "c")));
-        assert!(!SET.contains(&(3, "d")));
+        assert!(SET.contains(&(0u32, "a")));
+        assert!(SET.contains(&(1u32, "b")));
+        assert!(SET.contains(&(2u32, "c")));
+        assert!(!SET.contains(&(3u32, "d")));
     }
 
     #[test]
@@ -645,6 +674,20 @@ mod ordered_map {
     }
 
     #[test]
+    fn test_inferred_integer_keys() {
+        static MAP: phf::OrderedMap<u64, u64> = phf_ordered_map! {
+            0u64 => 0,
+            1 => 1,
+            2 => 2,
+        };
+
+        for i in 0u64..3 {
+            assert_eq!(Some(&i), MAP.get(&i));
+            assert_eq!(Some(i as usize), MAP.get_index(&i));
+        }
+    }
+
+    #[test]
     fn test_cfgs() {
         static MY_MAP: phf::OrderedMap<&'static str, u32> = phf_ordered_map! {
             "foo" => 1, // should always be present
@@ -696,14 +739,14 @@ mod ordered_map {
     #[test]
     fn test_tuples() {
         static MAP: phf::OrderedMap<(u32, &str), u32> = phf_ordered_map! {
-            (0, "a") => 1,
+            (0u32, "a") => 1,
             (1, "b") => 2,
             (2, "c") => 3,
         };
-        assert_eq!(Some(&1), MAP.get(&(0, "a")));
-        assert_eq!(Some(&2), MAP.get(&(1, "b")));
-        assert_eq!(Some(&3), MAP.get(&(2, "c")));
-        assert_eq!(None, MAP.get(&(3, "d")));
+        assert_eq!(Some(&1), MAP.get(&(0u32, "a")));
+        assert_eq!(Some(&2), MAP.get(&(1u32, "b")));
+        assert_eq!(Some(&3), MAP.get(&(2u32, "c")));
+        assert_eq!(None, MAP.get(&(3u32, "d")));
     }
 
     #[test]
@@ -816,6 +859,21 @@ mod ordered_set {
     }
 
     #[test]
+    fn test_inferred_integer_keys() {
+        static SET: phf::OrderedSet<u64> = phf_ordered_set! {
+            0u64,
+            1,
+            2,
+        };
+
+        for i in 0u64..3 {
+            assert!(SET.contains(&i));
+            assert_eq!(Some(i as usize), SET.get_index(&i));
+        }
+        assert!(!SET.contains(&3u64));
+    }
+
+    #[test]
     fn test_cfgs() {
         static SET: phf::OrderedSet<&'static str> = phf_ordered_set! {
             "foo", // should always be present
@@ -866,14 +924,14 @@ mod ordered_set {
     #[test]
     fn test_tuples() {
         static SET: phf::OrderedSet<(u32, &str)> = phf_ordered_set! {
-            (0, "a"),
+            (0u32, "a"),
             (1, "b"),
             (2, "c"),
         };
-        assert!(SET.contains(&(0, "a")));
-        assert!(SET.contains(&(1, "b")));
-        assert!(SET.contains(&(2, "c")));
-        assert!(!SET.contains(&(3, "d")));
+        assert!(SET.contains(&(0u32, "a")));
+        assert!(SET.contains(&(1u32, "b")));
+        assert!(SET.contains(&(2u32, "c")));
+        assert!(!SET.contains(&(3u32, "d")));
     }
 
     #[test]

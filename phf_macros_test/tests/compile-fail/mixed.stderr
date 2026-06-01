@@ -1,15 +1,8 @@
-error[E0308]: mismatched types
- --> tests/compile-fail/mixed.rs:7:5
+error: key type does not match the first key
+ --> tests/compile-fail/mixed.rs:8:5
   |
-7 |     "foo" => 0,
-  |     ^^^^^ expected `UniCase<&str>`, found `&str`
-  |
-  = note: expected struct `UniCase<&str>`
-          found reference `&'static str`
-help: call `Into::into` on this expression to convert `&'static str` into `UniCase<&str>`
-  |
-7 |     "foo".into() => 0,
-  |          +++++++
+8 |     UniCase::ascii("FOO") => 1,
+  |     ^^^^^^^^^^^^^^^^^^^^^
 
 error[E0277]: the trait bound `UniCase<&str>: phf_shared::PhfBorrow<_>` is not satisfied
   --> tests/compile-fail/mixed.rs:12:18

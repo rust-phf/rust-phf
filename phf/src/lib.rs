@@ -90,13 +90,17 @@ extern crate std as core;
 /// Requires the `macros` feature.
 ///
 /// Supported key expressions are:
-/// - literals: bools, (byte) strings, bytes, chars, and integers (these must have a type suffix)
-/// - arrays of `u8` integers
+/// - literals: bools, (byte) strings, bytes, chars, and integers (integer
+///   literals in the first key's type shape must have suffixes; later
+///   unsuffixed integers infer from the same position in that first key)
+/// - arrays of `u8` integer literals
 /// - tuples of any supported key expressions
 /// - dereferenced byte string literals
 /// - OR patterns using `|` to map multiple keys to the same value
 /// - `UniCase::unicode(string)`, `UniCase::ascii(string)`, or `Ascii::new(string)` if the `unicase` feature is enabled
 /// - `UncasedStr::new(string)` if the `uncased` feature is enabled
+///
+/// All keys must use the same supported key expression type as the first key.
 ///
 /// # Example
 ///

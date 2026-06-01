@@ -1,0 +1,47 @@
+error: integer key literals in the first key must have an explicit type suffix
+ --> tests/compile-fail/unsuffixed-integer.rs:4:5
+  |
+4 |     0 => 0u64,
+  |     ^
+
+error: integer key literals in the first key must have an explicit type suffix
+ --> tests/compile-fail/unsuffixed-integer.rs:9:5
+  |
+9 |     0,
+  |     ^
+
+error: integer key literals in the first key must have an explicit type suffix
+  --> tests/compile-fail/unsuffixed-integer.rs:14:6
+   |
+14 |     (0, "a") => 1u8,
+   |      ^
+
+error: integer key literals in the first key must have an explicit type suffix
+  --> tests/compile-fail/unsuffixed-integer.rs:19:6
+   |
+19 |     [0, 1u8] => 1u8,
+   |      ^
+
+error: integer key literals in the first key must have an explicit type suffix
+  --> tests/compile-fail/unsuffixed-integer.rs:24:5
+   |
+24 |     0 => 0u64,
+   |     ^
+
+error: integer key literals in the first key must have an explicit type suffix
+  --> tests/compile-fail/unsuffixed-integer.rs:29:5
+   |
+29 |     0,
+   |     ^
+
+error: key type does not match the first key
+  --> tests/compile-fail/unsuffixed-integer.rs:35:5
+   |
+35 |     1u32,
+   |     ^^^^
+
+error: key type does not match the first key
+  --> tests/compile-fail/unsuffixed-integer.rs:40:5
+   |
+40 |     97u32,
+   |     ^^^^^

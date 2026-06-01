@@ -3,7 +3,7 @@ use crate::{OrderedMap, PhfHash, ordered_map};
 use core::fmt;
 use core::iter::FusedIterator;
 use core::iter::IntoIterator;
-use phf_shared::PhfBorrow;
+use phf_shared::PhfEq;
 
 /// An order-preserving immutable set constructed at compile time.
 ///
@@ -60,7 +60,7 @@ impl<T> OrderedSet<T> {
     pub fn get_key<U>(&self, key: &U) -> Option<&T>
     where
         U: Eq + PhfHash + ?Sized,
-        T: PhfBorrow<U>,
+        T: PhfEq<U>,
     {
         self.map.get_key(key)
     }
@@ -70,7 +70,7 @@ impl<T> OrderedSet<T> {
     pub fn get_index<U>(&self, key: &U) -> Option<usize>
     where
         U: Eq + PhfHash + ?Sized,
-        T: PhfBorrow<U>,
+        T: PhfEq<U>,
     {
         self.map.get_index(key)
     }
@@ -85,7 +85,7 @@ impl<T> OrderedSet<T> {
     pub fn contains<U>(&self, value: &U) -> bool
     where
         U: Eq + PhfHash + ?Sized,
-        T: PhfBorrow<U>,
+        T: PhfEq<U>,
     {
         self.map.contains_key(value)
     }
@@ -102,7 +102,7 @@ impl<T> OrderedSet<T> {
 
 impl<T> OrderedSet<T>
 where
-    T: Eq + PhfHash + PhfBorrow<T>,
+    T: Eq + PhfHash + PhfEq<T>,
 {
     /// Returns true if `other` shares no elements with `self`.
     #[inline]

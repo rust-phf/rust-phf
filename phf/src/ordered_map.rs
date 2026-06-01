@@ -4,7 +4,7 @@ use core::iter::FusedIterator;
 use core::iter::IntoIterator;
 use core::ops::Index;
 use core::slice;
-use phf_shared::{self, HashKey, PhfBorrow, PhfHash};
+use phf_shared::{self, HashKey, PhfEq, PhfHash};
 
 /// An order-preserving immutable map constructed at compile time.
 ///
@@ -65,7 +65,7 @@ where
 impl<'a, K, V, T: ?Sized> Index<&'a T> for OrderedMap<K, V>
 where
     T: Eq + PhfHash,
-    K: PhfBorrow<T>,
+    K: PhfEq<T>,
 {
     type Output = V;
 
@@ -121,7 +121,7 @@ impl<K, V> OrderedMap<K, V> {
     pub fn get<T>(&self, key: &T) -> Option<&V>
     where
         T: Eq + PhfHash + ?Sized,
-        K: PhfBorrow<T>,
+        K: PhfEq<T>,
     {
         self.get_entry(key).map(|e| e.1)
     }
@@ -133,7 +133,7 @@ impl<K, V> OrderedMap<K, V> {
     pub fn get_key<T>(&self, key: &T) -> Option<&K>
     where
         T: Eq + PhfHash + ?Sized,
-        K: PhfBorrow<T>,
+        K: PhfEq<T>,
     {
         self.get_entry(key).map(|e| e.0)
     }
@@ -142,7 +142,7 @@ impl<K, V> OrderedMap<K, V> {
     pub fn contains_key<T>(&self, key: &T) -> bool
     where
         T: Eq + PhfHash + ?Sized,
-        K: PhfBorrow<T>,
+        K: PhfEq<T>,
     {
         self.get(key).is_some()
     }
@@ -152,7 +152,7 @@ impl<K, V> OrderedMap<K, V> {
     pub fn get_index<T>(&self, key: &T) -> Option<usize>
     where
         T: Eq + PhfHash + ?Sized,
-        K: PhfBorrow<T>,
+        K: PhfEq<T>,
     {
         self.get_internal(key).map(|(i, _)| i)
     }
@@ -167,7 +167,7 @@ impl<K, V> OrderedMap<K, V> {
     pub fn get_entry<T>(&self, key: &T) -> Option<(&K, &V)>
     where
         T: Eq + PhfHash + ?Sized,
-        K: PhfBorrow<T>,
+        K: PhfEq<T>,
     {
         self.get_internal(key).map(|(_, e)| e)
     }
@@ -175,7 +175,7 @@ impl<K, V> OrderedMap<K, V> {
     fn get_internal<T>(&self, key: &T) -> Option<(usize, (&K, &V))>
     where
         T: Eq + PhfHash + ?Sized,
-        K: PhfBorrow<T>,
+        K: PhfEq<T>,
     {
         #[cfg(not(feature = "ptrhash"))]
         {
@@ -188,8 +188,7 @@ impl<K, V> OrderedMap<K, V> {
             let idx = self.idxs[idx_index as usize];
             let entry = &self.entries[idx];
 
-            let borrowed: &T = entry.0.borrow();
-            if borrowed == key {
+            if entry.0.phf_eq(key) {
                 Some((idx, (&entry.0, &entry.1)))
             } else {
                 None
@@ -213,8 +212,7 @@ impl<K, V> OrderedMap<K, V> {
             let idx = self.idxs[idx_index as usize];
             let entry = &self.entries[idx];
 
-            let borrowed: &T = entry.0.borrow();
-            if borrowed == key {
+            if entry.0.phf_eq(key) {
                 Some((idx, (&entry.0, &entry.1)))
             } else {
                 None

@@ -94,7 +94,7 @@ extern crate std as core;
 ///   literals in the first key's type shape must have suffixes; later
 ///   unsuffixed integers infer from the same position in that first key)
 /// - arrays of `u8` integer literals
-/// - tuples of any supported key expressions
+/// - tuples of any supported key expressions, up to 12 elements
 /// - dereferenced byte string literals
 /// - OR patterns using `|` to map multiple keys to the same value
 /// - `UniCase::unicode(string)`, `UniCase::ascii(string)`, or `Ascii::new(string)` if the `unicase` feature is enabled
@@ -267,7 +267,7 @@ pub use self::ordered_map::OrderedMap;
 pub use self::ordered_set::OrderedSet;
 #[doc(inline)]
 pub use self::set::Set;
-pub use phf_shared::PhfHash;
+pub use phf_shared::{PhfEq, PhfHash};
 
 pub mod map;
 pub mod ordered_map;

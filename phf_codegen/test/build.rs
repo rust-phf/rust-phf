@@ -205,6 +205,26 @@ fn main() -> io::Result<()> {
             .build()
     )?;
 
+    writeln!(
+        &mut file,
+        "static ORDERED_TUPLE_MAP: ::phf::OrderedMap<(u32, &'static str), &'static str> = \n{};",
+        phf_codegen::OrderedMap::new()
+            .entry((1u32, "a"), "\"first\"")
+            .entry((2u32, "b"), "\"second\"")
+            .entry((3u32, "c"), "\"third\"")
+            .build()
+    )?;
+
+    writeln!(
+        &mut file,
+        "static ORDERED_TUPLE_SET: ::phf::OrderedSet<(u32, &'static str)> = \n{};",
+        phf_codegen::OrderedSet::new()
+            .entry((1u32, "x"))
+            .entry((2u32, "y"))
+            .entry((3u32, "z"))
+            .build()
+    )?;
+
     // Test nested tuple keys for Map
     writeln!(
         &mut file,

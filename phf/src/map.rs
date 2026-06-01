@@ -4,7 +4,7 @@ use core::iter::FusedIterator;
 use core::iter::IntoIterator;
 use core::ops::Index;
 use core::slice;
-use phf_shared::{self, HashKey, PhfBorrow, PhfHash};
+use phf_shared::{self, HashKey, PhfEq, PhfHash};
 #[cfg(feature = "serde")]
 use serde::ser::{Serialize, SerializeMap, Serializer};
 
@@ -57,7 +57,7 @@ where
 impl<'a, K, V, T: ?Sized> Index<&'a T> for Map<K, V>
 where
     T: Eq + PhfHash,
-    K: PhfBorrow<T>,
+    K: PhfEq<T>,
 {
     type Output = V;
 
@@ -134,7 +134,7 @@ impl<K, V> Map<K, V> {
     pub fn contains_key<T>(&self, key: &T) -> bool
     where
         T: Eq + PhfHash + ?Sized,
-        K: PhfBorrow<T>,
+        K: PhfEq<T>,
     {
         self.get(key).is_some()
     }
@@ -143,7 +143,7 @@ impl<K, V> Map<K, V> {
     pub fn get<T>(&self, key: &T) -> Option<&V>
     where
         T: Eq + PhfHash + ?Sized,
-        K: PhfBorrow<T>,
+        K: PhfEq<T>,
     {
         self.get_entry(key).map(|e| e.1)
     }
@@ -155,7 +155,7 @@ impl<K, V> Map<K, V> {
     pub fn get_key<T>(&self, key: &T) -> Option<&K>
     where
         T: Eq + PhfHash + ?Sized,
-        K: PhfBorrow<T>,
+        K: PhfEq<T>,
     {
         self.get_entry(key).map(|e| e.0)
     }
@@ -165,7 +165,7 @@ impl<K, V> Map<K, V> {
     pub fn get_entry<T>(&self, key: &T) -> Option<(&K, &V)>
     where
         T: Eq + PhfHash + ?Sized,
-        K: PhfBorrow<T>,
+        K: PhfEq<T>,
     {
         if self.disps.is_empty() {
             return None;
@@ -173,8 +173,7 @@ impl<K, V> Map<K, V> {
         let hashes = phf_shared::hash(key, &self.key);
         let index = phf_shared::get_index(&hashes, self.disps, self.entries.len());
         let entry = &self.entries[index as usize];
-        let b: &T = entry.0.borrow();
-        if b == key {
+        if entry.0.phf_eq(key) {
             Some((&entry.0, &entry.1))
         } else {
             None
@@ -186,7 +185,7 @@ impl<K, V> Map<K, V> {
     pub fn get_entry<T>(&self, key: &T) -> Option<(&K, &V)>
     where
         T: Eq + PhfHash + ?Sized,
-        K: PhfBorrow<T>,
+        K: PhfEq<T>,
     {
         if self.entries.is_empty() {
             return None;
@@ -201,9 +200,7 @@ impl<K, V> Map<K, V> {
             self.entries.len(),
         );
         let entry = &self.entries[index as usize];
-        let borrowed: &T = entry.0.borrow();
-
-        if borrowed == key {
+        if entry.0.phf_eq(key) {
             Some((&entry.0, &entry.1))
         } else {
             None

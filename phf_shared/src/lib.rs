@@ -100,7 +100,8 @@ pub trait FmtConst {
 /// > In particular `Eq`, `Ord` and `Hash` must be equivalent for borrowed and owned values:
 /// > `x.borrow() == y.borrow()` should give the same result as `x == y`.
 ///
-/// (This crate's API only requires `Eq` and `PhfHash`, however.)
+/// (This crate's lookup API only requires `Eq`, `PhfHash`, and [`PhfEq`],
+/// however.)
 ///
 /// ### Motivation
 /// The conventional signature for lookup methods on collections looks something like this:
@@ -125,14 +126,36 @@ pub trait FmtConst {
 /// all the blanket impls.
 ///
 /// Instead, this trait is implemented conservatively, without blanket impls, so that impls like
-/// this may be added. This is feasible since the set of types that implement `PhfHash` is
-/// intentionally small.
+/// this may be added. [`PhfEq`] uses these impls for borrowed key forms that can be represented
+/// as a reference to the lookup key type. This is feasible since the set of types that implement
+/// `PhfHash` is intentionally small.
 ///
 /// This likely won't be fixable with specialization alone but will require full support for lattice
 /// impls since we technically want to add overlapping blanket impls.
 pub trait PhfBorrow<B: ?Sized> {
     /// Convert a reference to `self` to a reference to the borrowed type.
     fn borrow(&self) -> &B;
+}
+
+/// Trait for comparing stored PHF keys with runtime lookup keys.
+///
+/// Lookup keys must hash the same way as the stored key they compare equal to.
+/// Most borrowed key forms use the blanket implementation based on
+/// [`PhfBorrow`]. Tuples are implemented separately so references inside a
+/// tuple can use shorter lifetimes at lookup time. Tuple impls are provided up
+/// to 12 elements.
+pub trait PhfEq<B: ?Sized> {
+    /// Returns `true` if `self` and `other` are equivalent PHF keys.
+    fn phf_eq(&self, other: &B) -> bool;
+}
+
+impl<K, B: ?Sized + Eq> PhfEq<B> for K
+where
+    K: PhfBorrow<B>,
+{
+    fn phf_eq(&self, other: &B) -> bool {
+        self.borrow() == other
+    }
 }
 
 /// Create an impl of `FmtConst` delegating to `fmt::Debug` for types that can deal with it.
@@ -508,12 +531,6 @@ macro_rules! tuple_impl {
             }
         }
 
-        impl<$($t: PhfHash),+> PhfBorrow<($($t,)+)> for ($($t,)+) {
-            fn borrow(&self) -> &($($t,)+) {
-                self
-            }
-        }
-
         impl<$($t: FmtConst),+> FmtConst for ($($t,)+) {
             fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 #[allow(non_snake_case)]
@@ -532,6 +549,21 @@ macro_rules! tuple_impl {
     };
 }
 
+macro_rules! tuple_eq_impl {
+    ($(($left_ty:ident, $left:ident, $right_ty:ident, $right:ident)),+) => {
+        impl<$($left_ty, $right_ty),+> PhfEq<($($right_ty,)+)> for ($($left_ty,)+)
+        where
+            $($left_ty: PartialEq<$right_ty>),+
+        {
+            fn phf_eq(&self, other: &($($right_ty,)+)) -> bool {
+                let ($($left,)+) = self;
+                let ($($right,)+) = other;
+                true $(&& $left == $right)+
+            }
+        }
+    };
+}
+
 tuple_impl!(A);
 tuple_impl!(A, B);
 tuple_impl!(A, B, C);
@@ -544,6 +576,100 @@ tuple_impl!(A, B, C, D, E, F, G, HT, I);
 tuple_impl!(A, B, C, D, E, F, G, HT, I, J);
 tuple_impl!(A, B, C, D, E, F, G, HT, I, J, K);
 tuple_impl!(A, B, C, D, E, F, G, HT, I, J, K, L);
+
+tuple_eq_impl!((A, a, AT, at));
+tuple_eq_impl!((A, a, AT, at), (B, b, BT, bt));
+tuple_eq_impl!((A, a, AT, at), (B, b, BT, bt), (C, c, CT, ct));
+tuple_eq_impl!(
+    (A, a, AT, at),
+    (B, b, BT, bt),
+    (C, c, CT, ct),
+    (D, d, DT, dt)
+);
+tuple_eq_impl!(
+    (A, a, AT, at),
+    (B, b, BT, bt),
+    (C, c, CT, ct),
+    (D, d, DT, dt),
+    (E, e, ET, et)
+);
+tuple_eq_impl!(
+    (A, a, AT, at),
+    (B, b, BT, bt),
+    (C, c, CT, ct),
+    (D, d, DT, dt),
+    (E, e, ET, et),
+    (F, ff, FT, ft)
+);
+tuple_eq_impl!(
+    (A, a, AT, at),
+    (B, b, BT, bt),
+    (C, c, CT, ct),
+    (D, d, DT, dt),
+    (E, e, ET, et),
+    (F, ff, FT, ft),
+    (G, g, GT, gt)
+);
+tuple_eq_impl!(
+    (A, a, AT, at),
+    (B, b, BT, bt),
+    (C, c, CT, ct),
+    (D, d, DT, dt),
+    (E, e, ET, et),
+    (F, ff, FT, ft),
+    (G, g, GT, gt),
+    (H, h, HT, ht)
+);
+tuple_eq_impl!(
+    (A, a, AT, at),
+    (B, b, BT, bt),
+    (C, c, CT, ct),
+    (D, d, DT, dt),
+    (E, e, ET, et),
+    (F, ff, FT, ft),
+    (G, g, GT, gt),
+    (H, h, HT, ht),
+    (I, i, IT, it)
+);
+tuple_eq_impl!(
+    (A, a, AT, at),
+    (B, b, BT, bt),
+    (C, c, CT, ct),
+    (D, d, DT, dt),
+    (E, e, ET, et),
+    (F, ff, FT, ft),
+    (G, g, GT, gt),
+    (H, h, HT, ht),
+    (I, i, IT, it),
+    (J, j, JT, jt)
+);
+tuple_eq_impl!(
+    (A, a, AT, at),
+    (B, b, BT, bt),
+    (C, c, CT, ct),
+    (D, d, DT, dt),
+    (E, e, ET, et),
+    (F, ff, FT, ft),
+    (G, g, GT, gt),
+    (H, h, HT, ht),
+    (I, i, IT, it),
+    (J, j, JT, jt),
+    (K, k, KT, kt)
+);
+tuple_eq_impl!(
+    (A, a, AT, at),
+    (B, b, BT, bt),
+    (C, c, CT, ct),
+    (D, d, DT, dt),
+    (E, e, ET, et),
+    (F, ff, FT, ft),
+    (G, g, GT, gt),
+    (H, h, HT, ht),
+    (I, i, IT, it),
+    (J, j, JT, jt),
+    (K, k, KT, kt),
+    (L, l, LT, lt)
+);
 
 #[cfg(test)]
 mod tests {
@@ -656,6 +782,28 @@ mod tests {
         assert_borrow::<&[u32; 2], [u32; 2]>();
         assert_borrow::<&[bool; 2], [bool; 2]>();
         assert_borrow::<&[char; 2], [char; 2]>();
+    }
+
+    #[test]
+    fn tuple_eq_allows_shorter_reference_lifetimes() {
+        fn assert_ref_tuple<'a>(key: &(&'a str, &'a str)) -> bool
+        where
+            (&'static str, &'static str): PhfEq<(&'a str, &'a str)>,
+        {
+            ("a", "b").phf_eq(key)
+        }
+
+        fn assert_mixed_tuple<'a>(key: &(u32, &'a str)) -> bool
+        where
+            (u32, &'static str): PhfEq<(u32, &'a str)>,
+        {
+            (1, "a").phf_eq(key)
+        }
+
+        let a = String::from("a");
+        let b = String::from("b");
+        assert!(assert_ref_tuple(&(a.as_str(), b.as_str())));
+        assert!(assert_mixed_tuple(&(1, a.as_str())));
     }
 
     #[test]

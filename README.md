@@ -87,6 +87,7 @@ work as you want. See [#196] for example.
 Integer literals in the first key's type shape must use explicit suffixes, such
 as `0u32`, `[0u8, 1]`, or `(0u32, 1u32)`; later keys infer unsuffixed integer
 literals from the same position in that first key.
+Tuple keys are supported up to 12 elements.
 All keys must use the same supported key expression type as the first key.
 
 [#196]: https://github.com/rust-phf/rust-phf/issues/196

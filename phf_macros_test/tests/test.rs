@@ -359,6 +359,9 @@ mod map {
         assert_eq!(Some(&2), MAP.get(&(1u32, "b")));
         assert_eq!(Some(&3), MAP.get(&(2u32, "c")));
         assert_eq!(None, MAP.get(&(3u32, "d")));
+
+        let key = "a".to_string();
+        assert_eq!(Some(&1), MAP.get(&(0u32, key.as_str())));
     }
 
     #[test]
@@ -509,6 +512,9 @@ mod set {
         assert!(SET.contains(&(1u32, "b")));
         assert!(SET.contains(&(2u32, "c")));
         assert!(!SET.contains(&(3u32, "d")));
+
+        let key = "a".to_string();
+        assert!(SET.contains(&(0u32, key.as_str())));
     }
 
     #[test]
@@ -747,6 +753,9 @@ mod ordered_map {
         assert_eq!(Some(&2), MAP.get(&(1u32, "b")));
         assert_eq!(Some(&3), MAP.get(&(2u32, "c")));
         assert_eq!(None, MAP.get(&(3u32, "d")));
+
+        let key = "a".to_string();
+        assert_eq!(Some(&1), MAP.get(&(0u32, key.as_str())));
     }
 
     #[test]
@@ -932,6 +941,9 @@ mod ordered_set {
         assert!(SET.contains(&(1u32, "b")));
         assert!(SET.contains(&(2u32, "c")));
         assert!(!SET.contains(&(3u32, "d")));
+
+        let key = "a".to_string();
+        assert!(SET.contains(&(0u32, key.as_str())));
     }
 
     #[test]

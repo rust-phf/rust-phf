@@ -178,6 +178,9 @@ mod test {
         assert_eq!("third", TUPLE_MAP[&(3u32, "c")]);
         assert!(!TUPLE_MAP.contains_key(&(4u32, "d")));
         assert!(!TUPLE_MAP.contains_key(&(1u32, "b")));
+
+        let key = String::from("a");
+        assert_eq!(Some(&"first"), TUPLE_MAP.get(&(1u32, key.as_str())));
     }
 
     #[test]
@@ -187,6 +190,33 @@ mod test {
         assert!(TUPLE_SET.contains(&(3u32, "z")));
         assert!(!TUPLE_SET.contains(&(4u32, "w")));
         assert!(!TUPLE_SET.contains(&(1u32, "y")));
+
+        let key = String::from("x");
+        assert!(TUPLE_SET.contains(&(1u32, key.as_str())));
+    }
+
+    #[test]
+    fn ordered_tuple_map() {
+        assert_eq!("first", ORDERED_TUPLE_MAP[&(1u32, "a")]);
+        assert_eq!("second", ORDERED_TUPLE_MAP[&(2u32, "b")]);
+        assert_eq!("third", ORDERED_TUPLE_MAP[&(3u32, "c")]);
+        assert!(!ORDERED_TUPLE_MAP.contains_key(&(4u32, "d")));
+        assert!(!ORDERED_TUPLE_MAP.contains_key(&(1u32, "b")));
+
+        let key = String::from("a");
+        assert_eq!(Some(&"first"), ORDERED_TUPLE_MAP.get(&(1u32, key.as_str())));
+    }
+
+    #[test]
+    fn ordered_tuple_set() {
+        assert!(ORDERED_TUPLE_SET.contains(&(1u32, "x")));
+        assert!(ORDERED_TUPLE_SET.contains(&(2u32, "y")));
+        assert!(ORDERED_TUPLE_SET.contains(&(3u32, "z")));
+        assert!(!ORDERED_TUPLE_SET.contains(&(4u32, "w")));
+        assert!(!ORDERED_TUPLE_SET.contains(&(1u32, "y")));
+
+        let key = String::from("x");
+        assert!(ORDERED_TUPLE_SET.contains(&(1u32, key.as_str())));
     }
 
     #[test]

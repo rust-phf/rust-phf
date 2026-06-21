@@ -336,7 +336,7 @@ dependencies = [
 
 [[package]]
 name = "phf"
-version = "0.13.1"
+version = "0.14.0"
 dependencies = [
  "phf_macros",
  "phf_shared",
@@ -345,7 +345,7 @@ dependencies = [
 
 [[package]]
 name = "phf_codegen"
-version = "0.13.1"
+version = "0.14.0"
 dependencies = [
  "phf_generator",
  "phf_shared",
@@ -367,7 +367,7 @@ dependencies = [
 
 [[package]]
 name = "phf_generator"
-version = "0.13.1"
+version = "0.14.0"
 dependencies = [
  "criterion",
  "fastrand",
@@ -376,7 +376,7 @@ dependencies = [
 
 [[package]]
 name = "phf_macros"
-version = "0.13.1"
+version = "0.14.0"
 dependencies = [
  "phf_generator",
  "phf_shared",
@@ -408,7 +408,7 @@ dependencies = [
 
 [[package]]
 name = "phf_shared"
-version = "0.13.1"
+version = "0.14.0"
 dependencies = [
  "siphasher",
  "uncased",

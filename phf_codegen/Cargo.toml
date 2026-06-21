@@ -1,7 +1,7 @@
 [package]
 name = "phf_codegen"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
-version = "0.13.1"
+version = "0.14.0"
 license = "MIT"
 description = "Codegen library for PHF types"
 repository = "https://github.com/rust-phf/rust-phf"
@@ -15,7 +15,7 @@ ptrhash = ["phf_generator/ptrhash"]
 quote = ["dep:proc-macro2", "dep:quote"]
 
 [dependencies]
-phf_generator = "0.13.1"
-phf_shared = "0.13.1"
+phf_generator = "0.14.0"
+phf_shared = "0.14.0"
 proc-macro2 = { version = "1", optional = true }
 quote = { version = "1", optional = true }

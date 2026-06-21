@@ -1,6 +1,6 @@
 [package]
 name = "phf_macros"
-version = "0.13.1"
+version = "0.14.0"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 edition = "2024"
 license = "MIT"
@@ -25,5 +25,5 @@ proc-macro2 = "1.0.95"
 unicase_ = { package = "unicase", version = "2.4.0", optional = true }
 uncased_ = { package = "uncased", version = "0.9.7", optional = true }
 
-phf_generator = "0.13.1"
-phf_shared = { version = "^0.13.1", default-features = false }
+phf_generator = "0.14.0"
+phf_shared = { version = "^0.14.0", default-features = false }

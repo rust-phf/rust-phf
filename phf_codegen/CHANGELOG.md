@@ -5,9 +5,88 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.14.0 (2026-06-21)
+
+### Chore
+
+ - <csr-id-ef36a8ee5df641399eee33a5c767c9c866fc2152/> update rust crate syn to v2.0.115
+ - <csr-id-93febde3dd3f1ac67b1259967f3899f68deab54e/> bump MSRV to 1.68
+ - <csr-id-cfbb052e855f697f2d42423408ce9d1e63d1c5b6/> setup cargo-deny
+ - <csr-id-17bce845aed852ccba597f99e5db853a4a6afa1f/> Fix clippy warnings
+ - <csr-id-e4e1556f40a25c1d50e4467dc9312c9b04beecd9/> Remove criterion from deps
+ - <csr-id-03a930696231da01005e762425841f91587b3e04/> Update version number
+ - <csr-id-ecd6a86d2bb104624cae5372bd63e7f10d1cc4cf/> Fix version number
+
+### New Features
+
+ - <csr-id-dbd34dec1b195e1a5a4f0b6fa047633a4463a9ec/> add `FmtConst` support for `Vec`/slice keys
+ - <csr-id-81257954b089048bd5409ada47cc4562ba346334/> migrate to 2024 edition
+   * feat: migrate to 2024 edition
+   
+   * update cargo.lock
+ - <csr-id-82574515fdaca4dd4444c0a3af558511d1e7e9de/> add support for `ToTokens`
+ - <csr-id-c628ed45358dc78a3c3df5c2972ebf49fb9409c6/> add experimental ptrhash feature
+ - <csr-id-180b9c32934619c4eb62365b4cb9a2634265e794/> Add tuple support for key
+ - <csr-id-a92fcde48bc77a25403d5f59131bf1a550559f2a/> Implement `FromIterator` for `Map`
+
+### Bug Fixes
+
+ - <csr-id-4ffa9f06e6b3eff6cef6221fab586af6326bdeea/> implement `PhfEq` to address tuple lifetime issue
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 25 commits contributed to the release over the course of 366 calendar days.
+ - 366 days passed between releases.
+ - 14 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 7 unique issues were worked on: [#377](https://github.com/rust-phf/rust-phf/issues/377), [#392](https://github.com/rust-phf/rust-phf/issues/392), [#397](https://github.com/rust-phf/rust-phf/issues/397), [#414](https://github.com/rust-phf/rust-phf/issues/414), [#415](https://github.com/rust-phf/rust-phf/issues/415), [#416](https://github.com/rust-phf/rust-phf/issues/416), [#420](https://github.com/rust-phf/rust-phf/issues/420)
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **[#377](https://github.com/rust-phf/rust-phf/issues/377)**
+    - Update rust crate syn to v2.0.115 ([`ef36a8e`](https://github.com/rust-phf/rust-phf/commit/ef36a8ee5df641399eee33a5c767c9c866fc2152))
+ * **[#392](https://github.com/rust-phf/rust-phf/issues/392)**
+    - Add experimental ptrhash feature ([`c628ed4`](https://github.com/rust-phf/rust-phf/commit/c628ed45358dc78a3c3df5c2972ebf49fb9409c6))
+ * **[#397](https://github.com/rust-phf/rust-phf/issues/397)**
+    - Update minimal required unicase version to 2.8.1 ([`ddb6f6f`](https://github.com/rust-phf/rust-phf/commit/ddb6f6f1bcaedf6a0d5bccfd6f5b516a60edf88c))
+ * **[#414](https://github.com/rust-phf/rust-phf/issues/414)**
+    - Add support for `ToTokens` ([`8257451`](https://github.com/rust-phf/rust-phf/commit/82574515fdaca4dd4444c0a3af558511d1e7e9de))
+ * **[#415](https://github.com/rust-phf/rust-phf/issues/415)**
+    - Migrate to 2024 edition ([`8125795`](https://github.com/rust-phf/rust-phf/commit/81257954b089048bd5409ada47cc4562ba346334))
+ * **[#416](https://github.com/rust-phf/rust-phf/issues/416)**
+    - Add `FmtConst` support for `Vec`/slice keys ([`dbd34de`](https://github.com/rust-phf/rust-phf/commit/dbd34dec1b195e1a5a4f0b6fa047633a4463a9ec))
+ * **[#420](https://github.com/rust-phf/rust-phf/issues/420)**
+    - Implement `PhfEq` to address tuple lifetime issue ([`4ffa9f0`](https://github.com/rust-phf/rust-phf/commit/4ffa9f06e6b3eff6cef6221fab586af6326bdeea))
+ * **Uncategorized**
+    - Merge pull request #367 from JohnTitor/msrv-1.68 ([`2629d9b`](https://github.com/rust-phf/rust-phf/commit/2629d9b47d9ef3d4caeb1c27ff16cd3d1c7bccc6))
+    - Bump MSRV to 1.68 ([`93febde`](https://github.com/rust-phf/rust-phf/commit/93febde3dd3f1ac67b1259967f3899f68deab54e))
+    - Merge pull request #355 from JohnTitor/deny ([`6661843`](https://github.com/rust-phf/rust-phf/commit/66618434f3c87f7f63eb72496fc31cacda7a164a))
+    - Setup cargo-deny ([`cfbb052`](https://github.com/rust-phf/rust-phf/commit/cfbb052e855f697f2d42423408ce9d1e63d1c5b6))
+    - Prepare a release for v0.13.1 ([`1e518a6`](https://github.com/rust-phf/rust-phf/commit/1e518a6e94a2444b8df7d89078cfc69859537971))
+    - Merge pull request #350 from JohnTitor/release-0.13.0 ([`6e87a16`](https://github.com/rust-phf/rust-phf/commit/6e87a1678ad11e6c75f7c861bba82ff5e67408b4))
+    - Prepare a release for v0.13.0 ([`a8e8d69`](https://github.com/rust-phf/rust-phf/commit/a8e8d69580e5525fd0c0089f5fd0603b6c85bd09))
+    - Merge pull request #344 from JohnTitor/feat/tuple-support ([`478afb4`](https://github.com/rust-phf/rust-phf/commit/478afb45413571f56688ae446cc53fe3f5b81b44))
+    - Add tuple support for key ([`180b9c3`](https://github.com/rust-phf/rust-phf/commit/180b9c32934619c4eb62365b4cb9a2634265e794))
+    - Merge pull request #343 from JohnTitor/chore/fix-clippy ([`4bcbfbc`](https://github.com/rust-phf/rust-phf/commit/4bcbfbcafd618297790ecf689ab375444ed8629c))
+    - Fix clippy warnings ([`17bce84`](https://github.com/rust-phf/rust-phf/commit/17bce845aed852ccba597f99e5db853a4a6afa1f))
+    - Merge pull request #340 from JohnTitor/chore/rm-criterion ([`1e892e8`](https://github.com/rust-phf/rust-phf/commit/1e892e8f5be8e1a6345cc4877baf7ef0796c34e1))
+    - Remove criterion from deps ([`e4e1556`](https://github.com/rust-phf/rust-phf/commit/e4e1556f40a25c1d50e4467dc9312c9b04beecd9))
+    - Merge pull request #336 from JohnTitor/feat/into-iter-map ([`8ab225b`](https://github.com/rust-phf/rust-phf/commit/8ab225b6f374b0334723e125a5d50a782c4780a5))
+    - Implement `FromIterator` for `Map` ([`a92fcde`](https://github.com/rust-phf/rust-phf/commit/a92fcde48bc77a25403d5f59131bf1a550559f2a))
+    - Update version number ([`03a9306`](https://github.com/rust-phf/rust-phf/commit/03a930696231da01005e762425841f91587b3e04))
+    - Merge pull request #334 from rust-phf/chore/fix-test ([`4ddbefd`](https://github.com/rust-phf/rust-phf/commit/4ddbefdb118fa5d63ad62824ae4003f1b970ed68))
+    - Fix version number ([`ecd6a86`](https://github.com/rust-phf/rust-phf/commit/ecd6a86d2bb104624cae5372bd63e7f10d1cc4cf))
+</details>
+
 ## 0.12.0 (2025-06-19)
 
 <csr-id-08e74647f00f7d77cbb81e0cb73ed663798d000f/>
+<csr-id-51d6baaa6ffce658fb9b56a96affaf0ddd0603e5/>
 
 ### Chore
 
@@ -21,7 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 8 commits contributed to the release over the course of 138 calendar days.
+ - 9 commits contributed to the release over the course of 138 calendar days.
  - 163 days passed between releases.
  - 2 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -33,6 +112,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Release phf_shared v0.12.0, phf_generator v0.12.0, phf_macros v0.12.0, phf v0.12.0, phf_codegen v0.12.0, safety bump 4 crates ([`e309f28`](https://github.com/rust-phf/rust-phf/commit/e309f286acbfc238d7fec17c7c5f4328557566f8))
     - Update changelog ([`51d6baa`](https://github.com/rust-phf/rust-phf/commit/51d6baaa6ffce658fb9b56a96affaf0ddd0603e5))
     - Update version number in docs ([`08e7464`](https://github.com/rust-phf/rust-phf/commit/08e74647f00f7d77cbb81e0cb73ed663798d000f))
     - Merge pull request #289 from thaliaarchi/master ([`a6df856`](https://github.com/rust-phf/rust-phf/commit/a6df856ade4cfbf2666fcabbd70c666ea8234abf))
@@ -281,4 +361,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Fix paths in codegen ([`75b37fd`](https://github.com/rust-phf/rust-phf/commit/75b37fd88cfe4553826317b459a8163b4db8e54b))
     - Add a codegen crate ([`311bf94`](https://github.com/rust-phf/rust-phf/commit/311bf94f90dcded03d41f54769d2fc29764bc4df))
 </details>
-

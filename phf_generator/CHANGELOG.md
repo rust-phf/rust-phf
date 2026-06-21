@@ -5,15 +5,84 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.14.0 (2026-06-21)
+
+### Performance
+
+ - <csr-id-d140ea1b118c1b9d2e15c78ed31367a1cd72e70b/> reduce generation time
+
+### Bug Fixes
+
+ - <csr-id-5fffe70ab02a965a28cd9368c1888cf291cfa161/> update rust crate criterion to 0.6.0
+
+### New Features
+
+ - <csr-id-81257954b089048bd5409ada47cc4562ba346334/> migrate to 2024 edition
+   * feat: migrate to 2024 edition
+   
+   * update cargo.lock
+ - <csr-id-c628ed45358dc78a3c3df5c2972ebf49fb9409c6/> add experimental ptrhash feature
+
+### Chore
+
+ - <csr-id-6d041c1daacf612ae6f401c1dd961dccd027ce86/> use `fill` when resetting generator buffers
+ - <csr-id-ef36a8ee5df641399eee33a5c767c9c866fc2152/> update rust crate syn to v2.0.115
+ - <csr-id-9be80c172f6e1c12a38d7b183e99f54685034dc6/> update rust crate criterion to 0.8.0
+ - <csr-id-93febde3dd3f1ac67b1259967f3899f68deab54e/> bump MSRV to 1.68
+ - <csr-id-e4e1556f40a25c1d50e4467dc9312c9b04beecd9/> Remove criterion from deps
+ - <csr-id-03a930696231da01005e762425841f91587b3e04/> Update version number
+ - <csr-id-ecd6a86d2bb104624cae5372bd63e7f10d1cc4cf/> Fix version number
 
 ### Changed
 
  - Speed up hash generation by using flatter bucket storage and smaller bucket groups, trading a larger displacement table for less placement search work.
 
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 18 commits contributed to the release over the course of 366 calendar days.
+ - 366 days passed between releases.
+ - 11 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 6 unique issues were worked on: [#370](https://github.com/rust-phf/rust-phf/issues/370), [#377](https://github.com/rust-phf/rust-phf/issues/377), [#392](https://github.com/rust-phf/rust-phf/issues/392), [#402](https://github.com/rust-phf/rust-phf/issues/402), [#407](https://github.com/rust-phf/rust-phf/issues/407), [#415](https://github.com/rust-phf/rust-phf/issues/415)
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **[#370](https://github.com/rust-phf/rust-phf/issues/370)**
+    - Update rust crate criterion to 0.8.0 ([`9be80c1`](https://github.com/rust-phf/rust-phf/commit/9be80c172f6e1c12a38d7b183e99f54685034dc6))
+ * **[#377](https://github.com/rust-phf/rust-phf/issues/377)**
+    - Update rust crate syn to v2.0.115 ([`ef36a8e`](https://github.com/rust-phf/rust-phf/commit/ef36a8ee5df641399eee33a5c767c9c866fc2152))
+ * **[#392](https://github.com/rust-phf/rust-phf/issues/392)**
+    - Add experimental ptrhash feature ([`c628ed4`](https://github.com/rust-phf/rust-phf/commit/c628ed45358dc78a3c3df5c2972ebf49fb9409c6))
+ * **[#402](https://github.com/rust-phf/rust-phf/issues/402)**
+    - Use `fill` when resetting generator buffers ([`6d041c1`](https://github.com/rust-phf/rust-phf/commit/6d041c1daacf612ae6f401c1dd961dccd027ce86))
+ * **[#407](https://github.com/rust-phf/rust-phf/issues/407)**
+    - Reduce generation time ([`d140ea1`](https://github.com/rust-phf/rust-phf/commit/d140ea1b118c1b9d2e15c78ed31367a1cd72e70b))
+ * **[#415](https://github.com/rust-phf/rust-phf/issues/415)**
+    - Migrate to 2024 edition ([`8125795`](https://github.com/rust-phf/rust-phf/commit/81257954b089048bd5409ada47cc4562ba346334))
+ * **Uncategorized**
+    - Merge pull request #367 from JohnTitor/msrv-1.68 ([`2629d9b`](https://github.com/rust-phf/rust-phf/commit/2629d9b47d9ef3d4caeb1c27ff16cd3d1c7bccc6))
+    - Bump MSRV to 1.68 ([`93febde`](https://github.com/rust-phf/rust-phf/commit/93febde3dd3f1ac67b1259967f3899f68deab54e))
+    - Prepare a release for v0.13.1 ([`1e518a6`](https://github.com/rust-phf/rust-phf/commit/1e518a6e94a2444b8df7d89078cfc69859537971))
+    - Merge pull request #350 from JohnTitor/release-0.13.0 ([`6e87a16`](https://github.com/rust-phf/rust-phf/commit/6e87a1678ad11e6c75f7c861bba82ff5e67408b4))
+    - Prepare a release for v0.13.0 ([`a8e8d69`](https://github.com/rust-phf/rust-phf/commit/a8e8d69580e5525fd0c0089f5fd0603b6c85bd09))
+    - Merge pull request #340 from JohnTitor/chore/rm-criterion ([`1e892e8`](https://github.com/rust-phf/rust-phf/commit/1e892e8f5be8e1a6345cc4877baf7ef0796c34e1))
+    - Remove criterion from deps ([`e4e1556`](https://github.com/rust-phf/rust-phf/commit/e4e1556f40a25c1d50e4467dc9312c9b04beecd9))
+    - Merge pull request #339 from rust-phf/renovate/criterion-0.x ([`a6191d1`](https://github.com/rust-phf/rust-phf/commit/a6191d14653e9fff7853c1df47fe1db6822f1b78))
+    - Update rust crate criterion to 0.6.0 ([`5fffe70`](https://github.com/rust-phf/rust-phf/commit/5fffe70ab02a965a28cd9368c1888cf291cfa161))
+    - Update version number ([`03a9306`](https://github.com/rust-phf/rust-phf/commit/03a930696231da01005e762425841f91587b3e04))
+    - Merge pull request #334 from rust-phf/chore/fix-test ([`4ddbefd`](https://github.com/rust-phf/rust-phf/commit/4ddbefdb118fa5d63ad62824ae4003f1b970ed68))
+    - Fix version number ([`ecd6a86`](https://github.com/rust-phf/rust-phf/commit/ecd6a86d2bb104624cae5372bd63e7f10d1cc4cf))
+</details>
+
 ## 0.12.0 (2025-06-19)
 
 <csr-id-08e74647f00f7d77cbb81e0cb73ed663798d000f/>
+<csr-id-51d6baaa6ffce658fb9b56a96affaf0ddd0603e5/>
 
 ### Chore
 
@@ -27,7 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 5 commits contributed to the release over the course of 138 calendar days.
+ - 6 commits contributed to the release over the course of 138 calendar days.
  - 163 days passed between releases.
  - 2 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -39,6 +108,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Release phf_shared v0.12.0, phf_generator v0.12.0, phf_macros v0.12.0, phf v0.12.0, phf_codegen v0.12.0, safety bump 4 crates ([`e309f28`](https://github.com/rust-phf/rust-phf/commit/e309f286acbfc238d7fec17c7c5f4328557566f8))
     - Update changelog ([`51d6baa`](https://github.com/rust-phf/rust-phf/commit/51d6baaa6ffce658fb9b56a96affaf0ddd0603e5))
     - Update version number in docs ([`08e7464`](https://github.com/rust-phf/rust-phf/commit/08e74647f00f7d77cbb81e0cb73ed663798d000f))
     - Merge branch 'master' into no-wasteful-allocations ([`33b8aff`](https://github.com/rust-phf/rust-phf/commit/33b8affe77cea8bdeccb5c8d6c730c78231fc138))

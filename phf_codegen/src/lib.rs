@@ -15,8 +15,8 @@
 //!
 //! ```toml
 //! [build-dependencies]
-//! phf = { version = "0.13.1", default-features = false }
-//! phf_codegen = "0.13.1"
+//! phf = { version = "0.14.0", default-features = false }
+//! phf_codegen = "0.14.0"
 //! ```
 //!
 //! When using the experimental `ptrhash` feature, enable it on both
@@ -140,7 +140,7 @@
 //! // ...
 //! ```
 
-#![doc(html_root_url = "https://docs.rs/phf_codegen/0.13.1")]
+#![doc(html_root_url = "https://docs.rs/phf_codegen/0.14.0")]
 #![allow(clippy::new_without_default)]
 
 use phf_shared::{FmtConst, PhfHash};

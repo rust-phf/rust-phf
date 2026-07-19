@@ -9,7 +9,6 @@ private = { ignore = true }
 
 [bans]
 multiple-versions = "deny"
-skip = ["syn@2"]
 
 [bans.build]
 executables = "deny"

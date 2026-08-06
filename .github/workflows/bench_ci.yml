@@ -1,0 +1,83 @@
+name: Benchmark PR vs Main
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'phf/**'
+      - 'phf_shared/**'
+      - 'asm_test/**'
+      - 'Cargo.toml'
+      - '.github/workflows/bench_ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  run_benchmarks:
+    name: Bench (${{ matrix.os }} - ${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            os: linux
+            arch: x64
+          - runner: ubuntu-24.04-arm
+            os: linux
+            arch: arm64
+          - runner: macos-14
+            os: macos
+            arch: arm64
+          - runner: windows-latest
+            os: windows
+            arch: x64
+            
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup toolchain
+        run: |
+          rustup set profile minimal
+          rustup override set stable
+
+      - name: Run benchmark comparison
+        run: python3 benches/run_ci_bench.py
+
+      - name: Rename result file
+        shell: bash
+        run: mv bench_result.json bench_result_${{ matrix.os }}_${{ matrix.arch }}.json
+
+      - name: Upload results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: bench_result_${{ matrix.os }}_${{ matrix.arch }}
+          path: bench_result_${{ matrix.os }}_${{ matrix.arch }}.json
+
+  merge_results:
+    name: Merge Results
+    needs: run_benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-size: '3.x'
+
+      - name: Download all results
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          path: results
+          pattern: bench_result_*
+          merge-multiple: true
+
+      - name: Generate summary report
+        run: python3 benches/merge_ci_benches.py

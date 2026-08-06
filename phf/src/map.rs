@@ -170,6 +170,15 @@ impl<K, V> Map<K, V> {
         if self.disps.is_empty() {
             return None;
         } //Prevent panic on empty map
+
+        // Fast path: linear scan for tiny maps (entries <= DEFAULT_LAMBDA = 3).
+        // 3 equality checks are cheaper than one full SipHash-1-3 computation
+        // (~80 instructions). Threshold matches the single-bucket case
+        // (disps.len == 1).
+        if self.entries.len() <= 3 {
+            return self.get_entry_linear(key);
+        }
+
         let hashes = phf_shared::hash(key, &self.key);
         let index = phf_shared::get_index(&hashes, self.disps, self.entries.len());
         let entry = &self.entries[index as usize];
@@ -178,6 +187,18 @@ impl<K, V> Map<K, V> {
         } else {
             None
         }
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn get_entry_linear<T>(&self, key: &T) -> Option<(&K, &V)>
+    where
+        T: Eq + PhfHash + ?Sized,
+        K: PhfEq<T>,
+    {
+        self.entries
+            .iter()
+            .find_map(|(k, v)| if k.phf_eq(key) { Some((k, v)) } else { None })
     }
 
     /// Like `get`, but returns both the key and the value.

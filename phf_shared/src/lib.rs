@@ -64,7 +64,7 @@ pub fn get_index(hashes: &Hashes, disps: &[(u32, u32)], len: usize) -> u32 {
     let bucket = (((hashes.g as u64) * (disps.len() as u64)) >> 32) as usize;
     let (d1, d2) = disps[bucket];
     let disp = displace(hashes.f1, hashes.f2, d1, d2);
-    (((disp as u64) * (len as u64)) >> 32) as u32
+    (((disp.wrapping_mul(0x9e3779b9) as u64) * (len as u64)) >> 32) as u32
 }
 
 /// A trait implemented by types which can be used in PHF data structures.

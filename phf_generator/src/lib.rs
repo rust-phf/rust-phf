@@ -172,7 +172,8 @@ impl Generator {
                     for &key in keys {
                         let disp =
                             phf_shared::displace(self.hashes[key].f1, self.hashes[key].f2, d1, d2);
-                        let idx = (((disp as u64) * (table_len as u64)) >> 32) as usize;
+                        let idx = (((disp.wrapping_mul(0x9e3779b9) as u64) * (table_len as u64)) >> 32)
+                            as usize;
                         if self.map[idx] != EMPTY_SLOT || self.try_map[idx] == generation {
                             continue 'disps;
                         }

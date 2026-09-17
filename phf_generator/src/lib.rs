@@ -121,7 +121,7 @@ impl Generator {
 
         // Store bucket contents in one flat buffer instead of allocating a Vec per bucket.
         for (i, hash) in self.hashes.iter().enumerate() {
-            let bucket = (hash.g % buckets_len) as usize;
+            let bucket = (((hash.g as u64) * (buckets_len as u64)) >> 32) as usize;
             self.key_buckets[i] = bucket;
             let bucket = &mut self.buckets[bucket];
             bucket.len += 1;
@@ -170,9 +170,10 @@ impl Generator {
                     generation += 1;
 
                     for &key in keys {
-                        let idx =
-                            (phf_shared::displace(self.hashes[key].f1, self.hashes[key].f2, d1, d2)
-                                % (table_len as u32)) as usize;
+                        let disp =
+                            phf_shared::displace(self.hashes[key].f1, self.hashes[key].f2, d1, d2);
+                        let idx = (((disp.wrapping_mul(0x9e3779b9) as u64) * (table_len as u64))
+                            >> 32) as usize;
                         if self.map[idx] != EMPTY_SLOT || self.try_map[idx] == generation {
                             continue 'disps;
                         }

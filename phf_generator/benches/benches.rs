@@ -87,7 +87,6 @@ fn ptrhash_lookup(data: &LookupBench, key: &str) -> bool {
         data.ptrhash.seed,
         hash,
         &data.ptrhash.pilots,
-        &data.ptrhash.remap,
         data.ptrhash.map.len(),
     ) as usize;
     data.keys[data.ptrhash.map[slot]] == key

@@ -149,10 +149,10 @@ use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 
-#[cfg(not(feature = "ptrhash"))]
-use phf_generator::HashState;
 #[cfg(feature = "ptrhash")]
 use phf_generator::ptrhash::HashState;
+#[cfg(not(feature = "ptrhash"))]
+use phf_generator::HashState;
 
 struct Delegate<T>(T);
 
@@ -316,8 +316,9 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
             f,
             "{}::Map {{
     key: {:?},
+    num_keys: {},
     pilots: &[",
-            self.path, self.state.seed
+            self.path, self.state.seed, self.state.num_keys
         )?;
 
         for &pilot in &self.state.pilots {
@@ -326,22 +327,6 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
                 "
         {},",
                 pilot
-            )?;
-        }
-
-        write!(
-            f,
-            "
-    ],
-    remap: &[",
-        )?;
-
-        for &index in &self.state.remap {
-            write!(
-                f,
-                "
-        {},",
-                index
             )?;
         }
 
@@ -588,22 +573,6 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
                 "
         {},",
                 pilot
-            )?;
-        }
-
-        write!(
-            f,
-            "
-    ],
-    remap: &[",
-        )?;
-
-        for &index in &self.state.remap {
-            write!(
-                f,
-                "
-        {},",
-                index
             )?;
         }
 

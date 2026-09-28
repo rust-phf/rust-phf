@@ -17,9 +17,10 @@ path = "src/lib.rs"
 [features]
 default = ["std"]
 std = []
-ptrhash = []
+ptrhash = ["dep:foldhash"]
 
 [dependencies]
 siphasher = "1.0"
 unicase = { version = "2.8.1", optional = true }
 uncased = { version = "0.9.9", optional = true, default-features = false }
+foldhash = { version = "0.2.0", default-features = false, optional = true }

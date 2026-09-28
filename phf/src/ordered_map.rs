@@ -45,8 +45,6 @@ pub struct OrderedMap<K: 'static, V: 'static> {
     #[doc(hidden)]
     pub pilots: &'static [u8],
     #[doc(hidden)]
-    pub remap: &'static [u32],
-    #[doc(hidden)]
     pub idxs: &'static [usize],
     #[doc(hidden)]
     pub entries: &'static [(K, V)],
@@ -91,7 +89,6 @@ where
     fn eq(&self, other: &Self) -> bool {
         self.key == other.key
             && self.pilots == other.pilots
-            && self.remap == other.remap
             && self.idxs == other.idxs
             && self.entries == other.entries
     }
@@ -202,13 +199,8 @@ impl<K, V> OrderedMap<K, V> {
             }
 
             let hash = phf_shared::ptrhash::hash(key, &self.key);
-            let idx_index = phf_shared::ptrhash::get_index(
-                self.key,
-                hash,
-                self.pilots,
-                self.remap,
-                self.idxs.len(),
-            );
+            let idx_index =
+                phf_shared::ptrhash::get_index(self.key, hash, self.pilots, self.idxs.len());
             let idx = self.idxs[idx_index as usize];
             let entry = &self.entries[idx];
 

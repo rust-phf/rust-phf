@@ -16,11 +16,11 @@ error[E0277]: the trait bound `UniCase<&str>: PhfEq<_>` is not satisfied
              `&[T; N]` implements `phf_shared::PhfBorrow<[T; N]>`
              `&[T]` implements `phf_shared::PhfBorrow<[T]>`
              `&str` implements `phf_shared::PhfBorrow<str>`
-             `String` implements `phf_shared::PhfBorrow<str>`
-             `Vec<T>` implements `phf_shared::PhfBorrow<[T]>`
-             `[bool; N]` implements `phf_shared::PhfBorrow<[bool]>`
-             `[char; N]` implements `phf_shared::PhfBorrow<[char]>`
-             `[i128; N]` implements `phf_shared::PhfBorrow<[i128]>`
+             `Arc<[T]>` implements `phf_shared::PhfBorrow<[T]>`
+             `Arc<str>` implements `phf_shared::PhfBorrow<str>`
+             `Box<[T]>` implements `phf_shared::PhfBorrow<[T]>`
+             `Box<str>` implements `phf_shared::PhfBorrow<str>`
+             `Rc<[T]>` implements `phf_shared::PhfBorrow<[T]>`
            and $N others
    = note: required for `UniCase<&str>` to implement `PhfEq<_>`
 note: required by a bound in `phf::Map::<K, V>::get`

@@ -740,9 +740,12 @@ exact_container_impl! {cfg(all(feature = "std", feature = "uncased")), ::uncased
 macro_rules! unicase_container_impl {
     ($s:ident: $uni:ty: $container:ty) => {
         #[cfg(all(feature = "std", feature = "unicase"))]
-        impl<$s> PhfBorrow<$uni> for $container {
-            fn borrow(&self) -> &$uni {
-                self
+        impl<$s, B: ?Sized> PhfBorrow<B> for $container
+        where
+            $uni: PhfBorrow<B>,
+        {
+            fn borrow(&self) -> &B {
+                <$uni as PhfBorrow<B>>::borrow(self)
             }
         }
 
@@ -932,5 +935,40 @@ mod tests {
         assert_hash::<Box<str>>();
         assert_hash::<std::rc::Rc<[u8]>>();
         assert_hash::<std::rc::Rc<str>>();
+    }
+
+    #[cfg(all(feature = "std", feature = "unicase"))]
+    #[test]
+    fn unicase_containers_allow_shorter_reference_lifetimes() {
+        use std::{rc::Rc, sync::Arc};
+        use unicase::{Ascii, UniCase};
+
+        fn assert_lookup<K, B>(key: K, matching: &B, missing: &B)
+        where
+            K: PhfEq<B> + PhfHash + 'static,
+            B: Eq + PhfHash,
+        {
+            assert!(key.phf_eq(matching));
+            assert!(!key.phf_eq(missing));
+            assert_eq!(test_hash(&key), test_hash(matching));
+        }
+
+        let unicode = String::from("STRASSE");
+        let ascii = String::from("ABC");
+        let missing = String::from("missing");
+
+        let key = UniCase::new("Straße");
+        let matching = UniCase::new(unicode.as_str());
+        let missing_unicode = UniCase::new(missing.as_str());
+        assert_lookup(Box::new(key), &matching, &missing_unicode);
+        assert_lookup(Rc::new(key), &matching, &missing_unicode);
+        assert_lookup(Arc::new(key), &matching, &missing_unicode);
+
+        let key = Ascii::new("abc");
+        let matching = Ascii::new(ascii.as_str());
+        let missing_ascii = Ascii::new(missing.as_str());
+        assert_lookup(Box::new(key), &matching, &missing_ascii);
+        assert_lookup(Rc::new(key), &matching, &missing_ascii);
+        assert_lookup(Arc::new(key), &matching, &missing_ascii);
     }
 }

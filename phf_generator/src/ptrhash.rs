@@ -11,8 +11,8 @@ const DEFAULT_LAMBDA: f64 = 3.0;
 
 pub struct HashState {
     pub seed: u64,
+    pub num_keys: usize,
     pub pilots: Vec<u8>,
-    pub remap: Vec<u32>,
     pub map: Vec<usize>,
 }
 
@@ -27,8 +27,8 @@ where
     if entries.is_empty() {
         return HashState {
             seed: 0,
+            num_keys: 0,
             pilots: vec![],
-            remap: vec![],
             map: vec![],
         };
     }
@@ -60,10 +60,10 @@ struct Slot {
 }
 
 fn try_generate_hash(seed: u64, hashes: &[u64]) -> Option<HashState> {
-    let table_len = hashes.len();
-    let table_len_u32 = table_len.try_into().unwrap();
-    let slots_len = adjusted_slots_len(table_len_u32) as usize;
-    let buckets_len = adjusted_buckets_len(table_len_u32) as usize;
+    let num_keys = hashes.len();
+    let num_keys_u32 = num_keys.try_into().unwrap();
+    let slots_len = adjusted_slots_len(num_keys_u32) as usize;
+    let buckets_len = adjusted_buckets_len(num_keys_u32) as usize;
 
     let mut buckets = (0..buckets_len)
         .map(|_| Bucket::default())
@@ -180,27 +180,18 @@ fn try_generate_hash(seed: u64, hashes: &[u64]) -> Option<HashState> {
         }
     }
 
-    let mut map = vec![0; table_len];
-    let mut remap = vec![0; slots.len() - table_len];
-    let mut free_slots = Vec::new();
+    let mut map = vec![0; slots_len];
 
     for (slot, entry) in slots.iter().enumerate() {
-        match (slot < table_len, entry) {
-            (true, Some(entry)) => map[slot] = entry.key,
-            (true, None) => free_slots.push(slot),
-            (false, Some(entry)) => {
-                let remapped = free_slots.pop().unwrap();
-                remap[slot - table_len] = remapped.try_into().unwrap();
-                map[remapped] = entry.key;
-            }
-            (false, None) => {}
+        if let Some(entry) = entry {
+            map[slot] = entry.key;
         }
     }
 
     Some(HashState {
         seed,
+        num_keys,
         pilots,
-        remap,
         map,
     })
 }

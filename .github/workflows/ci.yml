@@ -26,6 +26,52 @@ jobs:
           annotations: true
           version: 1.30.1
 
+  cross:
+    name: Cross-platform hashing (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: i686-unknown-linux-gnu
+            compiler: gcc-i686-linux-gnu
+            linker: i686-linux-gnu-gcc
+            runner: qemu-i386 -L /usr/i686-linux-gnu
+          - target: s390x-unknown-linux-gnu
+            compiler: gcc-s390x-linux-gnu
+            linker: s390x-linux-gnu-gcc
+            runner: qemu-s390x -L /usr/s390x-linux-gnu
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install cross-compilation tools
+        env:
+          CROSS_COMPILER: ${{ matrix.compiler }}
+          CROSS_TARGET: ${{ matrix.target }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user "$CROSS_COMPILER"
+          rustup target add "$CROSS_TARGET"
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Test host-generated tables on the target
+        env:
+          CROSS_TARGET: ${{ matrix.target }}
+          CROSS_LINKER: ${{ matrix.linker }}
+          CROSS_RUNNER: ${{ matrix.runner }}
+        run: |
+          target_env="${CROSS_TARGET//-/_}"
+          target_env="${target_env^^}"
+          export "CARGO_TARGET_${target_env}_LINKER"="$CROSS_LINKER"
+          export "CARGO_TARGET_${target_env}_RUNNER"="$CROSS_RUNNER"
+          cargo test --workspace --locked --target "$CROSS_TARGET"
+          cargo test --workspace --all-features --locked --target "$CROSS_TARGET"
+
   ci:
     name: CI
     runs-on: ubuntu-latest

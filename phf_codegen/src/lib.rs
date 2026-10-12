@@ -268,10 +268,11 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
         // funky formatting here for nice output
         write!(
             f,
-            "{}::Map {{
-    key: {:?},
+            "{0}::Map {{
+    key: const {{ {0}::HashKey::new({1}) }},
     disps: &[",
-            self.path, self.state.key
+            self.path,
+            self.state.key.seed()
         )?;
 
         // write map displacements
@@ -314,10 +315,11 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{}::Map {{
-    key: {:?},
+            "{0}::Map {{
+    key: const {{ {0}::HashKey::new({1}) }},
     pilots: &[",
-            self.path, self.state.seed
+            self.path,
+            self.state.key.seed()
         )?;
 
         for &pilot in &self.state.pilots {
@@ -522,10 +524,11 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{}::OrderedMap {{
-    key: {:?},
+            "{0}::OrderedMap {{
+    key: const {{ {0}::HashKey::new({1}) }},
     disps: &[",
-            self.path, self.state.key
+            self.path,
+            self.state.key.seed()
         )?;
         for &(d1, d2) in &self.state.disps {
             write!(
@@ -576,10 +579,11 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{}::OrderedMap {{
-    key: {:?},
+            "{0}::OrderedMap {{
+    key: const {{ {0}::HashKey::new({1}) }},
     pilots: &[",
-            self.path, self.state.seed
+            self.path,
+            self.state.key.seed()
         )?;
 
         for &pilot in &self.state.pilots {

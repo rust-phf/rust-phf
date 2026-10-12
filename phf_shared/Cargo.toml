@@ -20,6 +20,8 @@ std = []
 ptrhash = []
 
 [dependencies]
-siphasher = "1.0"
+# Generated tables require identical hash output on the host and target.
+# Pin the version because foldhash does not promise stability across releases.
+foldhash = { package = "foldhash-portable", version = "=0.2.1", default-features = false, features = ["portable"] }
 unicase = { version = "2.8.1", optional = true }
 uncased = { version = "0.9.9", optional = true, default-features = false }

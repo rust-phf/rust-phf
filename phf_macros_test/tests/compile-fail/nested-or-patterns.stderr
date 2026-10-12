@@ -1,0 +1,29 @@
+error: duplicate key
+ --> tests/compile-fail/nested-or-patterns.rs:5:5
+  |
+5 |     ('p', "a" | "a") => 0,
+  |     ^^^^^^^^^^^^^^^^
+
+error: duplicate key
+  --> tests/compile-fail/nested-or-patterns.rs:10:5
+   |
+10 |     [1, 2],
+   |     ^^^^^^
+
+error: duplicate key
+  --> tests/compile-fail/nested-or-patterns.rs:14:5
+   |
+14 |     UniCase::ascii("FOO" | "foo"),
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: key type does not match the first key
+  --> tests/compile-fail/nested-or-patterns.rs:18:5
+   |
+18 |     (0u8 | 1u16, "a") => 0,
+   |     ^^^^^^^^^^^^^^^^^
+
+error: integer key literals in the first key must have an explicit type suffix
+  --> tests/compile-fail/nested-or-patterns.rs:22:6
+   |
+22 |     (0 | 1u8, "a"),
+   |      ^

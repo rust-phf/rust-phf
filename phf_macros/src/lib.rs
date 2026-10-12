@@ -344,6 +344,79 @@ impl PhfHash for Entry {
     }
 }
 
+fn expand_or_patterns(key: &Expr) -> Vec<Expr> {
+    match key {
+        Expr::Binary(binary) if matches!(binary.op, BinOp::BitOr(_)) => {
+            let mut variants = expand_or_patterns(&binary.left);
+            variants.extend(expand_or_patterns(&binary.right));
+            variants
+        }
+        Expr::Tuple(tuple) => expand_elements(&tuple.elems)
+            .into_iter()
+            .map(|elems| {
+                Expr::Tuple(syn::ExprTuple {
+                    elems,
+                    ..tuple.clone()
+                })
+            })
+            .collect(),
+        Expr::Array(array) => expand_elements(&array.elems)
+            .into_iter()
+            .map(|elems| {
+                Expr::Array(syn::ExprArray {
+                    elems,
+                    ..array.clone()
+                })
+            })
+            .collect(),
+        Expr::Call(call) if call.args.len() == 1 => expand_or_patterns(&call.args[0])
+            .into_iter()
+            .map(|arg| {
+                let mut call = call.clone();
+                call.args[0] = arg;
+                Expr::Call(call)
+            })
+            .collect(),
+        Expr::Unary(unary) => expand_or_patterns(&unary.expr)
+            .into_iter()
+            .map(|expr| {
+                Expr::Unary(syn::ExprUnary {
+                    expr: Box::new(expr),
+                    ..unary.clone()
+                })
+            })
+            .collect(),
+        Expr::Group(group) => expand_or_patterns(&group.expr),
+        Expr::Paren(paren) => expand_or_patterns(&paren.expr),
+        _ => vec![key.clone()],
+    }
+}
+
+fn expand_elements(elements: &Punctuated<Expr, Token![,]>) -> Vec<Punctuated<Expr, Token![,]>> {
+    let mut variants = vec![elements.clone()];
+    for (index, element) in elements.iter().enumerate() {
+        let expanded = expand_or_patterns(element);
+        if let [element] = expanded.as_slice() {
+            for variant in &mut variants {
+                variant[index] = element.clone();
+            }
+            continue;
+        }
+        // Form the Cartesian product, with earlier elements varying more slowly.
+        variants = variants
+            .into_iter()
+            .flat_map(|elements| {
+                expanded.iter().map(move |element| {
+                    let mut elements = elements.clone();
+                    elements[index] = element.clone();
+                    elements
+                })
+            })
+            .collect();
+    }
+    variants
+}
+
 struct Map {
     entries: Vec<Entry>,
     key_hint: Option<ParsedKey>,
@@ -356,24 +429,17 @@ impl Map {
             key_hint: None,
         };
         for entry in entries {
-            map.add_variants_from(&entry.key().expr, &entry.value())?;
+            let value = entry.value();
+            for key in expand_or_patterns(&entry.key().expr) {
+                map.add_entry(key, &value)?;
+            }
         }
         map.check_duplicates()?;
         Ok(map)
     }
 
-    /// Handle OR patterns within the key expression
-    fn add_variants_from(&mut self, key: &Expr, value: &Expr) -> syn::Result<()> {
-        if let Expr::Binary(binary) = key {
-            if let BinOp::BitOr(_) = binary.op {
-                // Handle OR pattern: left | right
-                self.add_variants_from(&binary.left, value)?;
-                self.add_variants_from(&binary.right, value)?;
-                return Ok(());
-            }
-        }
-        // Single key
-        let parsed_key = ParsedKey::from_expr(key, self.key_hint.as_ref())?;
+    fn add_entry(&mut self, key: Expr, value: &Expr) -> syn::Result<()> {
+        let parsed_key = ParsedKey::from_expr(&key, self.key_hint.as_ref())?;
         if let Some(key_hint) = &self.key_hint {
             if !parsed_key.has_same_type_as(key_hint) {
                 return Err(Error::new_spanned(
@@ -386,7 +452,7 @@ impl Map {
         }
         self.entries.push(Entry {
             parsed_key,
-            key_expr: key.clone(),
+            key_expr: key,
             value_expr: value.clone(),
         });
         Ok(())

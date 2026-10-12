@@ -96,7 +96,8 @@ extern crate std as core;
 /// - arrays of `u8` integer literals
 /// - tuples of any supported key expressions, up to 12 elements
 /// - dereferenced byte string literals
-/// - OR patterns using `|` to map multiple keys to the same value
+/// - OR patterns using `|` to map multiple keys to the same value, including
+///   inside the supported key expressions
 /// - `UniCase::unicode(string)`, `UniCase::ascii(string)`, or `Ascii::new(string)` if the `unicase` feature is enabled
 /// - `UncasedStr::new(string)` if the `uncased` feature is enabled
 ///
@@ -136,6 +137,28 @@ extern crate std as core;
 ///     assert_eq!(OPERATORS["plus"], "addition");
 /// }
 /// ```
+///
+/// OR patterns can also appear inside tuples, arrays, and the supported wrapper
+/// expressions. Each combination produces a separate entry:
+///
+/// ```
+/// use phf::{phf_map, Map};
+///
+/// static TYPES: Map<(char, &str), &str> = phf_map! {
+///     ('p' | 'P', "Point2d" | "Point3d") => "point",
+/// };
+///
+/// for prefix in ['p', 'P'] {
+///     for name in ["Point2d", "Point3d"] {
+///         assert_eq!(TYPES.get(&(prefix, name)), Some(&"point"));
+///     }
+/// }
+/// assert_eq!(TYPES.len(), 4);
+/// ```
+///
+/// Alternatives expand from left to right. For ordered maps and sets, earlier
+/// tuple or array elements vary more slowly: the example above produces
+/// `('p', "Point2d")`, `('p', "Point3d")`, `('P', "Point2d")`, then `('P', "Point3d")`.
 pub use phf_macros::phf_map;
 
 #[cfg(feature = "macros")]
@@ -166,7 +189,8 @@ pub use phf_macros::phf_ordered_map;
 ///
 /// # OR Patterns
 ///
-/// You can use OR patterns to include multiple keys in a single entry:
+/// You can use OR patterns to include multiple keys in a single entry, including
+/// nested patterns as in [`phf_map`]:
 ///
 /// ```
 /// use phf::{phf_set, Set};

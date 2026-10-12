@@ -3,7 +3,9 @@
 //!
 //! It currently uses the
 //! [CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) by default and
-//! also ships an experimental `ptrhash` feature for an alternative MPHF layout.
+//! also ships an experimental `ptrhash` feature for an alternative PHF layout.
+//! This layout keeps spare slots (about 1% for large tables) to avoid remapping
+//! lookups. Iteration skips these slots, so each entry is returned exactly once.
 //!
 //! MSRV (minimum supported rust version) is Rust 1.85.
 //!
@@ -19,7 +21,7 @@
 //! phf = { version = "0.14.0", features = ["macros"] }
 //! ```
 //!
-//! To try the experimental MPHF alternative instead of the default CHD layout,
+//! To try the experimental alternative instead of the default CHD layout,
 //! enable the `ptrhash` feature on every `phf` crate involved in generation and
 //! runtime lookup:
 //!

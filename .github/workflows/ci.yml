@@ -79,6 +79,10 @@ jobs:
       - name: all features check
         run: cargo check --workspace --all-features
 
+      - name: ptrhash tests
+        if: matrix.version != '1.85.0'
+        run: cargo test -p phf_generator -p phf_macros_test -p phf_codegen_test --features ptrhash
+
       - name: unicase + macros features check
         run: cargo check -p unicase-example
 

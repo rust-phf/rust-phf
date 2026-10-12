@@ -23,23 +23,14 @@ pub fn hash_pilot(seed: u64, pilot: u8) -> u64 {
 /// * `seed` is from `phf_generator::ptrhash::HashState::seed`.
 /// * `hash` is from `hash()` in this crate.
 /// * `pilots` is from `phf_generator::ptrhash::HashState::pilots`.
-/// * `remap` is from `phf_generator::ptrhash::HashState::remap`.
 /// * `len` is the length of `phf_generator::ptrhash::HashState::map`.
 #[inline]
-pub fn get_index(seed: u64, hash: u64, pilots: &[u8], remap: &[u32], len: usize) -> u32 {
+pub fn get_index(seed: u64, hash: u64, pilots: &[u8], len: usize) -> u32 {
     let pilots_len = pilots.len() as u32;
-    let slots_len = (len + remap.len()) as u32;
 
     let bucket = fast_reduct32(low(hash), pilots_len) as usize;
     let pilot_hash = hash_pilot(seed, pilots[bucket]);
-    let index = fast_reduct32(high(hash) ^ high(pilot_hash) ^ low(pilot_hash), slots_len);
-    let index = index as usize;
-
-    if index < len {
-        index as u32
-    } else {
-        remap[index - len]
-    }
+    fast_reduct32(high(hash) ^ high(pilot_hash) ^ low(pilot_hash), len as u32)
 }
 
 // https://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/

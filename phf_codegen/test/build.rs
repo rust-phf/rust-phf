@@ -13,6 +13,18 @@ fn main() -> io::Result<()> {
 
     writeln!(
         &mut file,
+        "static SINGLETON_MAP: ::phf::Map<&'static str, u32> = \n{};",
+        phf_codegen::Map::new().entry("a", "1").build()
+    )?;
+
+    writeln!(
+        &mut file,
+        "static SINGLETON_SET: ::phf::Set<&'static str> = \n{};",
+        phf_codegen::Set::new().entry("a").build()
+    )?;
+
+    writeln!(
+        &mut file,
         "static MAP: ::phf::Map<u32, &'static str> = \n{};",
         phf_codegen::Map::new()
             .entry(1u32, "\"a\"")

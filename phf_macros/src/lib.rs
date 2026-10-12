@@ -498,7 +498,7 @@ fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
     {
         let key = state.seed;
         let pilots = state.pilots.iter().map(|pilot| quote!(#pilot));
-        let remap = state.remap.iter().map(|index| quote!(#index));
+        let empty_slots = &state.empty_slots;
         let entries = state.map.iter().map(|&idx| {
             let entry = &entries[idx];
             let key = &entry.key_expr;
@@ -510,7 +510,7 @@ fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
             phf::Map {
                 key: #key,
                 pilots: &[#(#pilots),*],
-                remap: &[#(#remap),*],
+                empty_slots: &[#(#empty_slots),*],
                 entries: &[#(#entries),*],
             }
         }
@@ -543,7 +543,6 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
     {
         let key = state.seed;
         let pilots = state.pilots.iter().map(|pilot| quote!(#pilot));
-        let remap = state.remap.iter().map(|index| quote!(#index));
         let idxs = state.map.iter().map(|idx| quote!(#idx));
         let entries = entries.iter().map(|entry| {
             let key = &entry.key_expr;
@@ -555,7 +554,6 @@ fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenS
             phf::OrderedMap {
                 key: #key,
                 pilots: &[#(#pilots),*],
-                remap: &[#(#remap),*],
                 idxs: &[#(#idxs),*],
                 entries: &[#(#entries),*],
             }

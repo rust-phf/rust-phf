@@ -401,6 +401,7 @@ version = "0.1.0"
 dependencies = [
  "phf",
  "phf_macros",
+ "serde_json",
  "trybuild",
  "uncased",
  "unicase",

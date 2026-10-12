@@ -12,7 +12,9 @@ const DEFAULT_LAMBDA: f64 = 3.0;
 pub struct HashState {
     pub seed: u64,
     pub pilots: Vec<u8>,
-    pub remap: Vec<u32>,
+    /// Sorted indices of padding slots, which must be skipped during iteration.
+    pub empty_slots: Vec<u32>,
+    /// Entry indices for all slots. Padding slots repeat entry zero.
     pub map: Vec<usize>,
 }
 
@@ -28,7 +30,7 @@ where
         return HashState {
             seed: 0,
             pilots: vec![],
-            remap: vec![],
+            empty_slots: vec![],
             map: vec![],
         };
     }
@@ -180,27 +182,22 @@ fn try_generate_hash(seed: u64, hashes: &[u64]) -> Option<HashState> {
         }
     }
 
-    let mut map = vec![0; table_len];
-    let mut remap = vec![0; slots.len() - table_len];
-    let mut free_slots = Vec::new();
+    // Keep the full slot table so lookups do not need a remapping step.
+    // Padding slots repeat the first entry; key equality rejects misses there.
+    let mut map = vec![0; slots.len()];
+    let mut empty_slots = Vec::with_capacity(slots.len() - table_len);
 
     for (slot, entry) in slots.iter().enumerate() {
-        match (slot < table_len, entry) {
-            (true, Some(entry)) => map[slot] = entry.key,
-            (true, None) => free_slots.push(slot),
-            (false, Some(entry)) => {
-                let remapped = free_slots.pop().unwrap();
-                remap[slot - table_len] = remapped.try_into().unwrap();
-                map[remapped] = entry.key;
-            }
-            (false, None) => {}
+        match entry {
+            Some(entry) => map[slot] = entry.key,
+            None => empty_slots.push(slot as u32),
         }
     }
 
     Some(HashState {
         seed,
         pilots,
-        remap,
+        empty_slots,
         map,
     })
 }
@@ -258,4 +255,38 @@ fn low(v: u64) -> u32 {
 #[inline]
 fn high(v: u64) -> u32 {
     (v >> 32) as u32
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use phf_shared::ptrhash::get_index;
+
+    #[test]
+    fn slots_preserve_all_keys() {
+        for len in [0, 1, 2, 3, 4, 7, 8, 16, 100, 1_000] {
+            let keys = (0..len as u32).collect::<Vec<_>>();
+            let state = generate_hash(&keys);
+            assert_eq!(state.map.len() - state.empty_slots.len(), len);
+
+            let mut occupied = vec![false; state.map.len()];
+            for (key_index, key) in keys.iter().enumerate() {
+                let hash = ptrhash_hash(key, &state.seed);
+                let slot = get_index(state.seed, hash, &state.pilots, state.map.len()) as usize;
+                assert!(!occupied[slot]);
+                occupied[slot] = true;
+                assert_eq!(state.map[slot], key_index);
+            }
+
+            let empty_slots = occupied
+                .iter()
+                .enumerate()
+                .filter_map(|(slot, &occupied)| (!occupied).then_some(slot as u32))
+                .collect::<Vec<_>>();
+            assert_eq!(state.empty_slots, empty_slots);
+            for slot in empty_slots {
+                assert_eq!(state.map[slot as usize], 0);
+            }
+        }
+    }
 }

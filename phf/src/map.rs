@@ -38,8 +38,9 @@ pub struct Map<K: 'static, V: 'static> {
     pub key: HashKey,
     #[doc(hidden)]
     pub pilots: &'static [u8],
+    // Sorted padding-slot indices, used only for iteration and length.
     #[doc(hidden)]
-    pub remap: &'static [u32],
+    pub empty_slots: &'static [u32],
     #[doc(hidden)]
     pub entries: &'static [(K, V)],
 }
@@ -86,7 +87,7 @@ where
     fn eq(&self, other: &Self) -> bool {
         self.key == other.key
             && self.pilots == other.pilots
-            && self.remap == other.remap
+            && self.empty_slots == other.empty_slots
             && self.entries == other.entries
     }
 }
@@ -113,7 +114,7 @@ impl<K, V> Map<K, V> {
         return Self {
             key: 0,
             pilots: &[],
-            remap: &[],
+            empty_slots: &[],
             entries: &[],
         };
     }
@@ -121,7 +122,11 @@ impl<K, V> Map<K, V> {
     /// Returns the number of entries in the `Map`.
     #[inline]
     pub const fn len(&self) -> usize {
-        self.entries.len()
+        #[cfg(not(feature = "ptrhash"))]
+        return self.entries.len();
+
+        #[cfg(feature = "ptrhash")]
+        return self.entries.len() - self.empty_slots.len();
     }
 
     /// Returns true if the `Map` is empty.
@@ -192,13 +197,7 @@ impl<K, V> Map<K, V> {
         }
 
         let hash = phf_shared::ptrhash::hash(key, &self.key);
-        let index = phf_shared::ptrhash::get_index(
-            self.key,
-            hash,
-            self.pilots,
-            self.remap,
-            self.entries.len(),
-        );
+        let index = phf_shared::ptrhash::get_index(self.key, hash, self.pilots, self.entries.len());
         let entry = &self.entries[index as usize];
         if entry.0.phf_eq(key) {
             Some((&entry.0, &entry.1))
@@ -212,7 +211,12 @@ impl<K, V> Map<K, V> {
     /// Entries are returned in an arbitrary but fixed order.
     pub fn entries(&self) -> Entries<'_, K, V> {
         Entries {
+            #[cfg(not(feature = "ptrhash"))]
             iter: self.entries.iter(),
+            #[cfg(feature = "ptrhash")]
+            iter: self.entries.iter().enumerate(),
+            #[cfg(feature = "ptrhash")]
+            empty_slots: self.empty_slots,
         }
     }
 
@@ -246,7 +250,12 @@ impl<'a, K, V> IntoIterator for &'a Map<K, V> {
 
 /// An iterator over the key/value pairs in a `Map`.
 pub struct Entries<'a, K, V> {
+    #[cfg(not(feature = "ptrhash"))]
     iter: slice::Iter<'a, (K, V)>,
+    #[cfg(feature = "ptrhash")]
+    iter: core::iter::Enumerate<slice::Iter<'a, (K, V)>>,
+    #[cfg(feature = "ptrhash")]
+    empty_slots: &'a [u32],
 }
 
 impl<'a, K, V> Clone for Entries<'a, K, V> {
@@ -254,6 +263,8 @@ impl<'a, K, V> Clone for Entries<'a, K, V> {
     fn clone(&self) -> Self {
         Self {
             iter: self.iter.clone(),
+            #[cfg(feature = "ptrhash")]
+            empty_slots: self.empty_slots,
         }
     }
 }
@@ -272,17 +283,50 @@ impl<'a, K, V> Iterator for Entries<'a, K, V> {
     type Item = (&'a K, &'a V);
 
     fn next(&mut self) -> Option<(&'a K, &'a V)> {
-        self.iter.next().map(|(k, v)| (k, v))
+        #[cfg(not(feature = "ptrhash"))]
+        return self.iter.next().map(|(k, v)| (k, v));
+
+        #[cfg(feature = "ptrhash")]
+        {
+            for (index, (k, v)) in self.iter.by_ref() {
+                if self.empty_slots.first() == Some(&(index as u32)) {
+                    self.empty_slots = &self.empty_slots[1..];
+                } else {
+                    return Some((k, v));
+                }
+            }
+            None
+        }
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        self.iter.size_hint()
+        #[cfg(not(feature = "ptrhash"))]
+        return self.iter.size_hint();
+
+        #[cfg(feature = "ptrhash")]
+        {
+            let len = self.iter.len() - self.empty_slots.len();
+            (len, Some(len))
+        }
     }
 }
 
 impl<'a, K, V> DoubleEndedIterator for Entries<'a, K, V> {
     fn next_back(&mut self) -> Option<(&'a K, &'a V)> {
-        self.iter.next_back().map(|e| (&e.0, &e.1))
+        #[cfg(not(feature = "ptrhash"))]
+        return self.iter.next_back().map(|e| (&e.0, &e.1));
+
+        #[cfg(feature = "ptrhash")]
+        {
+            for (index, (k, v)) in self.iter.by_ref().rev() {
+                if self.empty_slots.last() == Some(&(index as u32)) {
+                    self.empty_slots = &self.empty_slots[..self.empty_slots.len() - 1];
+                } else {
+                    return Some((k, v));
+                }
+            }
+            None
+        }
     }
 }
 

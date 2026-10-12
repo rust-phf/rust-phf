@@ -9,7 +9,9 @@ Rust-PHF is a library to generate efficient lookup tables at compile time using
 
 It currently uses the
 [CHD algorithm](http://cmph.sourceforge.net/papers/esa09.pdf) by default and
-also ships an experimental `ptrhash` feature for an alternative MPHF layout.
+also ships an experimental `ptrhash` feature for an alternative PHF layout.
+This layout keeps spare slots (about 1% for large tables) to avoid remapping
+lookups. Iteration skips these slots, so each entry is returned exactly once.
 
 MSRV (minimum supported rust version) is Rust 1.85.
 

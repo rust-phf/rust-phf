@@ -333,10 +333,10 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayMap<'a, K> {
             f,
             "
     ],
-    remap: &[",
+    empty_slots: &[",
         )?;
 
-        for &index in &self.state.remap {
+        for &index in &self.state.empty_slots {
             write!(
                 f,
                 "
@@ -588,22 +588,6 @@ impl<'a, K: FmtConst + 'a> fmt::Display for DisplayOrderedMap<'a, K> {
                 "
         {},",
                 pilot
-            )?;
-        }
-
-        write!(
-            f,
-            "
-    ],
-    remap: &[",
-        )?;
-
-        for &index in &self.state.remap {
-            write!(
-                f,
-                "
-        {},",
-                index
             )?;
         }
 

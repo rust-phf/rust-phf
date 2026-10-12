@@ -6,11 +6,30 @@ mod test {
     include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
     #[test]
+    fn singleton_iteration() {
+        assert_eq!(SINGLETON_MAP.len(), 1);
+        assert_eq!(SINGLETON_MAP.get("a"), Some(&1));
+        assert_eq!(SINGLETON_MAP.get("missing"), None);
+        assert_eq!(SINGLETON_MAP.entries().len(), 1);
+        assert_eq!(SINGLETON_MAP.entries().collect::<Vec<_>>(), [(&"a", &1)]);
+        assert_eq!(
+            SINGLETON_MAP.entries().rev().collect::<Vec<_>>(),
+            [(&"a", &1)]
+        );
+        assert_eq!(SINGLETON_SET.len(), 1);
+        assert_eq!(SINGLETON_SET.iter().collect::<Vec<_>>(), [&"a"]);
+        assert_eq!(SINGLETON_SET.iter().rev().collect::<Vec<_>>(), [&"a"]);
+    }
+
+    #[test]
     fn map() {
         assert_eq!("a", MAP[&1]);
         assert_eq!("b", MAP[&2]);
         assert_eq!("c", MAP[&3]);
         assert!(!MAP.contains_key(&100));
+        let mut entries = MAP.entries().collect::<Vec<_>>();
+        entries.sort();
+        assert_eq!(entries, [(&1, &"a"), (&2, &"b"), (&3, &"c")]);
     }
 
     #[test]
@@ -19,6 +38,9 @@ mod test {
         assert!(SET.contains(&2));
         assert!(SET.contains(&3));
         assert!(!SET.contains(&4));
+        let mut entries = SET.iter().copied().collect::<Vec<_>>();
+        entries.sort();
+        assert_eq!(entries, [1, 2, 3]);
     }
 
     #[test]

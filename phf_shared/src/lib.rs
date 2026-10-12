@@ -671,6 +671,114 @@ tuple_eq_impl!(
     (L, l, LT, lt)
 );
 
+macro_rules! slice_container_impl {
+    ($t:ident: $container:ty) => {
+        #[cfg(feature = "std")]
+        impl<$t> PhfBorrow<[$t]> for $container {
+            fn borrow(&self) -> &[$t] {
+                self
+            }
+        }
+
+        #[cfg(feature = "std")]
+        impl<$t: PhfHash> PhfHash for $container {
+            #[inline]
+            fn phf_hash<H: Hasher>(&self, state: &mut H) {
+                (**self).phf_hash(state)
+            }
+        }
+
+        #[cfg(feature = "std")]
+        impl<$t> FmtConst for $container
+        where
+            [$t]: FmtConst,
+        {
+            fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                <[$t] as FmtConst>::fmt_const(self, f)
+            }
+        }
+    };
+}
+
+slice_container_impl! {T: ::std::boxed::Box<[T]>}
+slice_container_impl! {T: ::std::rc::Rc<[T]>}
+slice_container_impl! {T: ::std::sync::Arc<[T]>}
+
+macro_rules! exact_container_impl {
+    ($a:meta, $t:ty: $container:ty) => {
+        #[$a]
+        impl PhfBorrow<$t> for $container {
+            fn borrow(&self) -> &$t {
+                self
+            }
+        }
+
+        #[$a]
+        impl PhfHash for $container {
+            #[inline]
+            fn phf_hash<H: Hasher>(&self, state: &mut H) {
+                (**self).phf_hash(state)
+            }
+        }
+
+        #[$a]
+        impl FmtConst for $container {
+            fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                <$t as FmtConst>::fmt_const(self, f)
+            }
+        }
+    };
+}
+
+exact_container_impl! {cfg(feature = "std"), str: ::std::boxed::Box<str>}
+exact_container_impl! {cfg(feature = "std"), str: ::std::rc::Rc<str>}
+exact_container_impl! {cfg(feature = "std"), str: ::std::sync::Arc<str>}
+exact_container_impl! {cfg(all(feature = "std", feature = "uncased")), ::uncased::UncasedStr: ::std::boxed::Box<::uncased::UncasedStr>}
+exact_container_impl! {cfg(all(feature = "std", feature = "uncased")), ::uncased::UncasedStr: ::std::rc::Rc<::uncased::UncasedStr>}
+exact_container_impl! {cfg(all(feature = "std", feature = "uncased")), ::uncased::UncasedStr: ::std::sync::Arc<::uncased::UncasedStr>}
+
+macro_rules! unicase_container_impl {
+    ($s:ident: $uni:ty: $container:ty) => {
+        #[cfg(all(feature = "std", feature = "unicase"))]
+        impl<$s, B: ?Sized> PhfBorrow<B> for $container
+        where
+            $uni: PhfBorrow<B>,
+        {
+            fn borrow(&self) -> &B {
+                <$uni as PhfBorrow<B>>::borrow(self)
+            }
+        }
+
+        #[cfg(all(feature = "std", feature = "unicase"))]
+        impl<$s> PhfHash for $container
+        where
+            $uni: PhfHash,
+        {
+            #[inline]
+            fn phf_hash<H: Hasher>(&self, state: &mut H) {
+                <$uni as PhfHash>::phf_hash(self, state)
+            }
+        }
+
+        #[cfg(all(feature = "std", feature = "unicase"))]
+        impl<$s> FmtConst for $container
+        where
+            $uni: FmtConst,
+        {
+            fn fmt_const(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                <$uni as FmtConst>::fmt_const(self, f)
+            }
+        }
+    };
+}
+
+unicase_container_impl!(S: ::unicase::UniCase<S>: ::std::boxed::Box<::unicase::UniCase<S>>);
+unicase_container_impl!(S: ::unicase::UniCase<S>: ::std::rc::Rc<::unicase::UniCase<S>>);
+unicase_container_impl!(S: ::unicase::UniCase<S>: ::std::sync::Arc<::unicase::UniCase<S>>);
+unicase_container_impl!(S: ::unicase::Ascii<S>: ::std::boxed::Box<::unicase::Ascii<S>>);
+unicase_container_impl!(S: ::unicase::Ascii<S>: ::std::rc::Rc<::unicase::Ascii<S>>);
+unicase_container_impl!(S: ::unicase::Ascii<S>: ::std::sync::Arc<::unicase::Ascii<S>>);
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -817,5 +925,50 @@ mod tests {
             (left.g, left.f1, left.f2) != (right.g, right.f1, right.f2),
             "different string arrays must not produce identical PHF hashes"
         );
+    }
+
+    #[test]
+    fn container_slice_impls() {
+        fn assert_hash<T: PhfHash>() {}
+
+        assert_hash::<Box<[u8]>>();
+        assert_hash::<Box<str>>();
+        assert_hash::<std::rc::Rc<[u8]>>();
+        assert_hash::<std::rc::Rc<str>>();
+    }
+
+    #[cfg(all(feature = "std", feature = "unicase"))]
+    #[test]
+    fn unicase_containers_allow_shorter_reference_lifetimes() {
+        use std::{rc::Rc, sync::Arc};
+        use unicase::{Ascii, UniCase};
+
+        fn assert_lookup<K, B>(key: K, matching: &B, missing: &B)
+        where
+            K: PhfEq<B> + PhfHash + 'static,
+            B: Eq + PhfHash,
+        {
+            assert!(key.phf_eq(matching));
+            assert!(!key.phf_eq(missing));
+            assert_eq!(test_hash(&key), test_hash(matching));
+        }
+
+        let unicode = String::from("STRASSE");
+        let ascii = String::from("ABC");
+        let missing = String::from("missing");
+
+        let key = UniCase::new("Straße");
+        let matching = UniCase::new(unicode.as_str());
+        let missing_unicode = UniCase::new(missing.as_str());
+        assert_lookup(Box::new(key), &matching, &missing_unicode);
+        assert_lookup(Rc::new(key), &matching, &missing_unicode);
+        assert_lookup(Arc::new(key), &matching, &missing_unicode);
+
+        let key = Ascii::new("abc");
+        let matching = Ascii::new(ascii.as_str());
+        let missing_ascii = Ascii::new(missing.as_str());
+        assert_lookup(Box::new(key), &matching, &missing_ascii);
+        assert_lookup(Rc::new(key), &matching, &missing_ascii);
+        assert_lookup(Arc::new(key), &matching, &missing_ascii);
     }
 }

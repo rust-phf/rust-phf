@@ -11,10 +11,10 @@ extern crate std as core;
 use core::fmt;
 use core::hash::{Hash, Hasher};
 use core::num::Wrapping;
-use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
+use foldhash::SharedSeed;
 
 mod hasher;
-use hasher::PortableSipHasher;
+use hasher::PortableFoldHasher;
 
 #[cfg(feature = "ptrhash")]
 pub mod ptrhash;
@@ -26,10 +26,42 @@ pub struct Hashes {
     pub f2: u32,
 }
 
-/// A central typedef for hash keys
+/// The seed and precomputed shared state for a perfect hash table.
 ///
-/// Makes experimentation easier by only needing to be updated here.
-pub type HashKey = u64;
+/// Both foldhash seeds vary between generation attempts. Keeping its shared
+/// seed fixed would make some distinct keys collide on every attempt.
+#[derive(Clone, Debug)]
+pub struct HashKey {
+    seed: u64,
+    shared_seed: SharedSeed,
+}
+
+impl HashKey {
+    /// Precomputes the shared state from a deterministic seed.
+    /// Generated tables call this in a const context, avoiding work at lookup.
+    #[inline]
+    pub const fn new(seed: u64) -> Self {
+        Self {
+            seed,
+            shared_seed: SharedSeed::from_u64(seed),
+        }
+    }
+
+    /// Returns the seed used to construct this key.
+    #[inline]
+    pub const fn seed(&self) -> u64 {
+        self.seed
+    }
+}
+
+impl PartialEq for HashKey {
+    fn eq(&self, other: &Self) -> bool {
+        // The private shared state is determined entirely by this seed.
+        self.seed == other.seed
+    }
+}
+
+impl Eq for HashKey {}
 
 #[inline]
 pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
@@ -39,13 +71,14 @@ pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 /// `key` is from `phf_generator::HashState`.
 #[inline]
 pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
-    let mut hasher = PortableSipHasher::new(SipHasher13::new_with_keys(0, *key));
+    let mut hasher = PortableFoldHasher::new(key);
     x.phf_hash(&mut hasher);
 
-    let Hash128 {
-        h1: lower,
-        h2: upper,
-    } = hasher.finish128();
+    let lower = hasher.finish();
+    // CHD uses three 32-bit components. Finalize again with a domain marker
+    // to obtain the third component without hashing the input a second time.
+    hasher.write_u64(0x9e3779b97f4a7c15);
+    let upper = hasher.finish();
 
     Hashes {
         g: (lower >> 32) as u32,
@@ -918,7 +951,7 @@ mod tests {
     fn variable_width_slice_elements_are_delimited() {
         assert_ne!(test_hash(&["ab", "c"]), test_hash(&["a", "bc"]));
 
-        let key = 0;
+        let key = HashKey::new(0);
         let left = hash(&["ab", "c"], &key);
         let right = hash(&["a", "bc"], &key);
         assert!(

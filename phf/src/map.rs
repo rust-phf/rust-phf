@@ -105,14 +105,14 @@ impl<K, V> Map<K, V> {
     pub const fn new() -> Self {
         #[cfg(not(feature = "ptrhash"))]
         return Self {
-            key: 0,
+            key: const { HashKey::new(0) },
             disps: &[],
             entries: &[],
         };
 
         #[cfg(feature = "ptrhash")]
         return Self {
-            key: 0,
+            key: const { HashKey::new(0) },
             pilots: &[],
             empty_slots: &[],
             entries: &[],
@@ -197,7 +197,8 @@ impl<K, V> Map<K, V> {
         }
 
         let hash = phf_shared::ptrhash::hash(key, &self.key);
-        let index = phf_shared::ptrhash::get_index(self.key, hash, self.pilots, self.entries.len());
+        let index =
+            phf_shared::ptrhash::get_index(self.key.seed(), hash, self.pilots, self.entries.len());
         let entry = &self.entries[index as usize];
         if entry.0.phf_eq(key) {
             Some((&entry.0, &entry.1))

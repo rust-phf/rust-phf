@@ -11,6 +11,7 @@ use phf_shared::{HashKey, Hashes, PhfHash};
 const DEFAULT_LAMBDA: usize = 3;
 
 const FIXED_SEED: u64 = 1234567890;
+const MAX_SEED_ATTEMPTS: usize = 1_000;
 const EMPTY_SLOT: usize = usize::MAX;
 
 #[cfg(feature = "ptrhash")]
@@ -22,10 +23,14 @@ pub struct HashState {
     pub map: Vec<usize>,
 }
 
+/// Generates a table for keys with distinct hashes.
+///
+/// Panics if no perfect hash is found within 1,000 seed attempts.
 pub fn generate_hash<H: PhfHash>(entries: &[H]) -> HashState {
     generate_hash_with_hash_fn(entries, phf_shared::hash)
 }
 
+/// Like [`generate_hash`], with a custom, seed-dependent hash function.
 pub fn generate_hash_with_hash_fn<T, F>(entries: &[T], hash_fn: F) -> HashState
 where
     F: Fn(&T, &HashKey) -> Hashes,
@@ -33,7 +38,8 @@ where
     let mut generator = Generator::new(entries.len());
     let mut rng = Rng::with_seed(FIXED_SEED);
 
-    iter::repeat_with(|| rng.u64(..))
+    iter::repeat_with(|| HashKey::new(rng.u64(..)))
+        .take(MAX_SEED_ATTEMPTS)
         .find(|key| {
             let hashes = entries.iter().map(|entry| hash_fn(entry, key));
             generator.reset(hashes);
@@ -45,7 +51,7 @@ where
             disps: generator.disps,
             map: generator.map,
         })
-        .expect("failed to solve PHF")
+        .expect("failed to solve PHF after 1000 seeds; keys must have distinct hashes")
 }
 
 struct Bucket {

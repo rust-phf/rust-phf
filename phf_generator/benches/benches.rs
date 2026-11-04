@@ -82,9 +82,9 @@ fn default_lookup(data: &LookupBench, key: &str) -> bool {
 
 #[cfg(feature = "ptrhash")]
 fn ptrhash_lookup(data: &LookupBench, key: &str) -> bool {
-    let hash = phf_shared::ptrhash::hash(key, &data.ptrhash.seed);
+    let hash = phf_shared::ptrhash::hash(key, &data.ptrhash.key);
     let slot = phf_shared::ptrhash::get_index(
-        data.ptrhash.seed,
+        data.ptrhash.key.seed(),
         hash,
         &data.ptrhash.pilots,
         data.ptrhash.map.len(),

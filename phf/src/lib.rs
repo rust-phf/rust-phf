@@ -9,6 +9,11 @@
 //!
 //! MSRV (minimum supported rust version) is Rust 1.85.
 //!
+//! Both layouts use portable foldhash with per-table seeds. Hash output is
+//! consistent across architectures, but is not stable across library releases.
+//! When migrating from SipHash, regenerate any saved `phf_codegen` output;
+//! procedural macros and build scripts generate the new table format automatically.
+//!
 //! ## Usage
 //!
 //! PHF data structures can be constructed via either the procedural
@@ -293,6 +298,8 @@ pub use self::ordered_map::OrderedMap;
 pub use self::ordered_set::OrderedSet;
 #[doc(inline)]
 pub use self::set::Set;
+#[doc(hidden)]
+pub use phf_shared::HashKey;
 pub use phf_shared::{PhfEq, PhfHash};
 
 pub mod map;

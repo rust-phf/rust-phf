@@ -15,6 +15,21 @@ lookups. Iteration skips these slots, so each entry is returned exactly once.
 
 MSRV (minimum supported rust version) is Rust 1.85.
 
+## Hashing and generated tables
+
+Both layouts use [foldhash-portable](https://docs.rs/foldhash-portable/0.2.1/)
+with its `portable` feature, so table generation and lookup agree across
+endianness and pointer widths. Each table stores a seed and 48 bytes of
+precomputed shared state. Both seeds change when generation retries; a fixed
+shared seed would make some distinct keys impossible to separate.
+
+This replaces SipHash and changes the generated table format. Regenerate any
+checked-in `phf_codegen` output when migrating. Procedural macros and build
+scripts generate the new format automatically. Low-level callers now construct
+`HashKey::new(seed)` instead of passing a `u64`; the ptrhash generator exposes
+this as `HashState::key`. Generation stops with a panic after 1,000 unsuccessful
+seed attempts, including for custom hash functions that cannot distinguish keys.
+
 ## Usage
 
 PHF data structures can be constructed via either the procedural

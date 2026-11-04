@@ -1,12 +1,11 @@
 use core::hash::Hasher;
-use siphasher::sip::SipHasher13;
 
-use crate::{HashKey, PhfHash, PortableSipHasher};
+use crate::{HashKey, PhfHash, PortableFoldHasher};
 
 /// `key` is from `phf_generator::ptrhash::HashState`.
 #[inline]
 pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> u64 {
-    let mut hasher = PortableSipHasher::new(SipHasher13::new_with_keys(0, *key));
+    let mut hasher = PortableFoldHasher::new(key);
     x.phf_hash(&mut hasher);
     hasher.finish()
 }
@@ -20,7 +19,7 @@ pub fn hash_pilot(seed: u64, pilot: u8) -> u64 {
 
 /// Return an index into `phf_generator::ptrhash::HashState::map`.
 ///
-/// * `seed` is from `phf_generator::ptrhash::HashState::seed`.
+/// * `seed` is from `phf_generator::ptrhash::HashState::key.seed()`.
 /// * `hash` is from `hash()` in this crate.
 /// * `pilots` is from `phf_generator::ptrhash::HashState::pilots`.
 /// * `len` is the length of `phf_generator::ptrhash::HashState::map`.

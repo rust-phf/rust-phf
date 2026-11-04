@@ -4,13 +4,13 @@ use fastrand::Rng;
 use phf_shared::ptrhash::{fast_reduct32, hash as ptrhash_hash, hash_pilot};
 use phf_shared::{HashKey, PhfHash};
 
-use crate::FIXED_SEED;
+use crate::{FIXED_SEED, MAX_SEED_ATTEMPTS};
 
 const DEFAULT_ALPHA: f64 = 0.99;
 const DEFAULT_LAMBDA: f64 = 3.0;
 
 pub struct HashState {
-    pub seed: u64,
+    pub key: HashKey,
     pub pilots: Vec<u8>,
     /// Sorted indices of padding slots, which must be skipped during iteration.
     pub empty_slots: Vec<u32>,
@@ -18,17 +18,21 @@ pub struct HashState {
     pub map: Vec<usize>,
 }
 
+/// Generates a table for keys with distinct hashes.
+///
+/// Panics if no perfect hash is found within 1,000 seed attempts.
 pub fn generate_hash<H: PhfHash>(entries: &[H]) -> HashState {
     generate_hash_with_hash_fn(entries, ptrhash_hash)
 }
 
+/// Like [`generate_hash`], with a custom, seed-dependent hash function.
 pub fn generate_hash_with_hash_fn<T, F>(entries: &[T], hash_fn: F) -> HashState
 where
     F: Fn(&T, &HashKey) -> u64,
 {
     if entries.is_empty() {
         return HashState {
-            seed: 0,
+            key: HashKey::new(0),
             pilots: vec![],
             empty_slots: vec![],
             map: vec![],
@@ -38,16 +42,18 @@ where
     let mut rng = Rng::with_seed(FIXED_SEED);
     let mut hashes = vec![0; entries.len()];
 
-    loop {
-        let seed = rng.u64(..);
+    for _ in 0..MAX_SEED_ATTEMPTS {
+        let key = HashKey::new(rng.u64(..));
         for (hash, entry) in hashes.iter_mut().zip(entries) {
-            *hash = hash_fn(entry, &seed);
+            *hash = hash_fn(entry, &key);
         }
 
-        if let Some(state) = try_generate_hash(seed, &hashes) {
+        if let Some(state) = try_generate_hash(key, &hashes) {
             return state;
         }
     }
+
+    panic!("failed to solve PHF after 1000 seeds; keys must have distinct hashes");
 }
 
 #[derive(Default)]
@@ -61,7 +67,8 @@ struct Slot {
     key: usize,
 }
 
-fn try_generate_hash(seed: u64, hashes: &[u64]) -> Option<HashState> {
+fn try_generate_hash(key: HashKey, hashes: &[u64]) -> Option<HashState> {
+    let seed = key.seed();
     let table_len = hashes.len();
     let table_len_u32 = table_len.try_into().unwrap();
     let slots_len = adjusted_slots_len(table_len_u32) as usize;
@@ -195,7 +202,7 @@ fn try_generate_hash(seed: u64, hashes: &[u64]) -> Option<HashState> {
     }
 
     Some(HashState {
-        seed,
+        key,
         pilots,
         empty_slots,
         map,
@@ -271,8 +278,9 @@ mod tests {
 
             let mut occupied = vec![false; state.map.len()];
             for (key_index, key) in keys.iter().enumerate() {
-                let hash = ptrhash_hash(key, &state.seed);
-                let slot = get_index(state.seed, hash, &state.pilots, state.map.len()) as usize;
+                let hash = ptrhash_hash(key, &state.key);
+                let slot =
+                    get_index(state.key.seed(), hash, &state.pilots, state.map.len()) as usize;
                 assert!(!occupied[slot]);
                 occupied[slot] = true;
                 assert_eq!(state.map[slot], key_index);

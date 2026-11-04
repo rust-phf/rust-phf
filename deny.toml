@@ -3,7 +3,8 @@ confidence-threshold = 0.90
 allow = [
     "Apache-2.0",
     "MIT",
-    "Unicode-3.0"
+    "Unicode-3.0",
+    "Zlib"
 ]
 private = { ignore = true }
 

@@ -9,6 +9,9 @@
 //!
 //! MSRV (minimum supported rust version) is Rust 1.85.
 //!
+//! Hash output is consistent across architectures, but is not stable across
+//! library releases.
+//!
 //! ## Usage
 //!
 //! PHF data structures can be constructed via either the procedural

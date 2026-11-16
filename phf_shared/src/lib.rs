@@ -11,10 +11,9 @@ extern crate std as core;
 use core::fmt;
 use core::hash::{Hash, Hasher};
 use core::num::Wrapping;
-use siphasher::sip128::{Hash128, Hasher128, SipHasher13};
 
 mod hasher;
-use hasher::PortableSipHasher;
+use hasher::PortableHasher;
 
 #[cfg(feature = "ptrhash")]
 pub mod ptrhash;
@@ -39,13 +38,14 @@ pub fn displace(f1: u32, f2: u32, d1: u32, d2: u32) -> u32 {
 /// `key` is from `phf_generator::HashState`.
 #[inline]
 pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
-    let mut hasher = PortableSipHasher::new(SipHasher13::new_with_keys(0, *key));
+    let mut hasher = PortableHasher::new(*key);
     x.phf_hash(&mut hasher);
 
-    let Hash128 {
-        h1: lower,
-        h2: upper,
-    } = hasher.finish128();
+    let lower = hasher.finish();
+    // CHD uses three 32-bit components. Finalize again with a domain marker
+    // to obtain the third component without hashing the input a second time.
+    hasher.write_u64(0x9e3779b97f4a7c15);
+    let upper = hasher.finish();
 
     Hashes {
         g: (lower >> 32) as u32,

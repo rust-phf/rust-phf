@@ -17,13 +17,13 @@ jobs:
         run: |
           rustup set profile minimal
           rustup override set nightly
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - name: Run benchmark on PR
         run: cargo bench | tee output.txt
       - name: Store benchmark result
-        uses: benchmark-action/github-action-benchmark@4322e5726e6334590d251fc4f92bec0efafc45dc # v1.22.2
+        uses: benchmark-action/github-action-benchmark@v1.22.2
         with:
           tool: 'cargo'
           output-file-path: output.txt

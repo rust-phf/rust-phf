@@ -9,6 +9,21 @@ permissions:
   contents: read
 
 jobs:
+  actions-lock:
+    name: Actions lockfile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Verify action lockfile
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh extension install github/gh-actions-lock --pin v0.4.1
+          gh actions-lock --verify
+
   zizmor:
     name: zizmor
     permissions:
@@ -16,11 +31,11 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
-      - uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+      - uses: zizmorcore/zizmor-action@v0.8.1
         with:
           advanced-security: false
           annotations: true
@@ -42,7 +57,7 @@ jobs:
             linker: s390x-linux-gnu-gcc
             runner: qemu-s390x -L /usr/s390x-linux-gnu
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
@@ -55,7 +70,7 @@ jobs:
           sudo apt-get install -y qemu-user "$CROSS_COMPILER"
           rustup target add "$CROSS_TARGET"
 
-      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: Swatinem/rust-cache@v2.9.3
         with:
           key: ${{ matrix.target }}
 
@@ -81,7 +96,7 @@ jobs:
         # MSRV and nightly
         version: [1.85.0, stable, nightly]
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
@@ -90,7 +105,7 @@ jobs:
           rustup set profile minimal
           rustup override set ${{ matrix.version }}
 
-      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: Swatinem/rust-cache@v2.9.3
 
       - name: Rustfmt check
         if: matrix.version == '1.85.0'
@@ -134,4 +149,4 @@ jobs:
 
       - name: deny check
         if: matrix.version == 'stable'
-        uses: EmbarkStudios/cargo-deny-action@70f81531115945ba6eb6b941ec9d39d063438eb9 # v2.1.2
+        uses: EmbarkStudios/cargo-deny-action@v2.1.2

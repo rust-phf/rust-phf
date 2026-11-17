@@ -10,26 +10,26 @@ pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> u64 {
     hasher.finish()
 }
 
+/// Return the slot for `hash` with the given `pilot`.
 #[inline]
-pub fn hash_pilot(seed: u64, pilot: u8) -> u64 {
-    const C: u64 = 0x517cc1b727220a95;
-
-    C.wrapping_mul(seed ^ u64::from(pilot))
+pub fn slot_index(hash: u64, pilot: u8, slots_len: u32) -> u32 {
+    // Mix before taking the high bits so pilots can separate hashes even when
+    // the slot count is a power of two.
+    let multiplier = 2 * u64::from(pilot) + 1;
+    fast_reduct32(high(hash.wrapping_mul(multiplier)), slots_len)
 }
 
 /// Return an index into `phf_generator::ptrhash::HashState::map`.
 ///
-/// * `seed` is from `phf_generator::ptrhash::HashState::seed`.
 /// * `hash` is from `hash()` in this crate.
 /// * `pilots` is from `phf_generator::ptrhash::HashState::pilots`.
 /// * `len` is the length of `phf_generator::ptrhash::HashState::map`.
 #[inline]
-pub fn get_index(seed: u64, hash: u64, pilots: &[u8], len: usize) -> u32 {
+pub fn get_index(hash: u64, pilots: &[u8], len: usize) -> u32 {
     let pilots_len = pilots.len() as u32;
 
     let bucket = fast_reduct32(low(hash), pilots_len) as usize;
-    let pilot_hash = hash_pilot(seed, pilots[bucket]);
-    fast_reduct32(high(hash) ^ high(pilot_hash) ^ low(pilot_hash), len as u32)
+    slot_index(hash, pilots[bucket], len as u32)
 }
 
 // https://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/

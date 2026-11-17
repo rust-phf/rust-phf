@@ -1,7 +1,7 @@
 use core::cmp;
 
 use fastrand::Rng;
-use phf_shared::ptrhash::{fast_reduct32, hash as ptrhash_hash, hash_pilot};
+use phf_shared::ptrhash::{fast_reduct32, hash as ptrhash_hash, slot_index};
 use phf_shared::{HashKey, PhfHash};
 
 use crate::FIXED_SEED;
@@ -107,7 +107,6 @@ fn try_generate_hash(seed: u64, hashes: &[u64]) -> Option<HashState> {
                     &mut pilots,
                     &mut values_to_add,
                     hashes,
-                    seed,
                     bucket,
                     pilot,
                 ) {
@@ -119,14 +118,13 @@ fn try_generate_hash(seed: u64, hashes: &[u64]) -> Option<HashState> {
 
             'pilot: for offset in 0..=u8::MAX {
                 let pilot = offset.wrapping_add(0x42);
-                let pilot_hash = hash_pilot(seed, pilot);
                 let mut score = 0;
 
                 values_to_add.clear();
                 already_scored.clear();
 
                 for &key in &buckets[bucket].keys {
-                    let slot = slot_index(hashes[key], pilot_hash, slots.len() as u32);
+                    let slot = slot_index(hashes[key], pilot, slots.len() as u32);
                     if values_to_add.iter().any(|&(seen, _)| seen == slot) {
                         continue 'pilot;
                     }
@@ -160,19 +158,18 @@ fn try_generate_hash(seed: u64, hashes: &[u64]) -> Option<HashState> {
 
             let (_, pilot) = best?;
             pilots[bucket] = pilot;
-            let pilot_hash = hash_pilot(seed, pilot);
 
             for &key in &buckets[bucket].keys {
-                let slot = slot_index(hashes[key], pilot_hash, slots.len() as u32) as usize;
+                let slot = slot_index(hashes[key], pilot, slots.len() as u32) as usize;
                 if let Some(previous) = slots[slot].replace(Slot { bucket, key }) {
                     stack.push(previous.bucket);
 
-                    let previous_hash = hash_pilot(seed, pilots[previous.bucket]);
+                    let previous_pilot = pilots[previous.bucket];
                     let slots_len = slots.len() as u32;
                     for previous_slot in buckets[previous.bucket]
                         .keys
                         .iter()
-                        .map(|&key| slot_index(hashes[key], previous_hash, slots_len) as usize)
+                        .map(|&key| slot_index(hashes[key], previous_pilot, slots_len) as usize)
                         .filter(|&previous_slot| previous_slot != slot)
                     {
                         slots[previous_slot] = None;
@@ -203,8 +200,7 @@ fn try_generate_hash(seed: u64, hashes: &[u64]) -> Option<HashState> {
 }
 
 fn adjusted_slots_len(keys_len: u32) -> u32 {
-    let len = (f64::from(keys_len) / DEFAULT_ALPHA).ceil() as u32;
-    len + u32::from(len.is_power_of_two())
+    (f64::from(keys_len) / DEFAULT_ALPHA).ceil() as u32
 }
 
 fn adjusted_buckets_len(keys_len: u32) -> u32 {
@@ -218,15 +214,13 @@ fn try_place_bucket(
     pilots: &mut [u8],
     values_to_add: &mut Vec<(u32, usize)>,
     hashes: &[u64],
-    seed: u64,
     bucket: usize,
     pilot: u8,
 ) -> bool {
-    let pilot_hash = hash_pilot(seed, pilot);
     values_to_add.clear();
 
     for &key in &buckets[bucket].keys {
-        let slot = slot_index(hashes[key], pilot_hash, slots.len() as u32);
+        let slot = slot_index(hashes[key], pilot, slots.len() as u32);
         if slots[slot as usize].is_some() || values_to_add.iter().any(|&(seen, _)| seen == slot) {
             return false;
         }
@@ -243,24 +237,58 @@ fn try_place_bucket(
 }
 
 #[inline]
-fn slot_index(hash: u64, pilot_hash: u64, slots_len: u32) -> u32 {
-    fast_reduct32(high(hash) ^ high(pilot_hash) ^ low(pilot_hash), slots_len)
-}
-
-#[inline]
 fn low(v: u64) -> u32 {
     v as u32
-}
-
-#[inline]
-fn high(v: u64) -> u32 {
-    (v >> 32) as u32
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use phf_shared::ptrhash::get_index;
+
+    #[test]
+    fn separates_hashes_with_matching_high_bits() {
+        // These hashes share a bucket and their top two bits. XOR mixing cannot
+        // separate them in a four-slot table, but multiplication can.
+        let hashes = [
+            0xc800_0000_0000_0000,
+            0xd000_0000_0000_0000,
+            0xd800_0000_0000_0000,
+        ];
+        let state = try_generate_hash(0, &hashes).expect("failed to separate hashes");
+        assert_eq!(state.map.len(), 4);
+
+        for (key, &hash) in hashes.iter().enumerate() {
+            let index = get_index(hash, &state.pilots, state.map.len());
+            assert_eq!(state.map[index as usize], key);
+        }
+    }
+
+    #[test]
+    fn generates_power_of_two_slot_tables() {
+        for (keys_len, slots_len) in [
+            (1, 2),
+            (3, 4),
+            (7, 8),
+            (15, 16),
+            (31, 32),
+            (63, 64),
+            (126, 128),
+            (253, 256),
+            (506, 512),
+            (1013, 1024),
+        ] {
+            let keys = (0..keys_len).collect::<Vec<u64>>();
+            let state = generate_hash(&keys);
+            assert_eq!(state.map.len(), slots_len);
+
+            for (key, value) in keys.iter().enumerate() {
+                let hash = ptrhash_hash(value, &state.seed);
+                let index = get_index(hash, &state.pilots, state.map.len());
+                assert_eq!(state.map[index as usize], key);
+            }
+        }
+    }
 
     #[test]
     fn slots_preserve_all_keys() {
@@ -272,7 +300,7 @@ mod tests {
             let mut occupied = vec![false; state.map.len()];
             for (key_index, key) in keys.iter().enumerate() {
                 let hash = ptrhash_hash(key, &state.seed);
-                let slot = get_index(state.seed, hash, &state.pilots, state.map.len()) as usize;
+                let slot = get_index(hash, &state.pilots, state.map.len()) as usize;
                 assert!(!occupied[slot]);
                 occupied[slot] = true;
                 assert_eq!(state.map[slot], key_index);

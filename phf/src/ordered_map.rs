@@ -199,8 +199,7 @@ impl<K, V> OrderedMap<K, V> {
             }
 
             let hash = phf_shared::ptrhash::hash(key, &self.key);
-            let idx_index =
-                phf_shared::ptrhash::get_index(self.key, hash, self.pilots, self.idxs.len());
+            let idx_index = phf_shared::ptrhash::get_index(hash, self.pilots, self.idxs.len());
             let idx = self.idxs[idx_index as usize];
             let entry = &self.entries[idx];
 

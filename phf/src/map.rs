@@ -197,7 +197,7 @@ impl<K, V> Map<K, V> {
         }
 
         let hash = phf_shared::ptrhash::hash(key, &self.key);
-        let index = phf_shared::ptrhash::get_index(self.key, hash, self.pilots, self.entries.len());
+        let index = phf_shared::ptrhash::get_index(hash, self.pilots, self.entries.len());
         let entry = &self.entries[index as usize];
         if entry.0.phf_eq(key) {
             Some((&entry.0, &entry.1))

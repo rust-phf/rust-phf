@@ -61,10 +61,14 @@ pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> Hashes {
 /// * `len` is the length of `phf_generator::HashState::map`.
 #[inline]
 pub fn get_index(hashes: &Hashes, disps: &[(u32, u32)], len: usize) -> u32 {
-    let bucket = (((hashes.g as u64) * (disps.len() as u64)) >> 32) as usize;
-    let (d1, d2) = disps[bucket];
-    let disp = displace(hashes.f1, hashes.f2, d1, d2);
-    (((disp.wrapping_mul(0x9e3779b9) as u64) * (len as u64)) >> 32) as u32
+    let (d1, d2) = disps[fast_reduct32(hashes.g, disps.len() as u32) as usize];
+    fast_reduct32(displace(hashes.f1, hashes.f2, d1, d2), len as u32)
+}
+
+// https://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
+#[inline]
+pub fn fast_reduct32(x: u32, limit: u32) -> u32 {
+    (((x as u64) * (limit as u64)) >> 32) as u32
 }
 
 /// A trait implemented by types which can be used in PHF data structures.

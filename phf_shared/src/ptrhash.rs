@@ -1,6 +1,6 @@
 use core::hash::Hasher;
 
-use crate::{HashKey, PhfHash, PortableHasher};
+use crate::{HashKey, PhfHash, PortableHasher, fast_reduct32};
 
 /// `key` is from `phf_generator::ptrhash::HashState`.
 #[inline]
@@ -8,6 +8,12 @@ pub fn hash<T: ?Sized + PhfHash>(x: &T, key: &HashKey) -> u64 {
     let mut hasher = PortableHasher::new(*key);
     x.phf_hash(&mut hasher);
     hasher.finish()
+}
+
+/// Return the bucket for `hash`, whose pilot is at that index.
+#[inline]
+pub fn bucket_index(hash: u64, buckets_len: u32) -> usize {
+    fast_reduct32(low(hash), buckets_len) as usize
 }
 
 /// Return the slot for `hash` with the given `pilot`.
@@ -26,16 +32,8 @@ pub fn slot_index(hash: u64, pilot: u8, slots_len: u32) -> u32 {
 /// * `len` is the length of `phf_generator::ptrhash::HashState::map`.
 #[inline]
 pub fn get_index(hash: u64, pilots: &[u8], len: usize) -> u32 {
-    let pilots_len = pilots.len() as u32;
-
-    let bucket = fast_reduct32(low(hash), pilots_len) as usize;
+    let bucket = bucket_index(hash, pilots.len() as u32);
     slot_index(hash, pilots[bucket], len as u32)
-}
-
-// https://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
-#[inline]
-pub fn fast_reduct32(x: u32, limit: u32) -> u32 {
-    (((x as u64) * (limit as u64)) >> 32) as u32
 }
 
 #[inline]

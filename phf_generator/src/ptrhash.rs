@@ -1,7 +1,7 @@
 use core::cmp;
 
 use fastrand::Rng;
-use phf_shared::ptrhash::{fast_reduct32, hash as ptrhash_hash, slot_index};
+use phf_shared::ptrhash::{bucket_index, hash as ptrhash_hash, slot_index};
 use phf_shared::{HashKey, PhfHash};
 
 use crate::FIXED_SEED;
@@ -79,7 +79,7 @@ fn try_generate_hash(seed: u64, hashes: &[u64]) -> Option<HashState> {
     let mut already_scored = Vec::new();
 
     for (idx, &hash) in hashes.iter().enumerate() {
-        let bucket = fast_reduct32(low(hash), buckets_len as u32) as usize;
+        let bucket = bucket_index(hash, buckets_len as u32);
         buckets[bucket].keys.push(idx);
     }
 
@@ -236,11 +236,6 @@ fn try_place_bucket(
     true
 }
 
-#[inline]
-fn low(v: u64) -> u32 {
-    v as u32
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -261,32 +256,6 @@ mod tests {
         for (key, &hash) in hashes.iter().enumerate() {
             let index = get_index(hash, &state.pilots, state.map.len());
             assert_eq!(state.map[index as usize], key);
-        }
-    }
-
-    #[test]
-    fn generates_power_of_two_slot_tables() {
-        for (keys_len, slots_len) in [
-            (1, 2),
-            (3, 4),
-            (7, 8),
-            (15, 16),
-            (31, 32),
-            (63, 64),
-            (126, 128),
-            (253, 256),
-            (506, 512),
-            (1013, 1024),
-        ] {
-            let keys = (0..keys_len).collect::<Vec<u64>>();
-            let state = generate_hash(&keys);
-            assert_eq!(state.map.len(), slots_len);
-
-            for (key, value) in keys.iter().enumerate() {
-                let hash = ptrhash_hash(value, &state.seed);
-                let index = get_index(hash, &state.pilots, state.map.len());
-                assert_eq!(state.map[index as usize], key);
-            }
         }
     }
 

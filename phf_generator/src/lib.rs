@@ -6,12 +6,13 @@
 use std::iter;
 
 use fastrand::Rng;
-use phf_shared::{HashKey, Hashes, PhfHash};
+use phf_shared::{HashKey, Hashes, PhfHash, displace, fast_reduct32};
 
 const DEFAULT_LAMBDA: usize = 3;
+/// Neighbouring slots tried by `d2` before `d1` moves the bucket elsewhere.
+const WINDOW: u32 = 64;
 
 const FIXED_SEED: u64 = 1234567890;
-const EMPTY_SLOT: usize = usize::MAX;
 
 #[cfg(feature = "ptrhash")]
 pub mod ptrhash;
@@ -63,7 +64,9 @@ struct Generator {
     key_buckets: Vec<usize>,
     disps: Vec<(u32, u32)>,
     map: Vec<usize>,
-    try_map: Vec<u64>,
+    // Slots taken by the buckets placed so far. Kept apart from `map` so that
+    // the search touches one byte per slot.
+    occupied: Vec<bool>,
 }
 
 impl Generator {
@@ -84,8 +87,8 @@ impl Generator {
         let key_buckets = vec![0; table_len];
         let disps = vec![(0u32, 0u32); buckets_len];
 
-        let map = vec![EMPTY_SLOT; table_len];
-        let try_map = vec![0u64; table_len];
+        let map = vec![0; table_len];
+        let occupied = vec![false; table_len];
 
         Self {
             hashes,
@@ -95,7 +98,7 @@ impl Generator {
             key_buckets,
             disps,
             map,
-            try_map,
+            occupied,
         }
     }
 
@@ -109,8 +112,8 @@ impl Generator {
             b.cursor = 0;
         });
         self.disps.fill((0, 0));
-        self.map.fill(EMPTY_SLOT);
-        self.try_map.fill(0);
+        // `map` needs no reset: a successful attempt writes every slot.
+        self.occupied.fill(false);
 
         self.hashes.clear();
         self.hashes.extend(hashes);
@@ -121,7 +124,7 @@ impl Generator {
 
         // Store bucket contents in one flat buffer instead of allocating a Vec per bucket.
         for (i, hash) in self.hashes.iter().enumerate() {
-            let bucket = (((hash.g as u64) * (buckets_len as u64)) >> 32) as usize;
+            let bucket = fast_reduct32(hash.g, buckets_len) as usize;
             self.key_buckets[i] = bucket;
             let bucket = &mut self.buckets[bucket];
             bucket.len += 1;
@@ -144,46 +147,48 @@ impl Generator {
         self.bucket_order
             .sort_unstable_by(|&a, &b| buckets[b].len.cmp(&buckets[a].len).then_with(|| a.cmp(&b)));
 
-        let table_len = self.hashes.len();
+        let table_len = self.hashes.len() as u32;
+        // Adding `step` to `d2` moves a key to the next slot.
+        let step = (u32::MAX / table_len.max(1)).wrapping_add(1);
 
-        // store whether an element from the bucket being placed is
-        // located at a certain position, to allow for efficient overlap
-        // checks. It works by storing the generation in each cell and
-        // each new placement-attempt is a new generation, so you can tell
-        // if this is legitimately full by checking that the generations
-        // are equal. (A u64 is far too large to overflow in a reasonable
-        // time for current hardware.)
-        let mut generation = 0u64;
-
-        // the actual values corresponding to the markers above, as
-        // (index, key) pairs, for adding to the main map once we've
-        // chosen the right disps.
+        // the slots tried for the bucket being placed, as (index, key)
+        // pairs, for adding to the main map once we've chosen the right
+        // disps.
         let mut values_to_add = vec![];
 
         'buckets: for &bucket_idx in &self.bucket_order {
             let bucket = &self.buckets[bucket_idx];
             let keys = &self.bucket_keys[bucket.start..bucket.start + bucket.len];
 
-            for d1 in 0..(table_len as u32) {
-                'disps: for d2 in 0..(table_len as u32) {
+            // `d1` sends each key of the bucket to an unrelated slot, and `d2` then
+            // walks the slots next to it. Walking is cheap, but walking alone piles
+            // keys into runs that later buckets have to step through, so most of the
+            // search is left to `d1`. Its values are drawn at random because evenly
+            // spaced ones can keep missing the last free slots.
+            let mut jumps = Rng::with_seed(FIXED_SEED);
+            for d1 in iter::repeat_with(|| jumps.u32(..)).take(table_len as usize) {
+                'disps: for d2 in (0..WINDOW.min(table_len)).map(|i| i.wrapping_mul(step)) {
                     values_to_add.clear();
-                    generation += 1;
 
                     for &key in keys {
-                        let disp =
-                            phf_shared::displace(self.hashes[key].f1, self.hashes[key].f2, d1, d2);
-                        let idx = (((disp.wrapping_mul(0x9e3779b9) as u64) * (table_len as u64))
-                            >> 32) as usize;
-                        if self.map[idx] != EMPTY_SLOT || self.try_map[idx] == generation {
+                        let hashes = &self.hashes[key];
+                        let idx = fast_reduct32(displace(hashes.f1, hashes.f2, d1, d2), table_len)
+                            as usize;
+                        if self.occupied[idx] {
                             continue 'disps;
                         }
-                        self.try_map[idx] = generation;
+                        // Walking shifts the whole bucket, so keys that share a slot keep
+                        // sharing it unless rounding happens to split them. Jump instead.
+                        if values_to_add.iter().any(|&(seen, _)| seen == idx) {
+                            break 'disps;
+                        }
                         values_to_add.push((idx, key));
                     }
 
                     // We've picked a good set of disps
                     self.disps[bucket.idx] = (d1, d2);
                     for &(idx, key) in &values_to_add {
+                        self.occupied[idx] = true;
                         self.map[idx] = key;
                     }
                     continue 'buckets;
@@ -194,5 +199,24 @@ impl Generator {
             return false;
         }
         true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn lookups_find_every_key() {
+        for len in [0, 1, 2, 3, 4, 7, 8, 16, 100, 1_000, 100_000] {
+            let keys = (0..len as u32).collect::<Vec<_>>();
+            let state = generate_hash(&keys);
+
+            for (index, key) in keys.iter().enumerate() {
+                let hashes = phf_shared::hash(key, &state.key);
+                let slot = phf_shared::get_index(&hashes, &state.disps, state.map.len());
+                assert_eq!(state.map[slot as usize], index);
+            }
+        }
     }
 }

@@ -76,6 +76,15 @@ pub fn fast_reduct32(x: u32, limit: u32) -> u32 {
 /// This differs from the standard library's `Hash` trait in that `PhfHash`'s
 /// results must be architecture independent so that hashes will be consistent
 /// between the host and target when cross compiling.
+///
+/// Which [`Hasher`] methods an implementation calls is not part of its
+/// interface and may change between releases. A key that must hash like
+/// another type should forward to that type's `phf_hash`, not repeat its calls.
+///
+/// Byte strings, for one, are fed to the hasher in one `write` without a
+/// length prefix. phf's own hasher keeps `write` calls apart, but [`Hasher`]
+/// does not promise that: under another hasher, `("ab", "c")` and
+/// `("a", "bc")` may collide.
 pub trait PhfHash {
     /// Feeds the value into the state given, updating the hasher as necessary.
     fn phf_hash<H: Hasher>(&self, state: &mut H);
@@ -417,8 +426,8 @@ macro_rules! single_byte_impl (
 
             #[inline]
             fn phf_hash_slice<H: Hasher>(slice: &[$t], state: &mut H) {
+                // No length prefix: `PortableHasher::write` mixes the length in.
                 // There is sadly no `[i8]::as_bytes` or `[bool]::as_bytes`.
-                state.write_u64(slice.len() as u64);
                 state.write(unsafe { &*(slice as *const [$t] as *const [u8]) });
             }
         }
@@ -867,15 +876,15 @@ mod tests {
     fn byte_slices_are_hashed_efficiently() {
         assert_eq!(
             test_hash(&[1u8, 2, 3]),
-            [HashCall::U64(3), HashCall::Bytes([1, 2, 3].to_vec())]
+            [HashCall::Bytes([1, 2, 3].to_vec())]
         );
         assert_eq!(
             test_hash(&[1i8, 2, 3]),
-            [HashCall::U64(3), HashCall::Bytes([1, 2, 3].to_vec())]
+            [HashCall::Bytes([1, 2, 3].to_vec())]
         );
         assert_eq!(
             test_hash(&[false, true]),
-            [HashCall::U64(2), HashCall::Bytes([0, 1].to_vec())]
+            [HashCall::Bytes([0, 1].to_vec())]
         );
     }
 

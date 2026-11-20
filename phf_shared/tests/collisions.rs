@@ -1,5 +1,6 @@
 //! Keys must not collide under every seed, or table generation never ends.
 
+use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 
 use phf_shared::{PhfHash, hash};
@@ -34,6 +35,52 @@ fn input_cannot_cancel_its_length() {
         &Unprefixed("\u{7ff}\x7f=\u{7ff}\u{d7ff}"),
         &Unprefixed("^`1\x18\u{5ae}\x13\u{376}n\u{cd}>2\u{45a}"),
     );
+}
+
+#[test]
+fn byte_strings_need_no_length_prefix() {
+    // Byte strings are written without a length prefix, so the hasher has to
+    // keep apart keys that differ only in length. Lengths 64 apart rotate the
+    // state by the same amount and differ only in how many blocks are folded.
+    for byte in [0, b'a'] {
+        let key = [byte; 130];
+        for seed in 0..64 {
+            let mut seen = HashSet::new();
+            for len in 0..=key.len() {
+                let hashes = hash(&key[..len], &seed);
+                // PtrHash uses only these two.
+                assert!(
+                    seen.insert((hashes.g, hashes.f1)),
+                    "length {len}, seed {seed}"
+                );
+            }
+        }
+    }
+    // Nor do neighbouring strings run together.
+    assert_separable(&("ab", "c"), &("a", "bc"));
+    assert_separable(&("", "a"), &("a", ""));
+}
+
+/// Writes each field one byte at a time and ends it with a word.
+struct Terminated(&'static [&'static str]);
+
+impl PhfHash for Terminated {
+    fn phf_hash<H: Hasher>(&self, state: &mut H) {
+        for field in self.0 {
+            for byte in field.bytes() {
+                state.write(&[byte]);
+            }
+            state.write_u64(1);
+        }
+    }
+}
+
+#[test]
+fn word_ahead_of_bytes_is_hashed() {
+    // The first terminator equals the length of the write that follows it.
+    // Taking it for a length prefix and skipping it would lose where the
+    // field ends.
+    assert_separable(&Terminated(&["ab", "c"]), &Terminated(&["a", "bc"]));
 }
 
 fn blocks(first: u8, second: u8) -> [u8; 80] {

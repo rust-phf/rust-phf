@@ -16,21 +16,21 @@ fn byte_hashes_match_across_targets() {
     // Fixed vectors from x86_64. Run unchanged on 32-bit and big-endian targets
     // to exercise each byte-loading path.
     for (len, expected) in [
-        (0, (0x20423589, 0x77114532, 0x4b732b26)),
-        (1, (0xc5c7925c, 0xd8a1c45e, 0xe49a8026)),
-        (2, (0xadd87c47, 0x6bfb024d, 0xddd5d0e5)),
-        (3, (0x6cd66fae, 0xa82ef676, 0x0658ca7b)),
-        (4, (0x818160a3, 0x945f4598, 0xabb0b775)),
-        (7, (0xfad082c2, 0x83ac469b, 0xfb67abcd)),
-        (8, (0x8e9161f3, 0x73fbfa44, 0x002e4e51)),
-        (16, (0xebec81b5, 0x10669275, 0x8ee2a88b)),
-        (17, (0xcef4d2d6, 0x74df4cad, 0xc768366c)),
-        (32, (0x0e0394c3, 0x4bf47be4, 0xf4f708c7)),
-        (33, (0x5e7292ac, 0x3d2053b0, 0x4aad2304)),
-        (64, (0x0a26f37d, 0x4796554a, 0x15ef8075)),
-        (65, (0x05232317, 0xaa647d04, 0x4e618765)),
-        (100, (0xa497e2ca, 0xd3e25380, 0x5a1db700)),
-        (200, (0xb20929e9, 0x0ecb1e2b, 0xfde169df)),
+        (0, (0xea085796, 0xffb53434, 0xcebcd66d)),
+        (1, (0x05e16102, 0x00da00a2, 0xab67128e)),
+        (2, (0x5c028cc2, 0x11395fe0, 0xa6c3448c)),
+        (3, (0x1cd0cebd, 0x1d57532d, 0xe6e678db)),
+        (4, (0x60d6e8b0, 0x8dc10445, 0xcafa28c2)),
+        (7, (0x3f70c62f, 0xbbe49d54, 0x76580929)),
+        (8, (0x79e34bc2, 0xd232d1f9, 0xa2e8cc97)),
+        (16, (0xc22b1a41, 0x710a047d, 0x7e899d69)),
+        (17, (0x9f454efa, 0xec7e4fac, 0x0c3a3942)),
+        (32, (0xf0310001, 0x10e9660b, 0xcf0c0be5)),
+        (33, (0x03402fc6, 0x2906586c, 0xe5e9bcad)),
+        (64, (0x5de0f2c2, 0x028e8b19, 0xd80bd23e)),
+        (65, (0x8f995b8f, 0xe97a6ab1, 0xa5df2f13)),
+        (100, (0x8b1dc112, 0x541d7519, 0x4b92e1cd)),
+        (200, (0x0707b599, 0x0a36281b, 0xd0d72141)),
     ] {
         let bytes = (0..len).map(|i| i as u8).collect::<Vec<_>>();
         check(bytes.as_slice(), expected);
@@ -54,7 +54,7 @@ fn integer_hashes_match_across_targets() {
             -5isize,
             "a string longer than sixteen bytes",
         ),
-        (0xc04a21c0, 0x8f6360bf, 0x262680e5),
+        (0x708524e5, 0x59fb9a50, 0x3bc5f817),
     );
     check(
         &[0x1234u16, 0x5678, 0x9abc, 0xdef0, 0x0fed][..],

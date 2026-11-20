@@ -47,6 +47,10 @@ fn fold_block(state: u64, block: &[u8]) -> u64 {
 /// Key bits are XORed into the seeded state before they are multiplied, while
 /// lengths rotate that state. The input cannot undo a rotation, so retrying
 /// with a new seed separates keys that collided under the previous one.
+///
+/// Each `write` is folded in on its own, together with its length. Byte
+/// strings therefore need no length prefix, and `("ab", "c")` does not hash
+/// like `("a", "bc")`.
 pub struct PortableHasher {
     state: u64,
     /// Integers that are not hashed yet, packed from the low bits up.
@@ -161,7 +165,10 @@ impl Hasher for PortableHasher {
     }
     #[inline]
     fn write_u64(&mut self, i: u64) {
-        self.write_int(i, 64);
+        // A full word cannot be packed with the integers before it.
+        self.flush();
+        self.ints = i;
+        self.ints_bits = 64;
     }
     #[inline]
     fn write_u128(&mut self, i: u128) {

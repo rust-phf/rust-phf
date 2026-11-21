@@ -2,7 +2,7 @@
 //! values so the map-building path can be shared.
 
 use proc_macro2::TokenStream;
-use quote::ToTokens;
+use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::{Expr, Result, Token};
@@ -24,8 +24,15 @@ impl Parse for Key {
 
 impl ToTokens for Key {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        for attr in &self.attrs {
-            attr.to_tokens(tokens);
+        match self.attrs.as_slice() {
+            [] => {}
+            [attr] => attr.to_tokens(tokens),
+            attrs => {
+                // __resolve_cfg! matches one attribute before the key.
+                // cfg_attr(all(), ...) applies the whole list in the caller.
+                let metas = attrs.iter().map(|attr| &attr.meta);
+                tokens.extend(quote!(#[cfg_attr(all(), #(#metas),*)]));
+            }
         }
         self.expr.to_tokens(tokens);
     }

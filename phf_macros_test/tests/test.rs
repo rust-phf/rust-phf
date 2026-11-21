@@ -338,14 +338,30 @@ mod map {
         #[cfg(not(feature = "enabled_feature"))]
         assert_eq!(None, MY_MAP.get("baz"));
 
-        static EMPTY_MAP: phf::Map<&'static str, u32> = phf_map! {
+        static OPTIONAL_MAP: phf::Map<&str, &str> = phf_map! {
             #[cfg(feature = "disabled_feature")]
-            "foo" => 1,
+            "foo" => "bar"
         };
-        #[cfg(feature = "disabled_feature")]
-        assert_eq!(EMPTY_MAP.len(), 1);
-        #[cfg(not(feature = "disabled_feature"))]
-        assert_eq!(EMPTY_MAP.len(), 0);
+        let enabled = cfg!(feature = "disabled_feature");
+        assert_eq!(OPTIONAL_MAP.len(), usize::from(enabled));
+        assert_eq!(OPTIONAL_MAP.get("foo").copied(), enabled.then_some("bar"));
+    }
+
+    #[test]
+    fn test_stacked_cfgs() {
+        static MAP: phf::Map<&str, &str> = phf_map! {
+            #[cfg(any())]
+            #[cfg(all())]
+            "foo" => compile_error!("first condition is false"),
+            #[cfg(all())]
+            #[cfg(any())]
+            "foo" => compile_error!("second condition is false"),
+            #[cfg(all())]
+            #[cfg(feature = "enabled_feature")]
+            "foo" => "bar"
+        };
+        let expected = cfg!(feature = "enabled_feature").then_some("bar");
+        assert_eq!(MAP.get("foo").copied(), expected);
     }
 
     #[test]

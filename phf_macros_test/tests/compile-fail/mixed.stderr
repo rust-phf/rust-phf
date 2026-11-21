@@ -26,8 +26,9 @@ error[E0277]: the trait bound `UniCase<&str>: PhfEq<_>` is not satisfied
 note: required by a bound in `phf::Map::<K, V>::get`
   --> $WORKSPACE/phf/src/map.rs
    |
+   | impl<K, V> Map<K, V> {
+...
    |     pub fn get<T>(&self, key: &T) -> Option<&V>
-   |            --- required by a bound in this associated function
 ...
    |         K: PhfEq<T>,
    |            ^^^^^^^^ required by this bound in `Map::<K, V>::get`

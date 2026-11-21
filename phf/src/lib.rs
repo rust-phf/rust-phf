@@ -123,6 +123,23 @@ extern crate std as core;
 /// }
 /// ```
 ///
+/// # Conditional entries
+///
+/// Use `#[cfg]` on an entry to include it only when its conditions hold in the
+/// calling crate. Multiple attributes must all match. The conditions apply to
+/// every key in an OR pattern.
+///
+/// ```
+/// use phf::{phf_map, Map};
+///
+/// static MEDIA_TYPES: Map<&str, &str> = phf_map! {
+///     #[cfg(feature = "serde")]
+///     "json" => "application/json"
+/// };
+///
+/// assert_eq!(MEDIA_TYPES.contains_key("json"), cfg!(feature = "serde"));
+/// ```
+///
 /// # OR Patterns
 ///
 /// You can use OR patterns to map multiple keys to the same value:
@@ -175,7 +192,7 @@ pub use phf_macros::phf_ordered_map;
 #[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`Set`].
 ///
-/// Requires the `macros` feature.
+/// Requires the `macros` feature. Entries accept `#[cfg]` attributes as in [`phf_map`].
 ///
 /// # Example
 ///
@@ -258,7 +275,7 @@ macro_rules! __resolve_cfg {
         $callback:ident
         [ $($acc:tt)* ]
         { $($in1:tt)* }
-        { $(#[$meta:meta])+ $($in2:tt)* }
+        { #[$meta:meta] $($in2:tt)* }
         $($rest:tt)*
     ) => {{
         // Macro shadowing is allowed if the shadowed macro is unused.
@@ -273,7 +290,7 @@ macro_rules! __resolve_cfg {
             };
         }
 
-        $(#[$meta])+
+        #[$meta]
         macro_rules! resolver {
             () => {
                 $crate::__resolve_cfg! {

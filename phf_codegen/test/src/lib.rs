@@ -33,6 +33,20 @@ mod test {
     }
 
     #[test]
+    fn bimap() {
+        assert_eq!(BIMAP.len(), 256);
+        for i in 0..256u16 {
+            let value = format!("item \"{i}\"");
+            assert_eq!(BIMAP.get_by_left(&i), Some(&value.as_str()));
+            assert_eq!(BIMAP.get_by_right(value.as_str()), Some(&i));
+        }
+        assert_eq!(BIMAP.get_by_left(&256), None);
+        assert_eq!(BIMAP.get_by_right("missing"), None);
+        assert_eq!(QUOTED_BIMAP.get_by_left("a"), Some(&1));
+        assert_eq!(QUOTED_BIMAP.get_by_right(&2), Some(&"b"));
+    }
+
+    #[test]
     fn set() {
         assert!(SET.contains(&1));
         assert!(SET.contains(&2));

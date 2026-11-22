@@ -22,7 +22,7 @@ use unicase_::{Ascii, UniCase};
 mod parse;
 use parse::AsMapEntry;
 
-#[derive(Hash, PartialEq, Eq, Clone)]
+#[derive(Hash, PartialEq, Eq)]
 enum ParsedKey {
     Str(String),
     Binary(Vec<u8>),
@@ -152,7 +152,7 @@ impl ParsedKey {
     }
 
     fn from_expr(expr: &Expr, hint: Option<&ParsedKey>) -> syn::Result<ParsedKey> {
-        match expr {
+        match ungroup(expr) {
             Expr::Lit(lit) => match &lit.lit {
                 Lit::Str(s) => Ok(ParsedKey::Str(s.value())),
                 Lit::ByteStr(s) => Ok(ParsedKey::Binary(s.value())),
@@ -184,7 +184,7 @@ impl ParsedKey {
                 let mut buf = vec![];
                 let can_infer_u8 = matches!(hint, Some(ParsedKey::Binary(_)));
                 for expr in &array.elems {
-                    match expr {
+                    match ungroup(expr) {
                         Expr::Lit(lit) => match &lit.lit {
                             Lit::Int(s) => match s.suffix() {
                                 "u8" => buf.push(s.base10_parse::<u8>().unwrap()),
@@ -235,19 +235,13 @@ impl ParsedKey {
                         ParsedKey::Isize(v) => Ok(ParsedKey::Isize(try_negate!(v))),
                         _ => Err(Error::new_spanned(expr, "unsupported key expression")),
                     },
-                    UnOp::Deref(_) => {
-                        let mut expr = &*unary.expr;
-                        while let Expr::Group(group) = expr {
-                            expr = &*group.expr;
-                        }
-                        match expr {
-                            Expr::Lit(ExprLit {
-                                lit: Lit::ByteStr(s),
-                                ..
-                            }) => Ok(ParsedKey::Binary(s.value())),
-                            _ => Err(Error::new_spanned(expr, "unsupported key expression")),
-                        }
-                    }
+                    UnOp::Deref(_) => match ungroup(&unary.expr) {
+                        Expr::Lit(ExprLit {
+                            lit: Lit::ByteStr(s),
+                            ..
+                        }) => Ok(ParsedKey::Binary(s.value())),
+                        _ => Err(Error::new_spanned(expr, "unsupported key expression")),
+                    },
                     _ => Err(Error::new_spanned(expr, "unsupported key expression")),
                 }
             }
@@ -262,7 +256,9 @@ impl ParsedKey {
                 }
                 Ok(ParsedKey::Tuple(elements))
             }
-            Expr::Group(group) => ParsedKey::from_expr(&group.expr, hint),
+            Expr::Binary(binary) if matches!(binary.op, BinOp::BitOr(_)) => Err(
+                Error::new_spanned(expr, "expected a single key, found an OR pattern"),
+            ),
             Expr::Call(call) if call.args.len() == 1 => {
                 let last;
                 let last_ahead;
@@ -283,13 +279,7 @@ impl ParsedKey {
                     return Err(Error::new_spanned(expr, "unsupported key expression"));
                 }
 
-                let mut arg = call.args.first().unwrap();
-
-                while let Expr::Group(group) = arg {
-                    arg = &group.expr;
-                }
-
-                let _value = match arg {
+                let _value = match ungroup(&call.args[0]) {
                     Expr::Lit(ExprLit {
                         attrs: _,
                         lit: Lit::Str(s),
@@ -316,6 +306,16 @@ impl ParsedKey {
     }
 }
 
+fn ungroup(mut expr: &Expr) -> &Expr {
+    loop {
+        expr = match expr {
+            Expr::Group(group) => &group.expr,
+            Expr::Paren(paren) => &paren.expr,
+            _ => return expr,
+        };
+    }
+}
+
 fn generate_hash_state<H: PhfHash>(entries: &[H]) -> HashState {
     #[cfg(not(feature = "ptrhash"))]
     {
@@ -325,22 +325,6 @@ fn generate_hash_state<H: PhfHash>(entries: &[H]) -> HashState {
     #[cfg(feature = "ptrhash")]
     {
         phf_generator::ptrhash::generate_hash(entries)
-    }
-}
-
-#[derive(Clone)]
-struct Entry {
-    parsed_key: ParsedKey,
-    key_expr: Expr,
-    value_expr: Expr,
-}
-
-impl PhfHash for Entry {
-    fn phf_hash<H>(&self, state: &mut H)
-    where
-        H: Hasher,
-    {
-        self.parsed_key.phf_hash(state)
     }
 }
 
@@ -417,154 +401,101 @@ fn expand_elements(elements: &Punctuated<Expr, Token![,]>) -> Vec<Punctuated<Exp
     variants
 }
 
-struct Map {
-    entries: Vec<Entry>,
-    key_hint: Option<ParsedKey>,
-}
-
-impl Map {
-    fn from_parsed(entries: Punctuated<impl AsMapEntry, Token![,]>) -> syn::Result<Self> {
-        let mut map = Self {
-            entries: Vec::new(),
-            key_hint: None,
-        };
-        for entry in entries {
-            let value = entry.value();
-            for key in expand_or_patterns(&entry.key().expr) {
-                map.add_entry(key, &value)?;
-            }
+// Parse a column of keys with the first key as the type hint for that column.
+fn hash_keys<'a>(
+    exprs: impl Iterator<Item = &'a Expr> + Clone,
+    name: &str,
+) -> syn::Result<HashState> {
+    let mut keys = Vec::with_capacity(exprs.size_hint().0);
+    for expr in exprs.clone() {
+        let first = keys.first();
+        let key = ParsedKey::from_expr(expr, first)?;
+        if first.is_some_and(|first| !key.has_same_type_as(first)) {
+            return Err(Error::new_spanned(
+                expr,
+                format!("{name} type does not match the first {name}"),
+            ));
         }
-        map.check_duplicates()?;
-        Ok(map)
+        keys.push(key);
     }
 
-    fn add_entry(&mut self, key: Expr, value: &Expr) -> syn::Result<()> {
-        let parsed_key = ParsedKey::from_expr(&key, self.key_hint.as_ref())?;
-        if let Some(key_hint) = &self.key_hint {
-            if !parsed_key.has_same_type_as(key_hint) {
-                return Err(Error::new_spanned(
-                    key,
-                    "key type does not match the first key",
-                ));
-            }
-        } else {
-            self.key_hint = Some(parsed_key.clone());
+    let mut seen = HashSet::with_capacity(keys.len());
+    for (key, expr) in keys.iter().zip(exprs) {
+        if !seen.insert(key) {
+            return Err(Error::new_spanned(expr, format!("duplicate {name}")));
         }
-        self.entries.push(Entry {
-            parsed_key,
-            key_expr: key,
-            value_expr: value.clone(),
-        });
-        Ok(())
     }
-
-    fn check_duplicates(&self) -> syn::Result<()> {
-        let mut keys = HashSet::new();
-        for entry in &self.entries {
-            if !keys.insert(&entry.parsed_key) {
-                return Err(Error::new_spanned(&entry.key_expr, "duplicate key"));
-            }
-        }
-        Ok(())
-    }
+    drop(seen);
+    Ok(generate_hash_state(&keys))
 }
 
-fn key_has_cfg_attr(key: &parse::Key) -> bool {
-    key.attrs.iter().any(|attr| attr.path().is_ident("cfg"))
-}
-
-fn build_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
+fn hash_fields(state: &HashState) -> proc_macro2::TokenStream {
     #[cfg(not(feature = "ptrhash"))]
     {
         let key = state.key;
-        let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
-        let entries = state.map.iter().map(|&idx| {
-            let entry = &entries[idx];
-            let key = &entry.key_expr;
-            let value = &entry.value_expr;
-            quote!((#key, #value))
-        });
-
-        quote! {
-            phf::Map {
-                key: #key,
-                disps: &[#(#disps),*],
-                entries: &[#(#entries),*],
-            }
-        }
+        let disps = state.disps.iter().map(|(d1, d2)| quote!((#d1, #d2)));
+        quote!(key: #key, disps: &[#(#disps),*],)
     }
-
     #[cfg(feature = "ptrhash")]
     {
         let key = state.seed;
-        let pilots = state.pilots.iter().map(|pilot| quote!(#pilot));
+        let pilots = &state.pilots;
+        quote!(key: #key, pilots: &[#(#pilots),*],)
+    }
+}
+
+fn entry_tokens((key, value): &(Expr, Expr)) -> proc_macro2::TokenStream {
+    quote!((#key, #value))
+}
+
+fn build_map(entries: &[(Expr, Expr)], state: &HashState) -> proc_macro2::TokenStream {
+    let fields = hash_fields(state);
+    #[cfg(feature = "ptrhash")]
+    let padding = {
         let empty_slots = &state.empty_slots;
-        let entries = state.map.iter().map(|&idx| {
-            let entry = &entries[idx];
-            let key = &entry.key_expr;
-            let value = &entry.value_expr;
-            quote!((#key, #value))
-        });
-
-        quote! {
-            phf::Map {
-                key: #key,
-                pilots: &[#(#pilots),*],
-                empty_slots: &[#(#empty_slots),*],
-                entries: &[#(#entries),*],
-            }
-        }
-    }
+        quote!(empty_slots: &[#(#empty_slots),*],)
+    };
+    #[cfg(not(feature = "ptrhash"))]
+    let padding = quote!();
+    let entries = state.map.iter().map(|&idx| entry_tokens(&entries[idx]));
+    quote!(phf::Map { #fields #padding entries: &[#(#entries),*] })
 }
 
-fn build_ordered_map(entries: &[Entry], state: HashState) -> proc_macro2::TokenStream {
-    #[cfg(not(feature = "ptrhash"))]
-    {
-        let key = state.key;
-        let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
-        let idxs = state.map.iter().map(|idx| quote!(#idx));
-        let entries = entries.iter().map(|entry| {
-            let key = &entry.key_expr;
-            let value = &entry.value_expr;
-            quote!((#key, #value))
-        });
+fn build_index(state: &HashState) -> proc_macro2::TokenStream {
+    let fields = hash_fields(state);
+    let idxs = state
+        .map
+        .iter()
+        .copied()
+        .map(proc_macro2::Literal::usize_unsuffixed);
+    quote!(phf::HashIndex { #fields idxs: &[#(#idxs),*] })
+}
 
-        quote! {
-            phf::OrderedMap {
-                key: #key,
-                disps: &[#(#disps),*],
-                idxs: &[#(#idxs),*],
-                entries: &[#(#entries),*],
-            }
-        }
-    }
-
-    #[cfg(feature = "ptrhash")]
-    {
-        let key = state.seed;
-        let pilots = state.pilots.iter().map(|pilot| quote!(#pilot));
-        let idxs = state.map.iter().map(|idx| quote!(#idx));
-        let entries = entries.iter().map(|entry| {
-            let key = &entry.key_expr;
-            let value = &entry.value_expr;
-            quote!((#key, #value))
-        });
-
-        quote! {
-            phf::OrderedMap {
-                key: #key,
-                pilots: &[#(#pilots),*],
-                idxs: &[#(#idxs),*],
-                entries: &[#(#entries),*],
-            }
-        }
-    }
+fn build_ordered_map(entries: &[(Expr, Expr)], state: &HashState) -> proc_macro2::TokenStream {
+    let fields = hash_fields(state);
+    let idxs = &state.map;
+    let entries = entries.iter().map(entry_tokens);
+    quote!(phf::OrderedMap { #fields idxs: &[#(#idxs),*], entries: &[#(#entries),*] })
 }
 
 fn resolve_cfg<T: AsMapEntry + ToTokens>(
     macro_name: impl ToTokens,
     entries: Punctuated<T, Token![,]>,
+    generate: impl FnOnce(Punctuated<T, Token![,]>) -> syn::Result<proc_macro2::TokenStream>,
 ) -> TokenStream {
+    let has_cfg = |entry: &T| {
+        entry
+            .key()
+            .attrs
+            .iter()
+            .any(|attr| attr.path().is_ident("cfg"))
+    };
+    if !entries.iter().any(has_cfg) {
+        return generate(entries)
+            .unwrap_or_else(Error::into_compile_error)
+            .into();
+    }
+
     let mut cfg_args = quote! { #macro_name [] };
 
     // Wrap conditional entries and groups of unconditional entries in { ... }.
@@ -573,7 +504,7 @@ fn resolve_cfg<T: AsMapEntry + ToTokens>(
     let mut unconditional = Vec::new();
     for pair in entries.pairs() {
         let entry = pair.value();
-        if key_has_cfg_attr(entry.key()) {
+        if has_cfg(entry) {
             // Pushing groups unconditionally simplifies the decl macro side.
             quote! { { #(#unconditional)* } }.to_tokens(&mut cfg_args);
             unconditional.clear();
@@ -597,22 +528,33 @@ fn resolve_cfg<T: AsMapEntry + ToTokens>(
 fn emit_code(
     macro_name: impl ToTokens,
     entries: Punctuated<impl AsMapEntry + ToTokens, Token![,]>,
-    builder: fn(&[Entry], HashState) -> proc_macro2::TokenStream,
+    builder: fn(&[(Expr, Expr)], &HashState) -> proc_macro2::TokenStream,
 ) -> TokenStream {
-    // If any entries have cfg attributes, resolve them via decl macro
-    let has_cfg_attrs = entries.iter().any(|entry| key_has_cfg_attr(entry.key()));
-    if has_cfg_attrs {
-        return resolve_cfg(macro_name, entries);
-    }
-
-    // No cfg attributes - generate code directly
-    match Map::from_parsed(entries) {
-        Ok(map) => {
-            let state = generate_hash_state(&map.entries);
-            builder(&map.entries, state).into()
+    resolve_cfg(macro_name, entries, |input| {
+        let mut entries = Vec::with_capacity(input.len());
+        for entry in input {
+            let (key, value) = entry.into_pair();
+            for key in expand_or_patterns(&key) {
+                entries.push((key, value.clone()));
+            }
         }
-        Err(err) => err.to_compile_error().into(),
-    }
+        let state = hash_keys(entries.iter().map(|(key, _)| key), "key")?;
+        Ok(builder(&entries, &state))
+    })
+}
+
+#[proc_macro]
+pub fn phf_bimap(input: TokenStream) -> TokenStream {
+    let map = parse_macro_input!(input as parse::Map);
+    resolve_cfg(quote!(phf_bimap), map.entries, |input| {
+        let entries: Vec<_> = input.into_iter().map(AsMapEntry::into_pair).collect();
+        let left = hash_keys(entries.iter().map(|(l, _)| l), "left key")?;
+        let right = hash_keys(entries.iter().map(|(_, r)| r), "right key")?;
+        let left = build_index(&left);
+        let right = build_index(&right);
+        let entries = entries.iter().map(entry_tokens);
+        Ok(quote!(phf::BiMap { left: #left, right: #right, entries: &[#(#entries),*] }))
+    })
 }
 
 #[proc_macro]

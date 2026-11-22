@@ -63,6 +63,14 @@ fn main() -> io::Result<()> {
             .build()
     )?;
 
+    let bimap: phf_codegen::BiMap<_, _> =
+        (0..256u16).map(|i| (i, format!("item \"{i}\""))).collect();
+    writeln!(
+        &mut file,
+        "static BIMAP: ::phf::BiMap<u16, &str> = {};",
+        bimap.build()
+    )?;
+
     writeln!(
         &mut file,
         "static STR_KEYS: ::phf::Map<&'static str, u32> = \n{};",
@@ -281,10 +289,19 @@ fn main() -> io::Result<()> {
     quoted_ordered_set.entry(1u32).entry(2u32).entry(3u32);
     let quoted_ordered_set = quoted_ordered_set.build();
 
+    let mut quoted_bimap = phf_codegen::BiMap::new();
+    quoted_bimap
+        .phf_path("tables")
+        .entry("a", 1u32)
+        .entry("b", 2);
+    let quoted_bimap = quoted_bimap.build();
+
     writeln!(
         &mut file,
         "{}",
         quote! {
+            use ::phf as tables;
+            static QUOTED_BIMAP: tables::BiMap<&str, u32> = #quoted_bimap;
             static TO_TOKEN_STREAM_MAP: ::phf::Map<u32, &'static str> = #quoted_map_tokens;
             static QUOTED_SET: ::phf::Set<u32> = #quoted_set;
             static QUOTED_ORDERED_MAP: ::phf::OrderedMap<u32, &'static str> = #quoted_ordered_map;

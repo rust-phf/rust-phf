@@ -8,6 +8,14 @@ fn cfgs_work_without_phf_macros_feature() {
     assert_eq!(MAP.get("off"), None);
     assert_eq!(MAP.get("on"), Some(&1));
 
+    static BIMAP: phf::BiMap<&str, u8> = phf_macros::phf_bimap! {
+        #[cfg(any())]
+        "off" => 1u8,
+        "on" => 1u8,
+    };
+    assert_eq!(BIMAP.get_by_left("off"), None);
+    assert_eq!(BIMAP.get_by_right(&1), Some(&"on"));
+
     static SET: phf::Set<&'static str> = phf_macros::phf_set! {
         #[cfg(any())]
         "off",

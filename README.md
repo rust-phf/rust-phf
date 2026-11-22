@@ -69,6 +69,22 @@ pub fn parse_operator(operator: &str) -> Option<&'static str> {
 }
 ```
 
+Use `phf_bimap!` for a one-to-one mapping that supports lookups in either
+direction. In a build script, `phf_codegen::BiMap` accepts typed values on
+both sides.
+
+```rust
+use phf::{BiMap, phf_bimap};
+
+static STATUS: BiMap<u16, &str> = phf_bimap! {
+    200u16 => "OK",
+    404 => "Not Found",
+};
+
+assert_eq!(STATUS.get_by_left(&404), Some(&"Not Found"));
+assert_eq!(STATUS.get_by_right("OK"), Some(&200));
+```
+
 ```toml
 [dependencies]
 phf = { version = "0.14.0", features = ["macros"] }

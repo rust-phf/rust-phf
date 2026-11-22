@@ -184,6 +184,27 @@ extern crate std as core;
 pub use phf_macros::phf_map;
 
 #[cfg(feature = "macros")]
+/// Creates a static [`BiMap`] with a unique value on each side of every pair.
+///
+/// Both sides use the key expressions supported by [`phf_map`], excluding OR
+/// patterns. Integer types are inferred independently on each side from the
+/// first included pair. Entries accept `#[cfg]` attributes as in [`phf_map`].
+///
+/// ```
+/// use phf::{BiMap, phf_bimap};
+///
+/// static STATUS: BiMap<u16, &str> = phf_bimap! {
+///     200u16 => "OK",
+///     404 => "Not Found",
+/// };
+///
+/// assert_eq!(STATUS.get_by_left(&404), Some(&"Not Found"));
+/// assert_eq!(STATUS.get_by_right("OK"), Some(&200));
+/// assert_eq!(STATUS.get_by_right("Unknown"), None);
+/// ```
+pub use phf_macros::phf_bimap;
+
+#[cfg(feature = "macros")]
 /// Macro to create a `static` (compile-time) [`OrderedMap`].
 ///
 /// Requires the `macros` feature. Same usage as [`phf_map`].
@@ -306,6 +327,10 @@ macro_rules! __resolve_cfg {
 }
 
 #[doc(inline)]
+pub use self::bi_map::BiMap;
+#[doc(hidden)]
+pub use self::hash_index::HashIndex;
+#[doc(inline)]
 pub use self::map::Map;
 #[doc(inline)]
 pub use self::ordered_map::OrderedMap;
@@ -315,6 +340,8 @@ pub use self::ordered_set::OrderedSet;
 pub use self::set::Set;
 pub use phf_shared::{PhfEq, PhfHash};
 
+pub mod bi_map;
+mod hash_index;
 pub mod map;
 pub mod ordered_map;
 pub mod ordered_set;

@@ -250,7 +250,7 @@ impl<'a, K, V> IntoIterator for &'a OrderedMap<K, V> {
 
 /// An iterator over the entries in a `OrderedMap`.
 pub struct Entries<'a, K, V> {
-    iter: slice::Iter<'a, (K, V)>,
+    pub(crate) iter: slice::Iter<'a, (K, V)>,
 }
 
 impl<'a, K, V> Clone for Entries<'a, K, V> {
@@ -296,7 +296,7 @@ impl<'a, K, V> FusedIterator for Entries<'a, K, V> {}
 
 /// An iterator over the keys in a `OrderedMap`.
 pub struct Keys<'a, K, V> {
-    iter: Entries<'a, K, V>,
+    pub(crate) iter: Entries<'a, K, V>,
 }
 
 impl<'a, K, V> Clone for Keys<'a, K, V> {
@@ -341,7 +341,7 @@ impl<'a, K, V> FusedIterator for Keys<'a, K, V> {}
 
 /// An iterator over the values in a `OrderedMap`.
 pub struct Values<'a, K, V> {
-    iter: Entries<'a, K, V>,
+    pub(crate) iter: Entries<'a, K, V>,
 }
 
 impl<'a, K, V> Clone for Values<'a, K, V> {

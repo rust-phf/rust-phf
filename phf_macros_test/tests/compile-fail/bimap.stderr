@@ -1,0 +1,23 @@
+error: duplicate left key
+ --> tests/compile-fail/bimap.rs:5:5
+  |
+5 |     65 => "second",
+  |     ^^
+
+error: duplicate right key
+  --> tests/compile-fail/bimap.rs:10:17
+   |
+10 |     "second" => 1,
+   |                 ^
+
+error: right key type does not match the first right key
+  --> tests/compile-fail/bimap.rs:15:17
+   |
+15 |     "second" => 2u16,
+   |                 ^^^^
+
+error: expected a single key, found an OR pattern
+  --> tests/compile-fail/bimap.rs:19:16
+   |
+19 |     "color" => 'r' | 'g',
+   |                ^^^^^^^^^

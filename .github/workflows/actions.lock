@@ -10,7 +10,7 @@ workflows:
         - 'actions/checkout@v7.0.1'
         - 'embarkstudios/cargo-deny-action@v2.1.3'
         - 'swatinem/rust-cache@v2.9.3'
-        - 'zizmorcore/zizmor-action@v0.8.1'
+        - 'zizmorcore/zizmor-action@v0.9.0'
 dependencies:
     'actions/checkout@v7.0.1':
         ref: 'v7.0.1'
@@ -27,9 +27,9 @@ dependencies:
         commit: 'sha1-17aeb3c839e42274e2b8adf721c8c65edfdc74dd'
         owner_id: 44887257
         repo_id: 228054692
-    'github/codeql-action@9b3254085494b55a0f7c4c2b3d2d52cc712ce370':
-        ref: 'v4.39.1'
-        commit: 'sha1-9b3254085494b55a0f7c4c2b3d2d52cc712ce370'
+    'github/codeql-action@33d7b85da1a04171e211befe2c739303b9a4c066':
+        ref: 'v4.39.3'
+        commit: 'sha1-33d7b85da1a04171e211befe2c739303b9a4c066'
         owner_id: 9919
         repo_id: 259445878
     'swatinem/rust-cache@v2.9.3':
@@ -37,10 +37,10 @@ dependencies:
         commit: 'sha1-d1527c8f67ef9af357290475d4af4b0fab8f12e0'
         owner_id: 580492
         repo_id: 298565987
-    'zizmorcore/zizmor-action@v0.8.1':
-        ref: 'v0.8.1'
-        commit: 'sha1-45d7276c9ca790aabd705e31ca99c6185c3e76dd'
+    'zizmorcore/zizmor-action@v0.9.0':
+        ref: 'v0.9.0'
+        commit: 'sha1-bd12b495c90993a4301c73398142281a61499af3'
         owner_id: 210636713
         repo_id: 985558803
         uses:
-            - 'github/codeql-action@9b3254085494b55a0f7c4c2b3d2d52cc712ce370'
+            - 'github/codeql-action@33d7b85da1a04171e211befe2c739303b9a4c066'

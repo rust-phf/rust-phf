@@ -90,15 +90,15 @@ impl Parse for Set {
 
 pub trait AsMapEntry {
     fn key(&self) -> &Key;
-    fn value(&self) -> Expr;
+    fn into_pair(self) -> (Expr, Expr);
 }
 
 impl AsMapEntry for Key {
     fn key(&self) -> &Key {
         self
     }
-    fn value(&self) -> Expr {
-        syn::parse_quote!(())
+    fn into_pair(self) -> (Expr, Expr) {
+        (self.expr, syn::parse_quote!(()))
     }
 }
 
@@ -106,7 +106,7 @@ impl AsMapEntry for Entry {
     fn key(&self) -> &Key {
         &self.key
     }
-    fn value(&self) -> Expr {
-        self.value.clone()
+    fn into_pair(self) -> (Expr, Expr) {
+        (self.key.expr, self.value)
     }
 }

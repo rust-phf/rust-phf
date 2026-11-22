@@ -154,6 +154,10 @@ use phf_generator::HashState;
 #[cfg(feature = "ptrhash")]
 use phf_generator::ptrhash::HashState;
 
+mod bi_map;
+
+pub use bi_map::{BiMap, DisplayBiMap};
+
 struct Delegate<T>(T);
 
 impl<T: FmtConst> fmt::Display for Delegate<T> {
@@ -172,7 +176,14 @@ fn write_tokens(tokens: &mut proc_macro2::TokenStream, value: impl fmt::Display)
     );
 }
 
-fn generate_hash_state<H: PhfHash>(keys: &[H]) -> HashState {
+fn generate_hash_state<K: Hash + Eq + PhfHash + FmtConst>(keys: &[K], key_name: &str) -> HashState {
+    let mut seen = HashSet::with_capacity(keys.len());
+    for key in keys {
+        if !seen.insert(key) {
+            panic!("duplicate {key_name} `{}`", Delegate(key));
+        }
+    }
+
     #[cfg(not(feature = "ptrhash"))]
     {
         phf_generator::generate_hash(keys)
@@ -236,17 +247,8 @@ impl<'a, K: Hash + PhfHash + Eq + FmtConst> Map<'a, K> {
     ///
     /// Panics if there are any duplicate keys.
     pub fn build(&self) -> DisplayMap<'_, K> {
-        let mut set = HashSet::new();
-        for key in &self.keys {
-            if !set.insert(key) {
-                panic!("duplicate key `{}`", Delegate(key));
-            }
-        }
-
-        let state = generate_hash_state(&self.keys);
-
         DisplayMap {
-            state,
+            state: generate_hash_state(&self.keys, "key"),
             path: &self.path,
             keys: &self.keys,
             values: &self.values,
@@ -491,17 +493,8 @@ impl<'a, K: Hash + PhfHash + Eq + FmtConst> OrderedMap<'a, K> {
     ///
     /// Panics if there are any duplicate keys.
     pub fn build(&self) -> DisplayOrderedMap<'_, K> {
-        let mut set = HashSet::new();
-        for key in &self.keys {
-            if !set.insert(key) {
-                panic!("duplicate key `{}`", Delegate(key));
-            }
-        }
-
-        let state = generate_hash_state(&self.keys);
-
         DisplayOrderedMap {
-            state,
+            state: generate_hash_state(&self.keys, "key"),
             path: &self.path,
             keys: &self.keys,
             values: &self.values,
@@ -700,5 +693,22 @@ impl<'a, T: FmtConst + 'a> fmt::Display for DisplayOrderedSet<'a, T> {
 impl<'a, T: FmtConst + 'a> quote::ToTokens for DisplayOrderedSet<'a, T> {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         write_tokens(tokens, self);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Map, OrderedMap};
+
+    #[test]
+    #[should_panic(expected = "duplicate key `7`")]
+    fn duplicate_map_key() {
+        Map::new().entry(7u8, "1").entry(7, "2").build();
+    }
+
+    #[test]
+    #[should_panic(expected = "duplicate key `7`")]
+    fn duplicate_ordered_map_key() {
+        OrderedMap::new().entry(7u8, "1").entry(7, "2").build();
     }
 }

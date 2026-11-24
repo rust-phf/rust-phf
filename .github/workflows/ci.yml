@@ -149,4 +149,4 @@ jobs:
 
       - name: deny check
         if: matrix.version == 'stable'
-        uses: EmbarkStudios/cargo-deny-action@v2.1.3
+        uses: EmbarkStudios/cargo-deny-action@v2.1.4

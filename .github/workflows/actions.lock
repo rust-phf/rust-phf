@@ -8,7 +8,7 @@ workflows:
         - 'benchmark-action/github-action-benchmark@v1.22.2'
     '.github/workflows/ci.yml':
         - 'actions/checkout@v7.0.1'
-        - 'embarkstudios/cargo-deny-action@v2.1.4'
+        - 'embarkstudios/cargo-deny-action@v2.1.5'
         - 'swatinem/rust-cache@v2.9.3'
         - 'zizmorcore/zizmor-action@v0.9.2'
 dependencies:
@@ -22,9 +22,9 @@ dependencies:
         commit: 'sha1-4322e5726e6334590d251fc4f92bec0efafc45dc'
         owner_id: 91769432
         repo_id: 219665796
-    'embarkstudios/cargo-deny-action@v2.1.4':
-        ref: 'v2.1.4'
-        commit: 'sha1-81891abc19297b21343b15ef67dc61e4aea74fda'
+    'embarkstudios/cargo-deny-action@v2.1.5':
+        ref: 'v2.1.5'
+        commit: 'sha1-bb119f768ea239e765aeaef5769558d4f21213aa'
         owner_id: 44887257
         repo_id: 228054692
     'github/codeql-action@33d7b85da1a04171e211befe2c739303b9a4c066':
